@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <!-- Refrigerator Body -->
+  <rect x="8" y="4" width="32" height="38" rx="5" fill="#243447" stroke="#1D2A3A" stroke-width="2"/>
+  <!-- Freezer / Fridge Split Line -->
+  <line x1="8" y1="18" x2="40" y2="18" stroke="#3A4D64" stroke-width="2"/>
+  <!-- Handles -->
+  <rect x="12" y="8" width="2" height="6" rx="1" fill="#E5E2DC"/>
+  <rect x="12" y="22" width="2" height="12" rx="1" fill="#E5E2DC"/>
+  <!-- Souvenir Magnet on Door -->
+  <circle cx="28" cy="28" r="7" fill="#E98267" stroke="#FFFFFF" stroke-width="1.5"/>
+  <path d="M25 28L27.5 25.5L31 29L29 31Z" fill="#FFFFFF"/>
+  <circle cx="28" cy="28" r="2.5" fill="#3A8D8C"/>
+  <!-- Fridge Feet -->
+  <rect x="11" y="42" width="6" height="3" rx="1.5" fill="#1D2A3A"/>
+  <rect x="31" y="42" width="6" height="3" rx="1.5" fill="#1D2A3A"/>
+</svg>

@@ -1,0 +1,24 @@
+-- ====================================================================
+-- Magneto Sample Seed Script (Optional)
+-- Note: Replace '<YOUR_AUTH_USER_UUID>' with your actual Supabase auth.users UUID.
+-- ====================================================================
+
+-- Insert sample trip for Japan
+-- INSERT INTO public.trips (id, user_id, destination_name, magnet_key, start_date, end_date, target_budget_minor, currency, notes)
+-- VALUES (
+--   '11111111-1111-1111-1111-111111111111',
+--   '<YOUR_AUTH_USER_UUID>',
+--   'Kyoto & Tokyo, Japan',
+--   'japan',
+--   '2027-04-01',
+--   '2027-04-12',
+--   5000000, -- 50,000 INR stored in paise (50,000 * 100)
+--   'INR',
+--   'Cherry blossom season trip to Japan!'
+-- );
+
+-- Insert sample deposits
+-- INSERT INTO public.savings_transactions (trip_id, user_id, amount_minor, currency, note)
+-- VALUES
+--   ('11111111-1111-1111-1111-111111111111', '<YOUR_AUTH_USER_UUID>', 500000, 'INR', 'First savings deposit (5,000 INR)'),
+--   ('11111111-1111-1111-1111-111111111111', '<YOUR_AUTH_USER_UUID>', 1000000, 'INR', 'Second savings deposit (10,000 INR)');
