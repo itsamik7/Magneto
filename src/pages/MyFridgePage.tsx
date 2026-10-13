@@ -240,7 +240,9 @@ export const MyFridgePage: React.FC = () => {
   const navigate = useNavigate()
 
   // Fridge Magnets
-  const [userMagnets, setUserMagnets] = useState<FridgeMagnetItem[]>([])
+  const [userMagnets, setUserMagnets] = useState<FridgeMagnetItem[]>(() => {
+    return userMagnetService.getUserFridgeMagnetsSync(user?.id || 'guest')
+  })
   const [selectedSlug, setSelectedSlug] = useState<string>('santorini')
   const [isFavorite, setIsFavorite] = useState<boolean>(true)
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false)
@@ -272,21 +274,36 @@ export const MyFridgePage: React.FC = () => {
   const [placements, setPlacements] = useState<MagnetPlacement[]>([])
   const [selectedPlacementId, setSelectedPlacementId] = useState<string | null>(null)
 
-  // Load User Magnets or default starter collection
+  // Load User Magnets or default starter collection & keep synced
   useEffect(() => {
+    const uid = user?.id || 'guest'
     const load = async () => {
-      const uid = user?.id || 'guest'
-      const list = await userMagnetService.getUserFridgeMagnets(uid)
-      if (list.length > 0) {
-        setUserMagnets(list)
-      } else {
+      const raw = userMagnetService.safeStorage.getItem(`magneto_fridge_${uid}`)
+      if (raw === null) {
         setUserMagnets(DEFAULT_FEATURED_MAGNETS)
         await userMagnetService.saveUserFridgeMagnets(uid, DEFAULT_FEATURED_MAGNETS)
+      } else {
+        const list = await userMagnetService.getUserFridgeMagnets(uid)
+        setUserMagnets(list)
       }
       const activeId = fridgeService.getActiveFridgeId(uid)
       setActiveModel(fridgeService.getFridgeModelById(activeId, user?.id))
     }
     load()
+
+    const handleSync = () => {
+      const activeId = fridgeService.getActiveFridgeId(uid)
+      setActiveModel(fridgeService.getFridgeModelById(activeId, user?.id))
+      const syncMagnets = userMagnetService.getUserFridgeMagnetsSync(uid)
+      setUserMagnets(syncMagnets)
+    }
+
+    window.addEventListener('magneto_sync', handleSync)
+    window.addEventListener('storage', handleSync)
+    return () => {
+      window.removeEventListener('magneto_sync', handleSync)
+      window.removeEventListener('storage', handleSync)
+    }
   }, [user])
 
   // Current Destination Details

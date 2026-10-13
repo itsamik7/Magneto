@@ -26,6 +26,7 @@ export interface FridgeWorkspaceProps {
   readOnly?: boolean
   onRemoveMagnet?: (placementIdOrSlug: string) => void
   onPlacementsChange?: (placements: MagnetPlacement[]) => void
+  onDropMagnet?: (magnetData: any, dropCoords: { x: number; y: number }) => void
 }
 
 export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
@@ -41,8 +42,10 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
   readOnly = false,
   onRemoveMagnet,
   onPlacementsChange,
+  onDropMagnet,
 }) => {
   const surfaceRef = useRef<HTMLDivElement>(null)
+  const [isDragOver, setIsDragOver] = useState(false)
   const [isModelModalOpen, setIsModelModalOpen] = useState(false)
   const [internalSelectedId, setInternalSelectedId] = useState<string | null>(null)
   const [placements, setPlacements] = useState<MagnetPlacement[]>([])
@@ -56,7 +59,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
     }
   }
 
-  // Load / sync placements whenever model or magnets change
+  // Load / sync placements whenever model or magnets change, or on sync events
   useEffect(() => {
     const loaded = fridgeService.getFridgePlacements(
       userId,
@@ -67,12 +70,78 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
     if (onPlacementsChange) {
       onPlacementsChange(loaded)
     }
+
+    const handleSync = () => {
+      const refreshed = fridgeService.getFridgePlacements(
+        userId,
+        currentModel.id,
+        magnets
+      )
+      setPlacements(refreshed)
+      if (onPlacementsChange) {
+        onPlacementsChange(refreshed)
+      }
+    }
+
+    window.addEventListener('magneto_sync', handleSync)
+    window.addEventListener('storage', handleSync)
+    return () => {
+      window.removeEventListener('magneto_sync', handleSync)
+      window.removeEventListener('storage', handleSync)
+    }
   }, [userId, currentModel.id, magnets])
 
   // Deselect when clicking outside magnets
   const handleSurfaceClick = (e: React.MouseEvent) => {
     if (e.target === surfaceRef.current) {
       setSelectedPlacementId(null)
+    }
+  }
+
+  // Handle HTML5 drag and drop of magnets onto fridge surface
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    if (readOnly) return
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'copy'
+    if (!isDragOver) setIsDragOver(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return
+    setIsDragOver(false)
+  }
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    if (readOnly) return
+    e.preventDefault()
+    setIsDragOver(false)
+
+    const surface = surfaceRef.current
+    if (!surface) return
+
+    const rect = surface.getBoundingClientRect()
+    if (rect.width === 0 || rect.height === 0) return
+
+    const dropX = Math.min(0.88, Math.max(0.12, (e.clientX - rect.left) / rect.width))
+    const dropY = Math.min(0.88, Math.max(0.12, (e.clientY - rect.top) / rect.height))
+
+    let magnetData: any = null
+    try {
+      const json = e.dataTransfer.getData('application/json')
+      if (json) magnetData = JSON.parse(json)
+    } catch {
+      // Fallback
+    }
+
+    if (!magnetData) {
+      const textId = e.dataTransfer.getData('text/plain')
+      if (textId) {
+        magnetData = { id: textId }
+      }
+    }
+
+    if (magnetData && onDropMagnet) {
+      onDropMagnet(magnetData, { x: dropX, y: dropY })
     }
   }
 
@@ -189,6 +258,9 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
       */}
       <div
         className="relative mx-auto rounded-[2rem] sm:rounded-[2.4rem] shadow-[0_25px_60px_-15px_rgba(20,29,47,0.35),0_10px_20px_-8px_rgba(0,0,0,0.18)] border-[3px] border-slate-300/80 overflow-hidden bg-slate-100"
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
         style={{
           width: '100%',
           maxWidth: '380px',
@@ -210,6 +282,9 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
         <div
           ref={surfaceRef}
           onClick={handleSurfaceClick}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
           style={{
             position: 'absolute',
             top: `${magneticRegion.top * 100}%`,
@@ -217,7 +292,9 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
             width: `${magneticRegion.width * 100}%`,
             height: `${magneticRegion.height * 100}%`,
           }}
-          className="relative select-none cursor-default"
+          className={`relative select-none cursor-default transition-all duration-200 ${
+            isDragOver ? 'ring-4 ring-blue-500/50 bg-blue-500/10 rounded-2xl' : ''
+          }`}
         >
           {/* Empty Fridge Invitation State */}
           {magnets.length === 0 && (

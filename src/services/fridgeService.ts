@@ -146,6 +146,9 @@ export const fridgeService = {
    */
   setActiveFridgeId(userId: string, modelId: string): void {
     safeStorage.setItem(`magneto_active_fridge_${userId}`, modelId)
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('magneto_sync', { detail: { userId, modelId } }))
+    }
   },
 
   /**
@@ -272,6 +275,9 @@ export const fridgeService = {
   ): void {
     const key = `magneto_fridge_placements_v2_${userId}_${modelId}`
     safeStorage.setItem(key, JSON.stringify(placements))
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('magneto_sync', { detail: { userId, modelId } }))
+    }
   },
 
   /**

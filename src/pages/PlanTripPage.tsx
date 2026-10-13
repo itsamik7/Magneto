@@ -64,8 +64,14 @@ export const PlanTripPage: React.FC = () => {
     return fridgeService.getFridgeModelById(id, user?.id)
   })
   const [isModelModalOpen, setIsModelModalOpen] = useState(false)
-  const [userMagnets, setUserMagnets] = useState<FridgeMagnetItem[]>([])
-  const [placements, setPlacements] = useState<MagnetPlacement[]>([])
+  const [userMagnets, setUserMagnets] = useState<FridgeMagnetItem[]>(() => {
+    return userMagnetService.getUserFridgeMagnetsSync(user?.id || 'guest')
+  })
+  const [placements, setPlacements] = useState<MagnetPlacement[]>(() => {
+    const uid = user?.id || 'guest'
+    const id = fridgeService.getActiveFridgeId(uid)
+    return fridgeService.getFridgePlacements(uid, id)
+  })
   const [selectedPlacementId, setSelectedPlacementId] = useState<string | null>('magnet-santorini')
 
   // Right Trip Editor State
@@ -109,21 +115,38 @@ export const PlanTripPage: React.FC = () => {
     'Dream Greek Island holiday: Oia sunsets, blue domed churches, caldera boat tour, and authentic seafood tavernas by Ammoudi Bay.'
   )
 
-  // Load User Magnets or default collection
+  // Load User Magnets or default collection & sync across pages
   useEffect(() => {
+    const uid = user?.id || 'guest'
     const load = async () => {
-      const uid = user?.id || 'guest'
-      const list = await userMagnetService.getUserFridgeMagnets(uid)
-      if (list.length > 0) {
-        setUserMagnets(list)
-      } else {
+      const raw = userMagnetService.safeStorage.getItem(`magneto_fridge_${uid}`)
+      if (raw === null) {
         setUserMagnets(DEFAULT_FEATURED_MAGNETS)
         await userMagnetService.saveUserFridgeMagnets(uid, DEFAULT_FEATURED_MAGNETS)
+      } else {
+        const list = await userMagnetService.getUserFridgeMagnets(uid)
+        setUserMagnets(list)
       }
       const activeId = fridgeService.getActiveFridgeId(uid)
       setActiveModel(fridgeService.getFridgeModelById(activeId, user?.id))
     }
     load()
+
+    const handleSync = () => {
+      const activeId = fridgeService.getActiveFridgeId(uid)
+      setActiveModel(fridgeService.getFridgeModelById(activeId, user?.id))
+      const syncMagnets = userMagnetService.getUserFridgeMagnetsSync(uid)
+      setUserMagnets(syncMagnets)
+      const syncPlacements = fridgeService.getFridgePlacements(uid, activeId)
+      setPlacements(syncPlacements)
+    }
+
+    window.addEventListener('magneto_sync', handleSync)
+    window.addEventListener('storage', handleSync)
+    return () => {
+      window.removeEventListener('magneto_sync', handleSync)
+      window.removeEventListener('storage', handleSync)
+    }
   }, [user])
 
   // Filter Catalog Magnets
@@ -232,6 +255,82 @@ export const PlanTripPage: React.FC = () => {
     fridgeService.saveFridgePlacements(uid, activeModel.id, nextPlacements)
 
     setSaveSuccessMessage(`${magnet.name} added to fridge!`)
+    setTimeout(() => setSaveSuccessMessage(null), 2500)
+  }
+
+  // Handle dropping a magnet from left discovery catalog directly onto the fridge surface
+  const handleDropMagnet = async (rawItem: any, coords: { x: number; y: number }) => {
+    const cleanSlug = (rawItem.id || rawItem.slug || '').toLowerCase()
+    if (!cleanSlug) return
+
+    const catalogItem =
+      SOUVENIR_MAGNETS_CATALOG.find((m) => m.id.toLowerCase() === cleanSlug) || rawItem
+
+    const uid = user?.id || 'guest'
+    const canonicalId = `magnet-${cleanSlug}`
+
+    const existingPlacementIndex = placements.findIndex(
+      (p) => p.magnetSlug.toLowerCase() === cleanSlug || p.id === canonicalId
+    )
+
+    if (existingPlacementIndex >= 0) {
+      // Reposition already placed magnet to exact drop coordinates
+      const nextPlacements = placements.map((p, idx) =>
+        idx === existingPlacementIndex ? { ...p, x: coords.x, y: coords.y } : p
+      )
+      setPlacements(nextPlacements)
+      setSelectedPlacementId(canonicalId)
+      setSelectedDestinationSlug(cleanSlug)
+      fridgeService.saveFridgePlacements(uid, activeModel.id, nextPlacements)
+      setSaveSuccessMessage(`${catalogItem.name || cleanSlug} repositioned on fridge!`)
+      setTimeout(() => setSaveSuccessMessage(null), 2500)
+      return
+    }
+
+    // Add new magnet placed at exact drop coordinates
+    const newMagnetItem: FridgeMagnetItem = {
+      id: canonicalId,
+      destination_slug: cleanSlug,
+      destination_name: catalogItem.name || cleanSlug,
+      country_name: catalogItem.destination?.split(',')[1]?.trim() || catalogItem.region || 'World',
+      continent: catalogItem.region === 'India' ? 'Asia' : 'Europe',
+      asset_url: catalogItem.imagePath || `/magnets/destinations/${cleanSlug}.png`,
+      magnet_shape: 'arch',
+      acquired_at: new Date().toISOString(),
+      unlock_state: 'saving',
+      progress_percentage: 0,
+      total_saved_minor: 0,
+      target_budget_minor: 15000000,
+    }
+
+    const newPlacement: MagnetPlacement = {
+      id: canonicalId,
+      magnetSlug: cleanSlug,
+      destinationName: catalogItem.name || cleanSlug,
+      assetUrl: catalogItem.imagePath || `/magnets/destinations/${cleanSlug}.png`,
+      x: coords.x,
+      y: coords.y,
+      scale: 1.0,
+      rotation: 0,
+      zIndex: placements.length + 1,
+      unlockState: 'saving',
+      progressPercentage: 0,
+      totalSavedMinor: 0,
+      targetBudgetMinor: 15000000,
+    }
+
+    const nextMagnets = [...userMagnets, newMagnetItem]
+    const nextPlacements = [...placements, newPlacement]
+
+    setUserMagnets(nextMagnets)
+    setPlacements(nextPlacements)
+    setSelectedPlacementId(canonicalId)
+    setSelectedDestinationSlug(cleanSlug)
+
+    await userMagnetService.saveUserFridgeMagnets(uid, nextMagnets)
+    fridgeService.saveFridgePlacements(uid, activeModel.id, nextPlacements)
+
+    setSaveSuccessMessage(`${catalogItem.name} placed on fridge!`)
     setTimeout(() => setSaveSuccessMessage(null), 2500)
   }
 
@@ -419,7 +518,13 @@ export const PlanTripPage: React.FC = () => {
             return (
               <div
                 key={item.id}
-                className="group relative p-2 bg-white rounded-2xl border border-slate-200/90 hover:border-blue-300 hover:shadow-md transition-all flex flex-col justify-between"
+                draggable={true}
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('application/json', JSON.stringify(item))
+                  e.dataTransfer.setData('text/plain', item.id)
+                  e.dataTransfer.effectAllowed = 'copy'
+                }}
+                className="group relative p-2 bg-white rounded-2xl border border-slate-200/90 hover:border-blue-300 hover:shadow-md transition-all flex flex-col justify-between cursor-grab active:cursor-grabbing select-none"
               >
                 {/* Heart Button */}
                 <button
@@ -447,7 +552,8 @@ export const PlanTripPage: React.FC = () => {
                   <img
                     src={item.imagePath}
                     alt={item.name}
-                    className="max-h-full max-w-full object-contain filter drop-shadow-md group-hover:scale-105 transition-transform"
+                    draggable={false}
+                    className="max-h-full max-w-full object-contain filter drop-shadow-md group-hover:scale-105 transition-transform pointer-events-none"
                   />
                 </div>
 
@@ -537,6 +643,12 @@ export const PlanTripPage: React.FC = () => {
               <span>Auto Arrange</span>
             </button>
 
+            {/* Auto-Saved Badge */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 font-heading font-bold text-xs rounded-xl shadow-xs border border-emerald-200">
+              <Check className="w-3 h-3 text-emerald-600" />
+              <span>Auto-Saved</span>
+            </div>
+
             {/* Edit Mode Badge */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 font-heading font-bold text-xs rounded-xl shadow-xs border border-blue-200">
               <Edit2 className="w-3 h-3 text-blue-600" />
@@ -561,34 +673,10 @@ export const PlanTripPage: React.FC = () => {
             onPlacementsChange={(next) => {
               setPlacements(next)
             }}
+            onDropMagnet={handleDropMagnet}
             showControls={false}
             readOnly={false}
           />
-        </div>
-
-        {/* Bottom Floating Notification & Action Bar */}
-        <div className="w-full max-w-lg mt-3 z-20 bg-white rounded-2xl p-2.5 shadow-lg border border-slate-200 flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-2">
-          <div className="flex items-center gap-2 text-xs text-slate-700">
-            <span className="text-amber-500">💡</span>
-            <span className="font-medium text-[11px]">
-              Drag magnets from left to add to your fridge.
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 rounded-xl transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSaveFridge}
-              className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-heading font-bold text-xs rounded-xl shadow-md transition-all hover:scale-105 active:scale-95"
-            >
-              Save Fridge
-            </button>
-          </div>
         </div>
 
         {/* Toast Notification */}
@@ -641,8 +729,9 @@ export const PlanTripPage: React.FC = () => {
             </span>
           </div>
           <button
-            onClick={() => navigate('/dashboard')}
-            className="p-1 text-slate-400 hover:text-slate-600 rounded-lg"
+            onClick={() => setSelectedPlacementId(null)}
+            className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
+            title="Close inspector"
           >
             <X className="w-4 h-4" />
           </button>

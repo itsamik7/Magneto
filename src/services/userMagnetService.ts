@@ -273,9 +273,9 @@ export const userMagnetService = {
     if (items.length === 0) {
       try {
         const raw = safeStorage.getItem(`magneto_fridge_${userId}`)
-        if (raw) {
+        if (raw !== null) {
           const parsed = JSON.parse(raw)
-          if (Array.isArray(parsed) && parsed.length > 0) {
+          if (Array.isArray(parsed)) {
             items.push(...parsed)
           }
         }
@@ -429,6 +429,24 @@ export const userMagnetService = {
   },
 
   /**
+   * Synchronously get cached magnets for immediate component initialization.
+   */
+  getUserFridgeMagnetsSync(userId: string): FridgeMagnetItem[] {
+    try {
+      const raw = safeStorage.getItem(`magneto_fridge_${userId}`)
+      if (raw !== null) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed)) {
+          return parsed
+        }
+      }
+    } catch {
+      // Ignore
+    }
+    return DEFAULT_FEATURED_MAGNETS
+  },
+
+  /**
    * Save the complete list of fridge magnets for a user.
    */
   async saveUserFridgeMagnets(userId: string, magnets: FridgeMagnetItem[]): Promise<void> {
@@ -436,6 +454,9 @@ export const userMagnetService = {
       safeStorage.setItem(`magneto_fridge_${userId}`, JSON.stringify(magnets))
       const collectedSlugs = magnets.map((m) => m.destination_slug)
       safeStorage.setItem(`magneto_collected_${userId}`, JSON.stringify(collectedSlugs))
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('magneto_sync', { detail: { userId } }))
+      }
     } catch {
       // Ignore
     }
@@ -458,6 +479,10 @@ export const userMagnetService = {
 
       const collectedSlugs = filtered.map((m) => m.destination_slug)
       safeStorage.setItem(`magneto_collected_${userId}`, JSON.stringify(collectedSlugs))
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('magneto_sync', { detail: { userId } }))
+      }
 
       if (isSupabaseConfigured) {
         const { data: dRow } = await supabase
