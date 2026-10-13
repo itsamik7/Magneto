@@ -1,3 +1,5 @@
+import { DESTINATIONS_CATALOG } from './destinationsCatalog'
+
 export interface SouvenirMagnetData {
   id: string
   name: string
@@ -12,7 +14,7 @@ export interface SouvenirMagnetData {
   isFeatured?: boolean
 }
 
-export const SOUVENIR_MAGNETS_CATALOG: SouvenirMagnetData[] = [
+const PRIMARY_FEATURED_MAGNETS: SouvenirMagnetData[] = [
   // --- INDIA DESTINATIONS ---
   {
     id: 'taj-mahal',
@@ -224,4 +226,37 @@ export const SOUVENIR_MAGNETS_CATALOG: SouvenirMagnetData[] = [
     defaultScale: 1.0,
     isFeatured: true,
   },
+]
+
+// Helper to map category from destination_type
+function mapCategory(type: string): 'Monuments' | 'Nature' | 'Beaches' | 'Mountains' | 'Culture' | 'Cities' | 'Food' {
+  if (type === 'Beach' || type === 'Island') return 'Beaches'
+  if (type === 'Mountain') return 'Mountains'
+  if (type === 'City') return 'Cities'
+  if (type === 'Natural Wonder' || type === 'Wildlife') return 'Nature'
+  if (type === 'Cultural Heritage') return 'Culture'
+  return 'Monuments'
+}
+
+// Convert all DESTINATIONS_CATALOG entries to SouvenirMagnetData
+const catalogAdditionalMagnets: SouvenirMagnetData[] = DESTINATIONS_CATALOG.map((dest) => ({
+  id: dest.slug,
+  name: dest.city || dest.name.split(',')[0].trim(),
+  destination: dest.name,
+  region: dest.country_name === 'India' ? ('India' as const) : ('International' as const),
+  category: mapCategory(dest.destination_type),
+  material: '3D Sculpted Die-Cut Enamel Relief',
+  imagePath: dest.asset_url || `/magnets/destinations/${dest.slug}.png`,
+  description: dest.short_description || `Authentic 3D souvenir magnet for ${dest.name}.`,
+  tags: [dest.destination_type, ...(dest.tags || []), dest.country_name],
+  defaultScale: 1.0,
+  isFeatured: !!dest.is_featured,
+}))
+
+// Primary IDs set for deduplication
+const primaryIds = new Set(PRIMARY_FEATURED_MAGNETS.map((m) => m.id))
+
+export const SOUVENIR_MAGNETS_CATALOG: SouvenirMagnetData[] = [
+  ...PRIMARY_FEATURED_MAGNETS,
+  ...catalogAdditionalMagnets.filter((m) => !primaryIds.has(m.id)),
 ]

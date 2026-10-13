@@ -36,7 +36,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#3D2C8D"
     ],
     "art_preset": "taj_mahal",
-    "asset_url": "/magnets/destinations/taj-mahal.svg"
+    "asset_url": "/magnets/destinations/taj-mahal.png"
   },
   {
     "slug": "jaipur",
@@ -71,7 +71,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF3C7"
     ],
     "art_preset": "jaipur",
-    "asset_url": "/magnets/destinations/jaipur.svg"
+    "asset_url": "/magnets/destinations/jaipur.png"
   },
   {
     "slug": "varanasi",
@@ -106,7 +106,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF08A"
     ],
     "art_preset": "varanasi",
-    "asset_url": "/magnets/destinations/varanasi.svg"
+    "asset_url": "/magnets/destinations/varanasi.png"
   },
   {
     "slug": "goa",
@@ -141,7 +141,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#EA580C"
     ],
     "art_preset": "goa",
-    "asset_url": "/magnets/destinations/goa.svg"
+    "asset_url": "/magnets/destinations/goa.png"
   },
   {
     "slug": "kerala-backwaters",
@@ -176,7 +176,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#0284C7"
     ],
     "art_preset": "kerala",
-    "asset_url": "/magnets/destinations/kerala-backwaters.svg"
+    "asset_url": "/magnets/destinations/kerala-backwaters.png"
   },
   {
     "slug": "munnar",
@@ -211,7 +211,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#A7F3D0"
     ],
     "art_preset": "munnar",
-    "asset_url": "/magnets/destinations/munnar.svg"
+    "asset_url": "/magnets/destinations/munnar.png"
   },
   {
     "slug": "ladakh",
@@ -246,7 +246,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E0F2FE"
     ],
     "art_preset": "ladakh",
-    "asset_url": "/magnets/destinations/ladakh.svg"
+    "asset_url": "/magnets/destinations/ladakh.png"
   },
   {
     "slug": "udaipur",
@@ -281,7 +281,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#312E81"
     ],
     "art_preset": "udaipur",
-    "asset_url": "/magnets/destinations/udaipur.svg"
+    "asset_url": "/magnets/destinations/udaipur.png"
   },
   {
     "slug": "rishikesh",
@@ -316,7 +316,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#CCFBF1"
     ],
     "art_preset": "rishikesh",
-    "asset_url": "/magnets/destinations/rishikesh.svg"
+    "asset_url": "/magnets/destinations/rishikesh.png"
   },
   {
     "slug": "darjeeling",
@@ -351,7 +351,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#DBEAFE"
     ],
     "art_preset": "darjeeling",
-    "asset_url": "/magnets/destinations/darjeeling.svg"
+    "asset_url": "/magnets/destinations/darjeeling.png"
   },
   {
     "slug": "hampi",
@@ -386,7 +386,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF3C7"
     ],
     "art_preset": "hampi",
-    "asset_url": "/magnets/destinations/hampi.svg"
+    "asset_url": "/magnets/destinations/hampi.png"
   },
   {
     "slug": "manali",
@@ -421,7 +421,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#38BDF8"
     ],
     "art_preset": "manali",
-    "asset_url": "/magnets/destinations/manali.svg"
+    "asset_url": "/magnets/destinations/manali.png"
   },
   {
     "slug": "amritsar",
@@ -456,7 +456,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF08A"
     ],
     "art_preset": "amritsar",
-    "asset_url": "/magnets/destinations/amritsar.svg"
+    "asset_url": "/magnets/destinations/amritsar.png"
   },
   {
     "slug": "meghalaya",
@@ -491,7 +491,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#A7F3D0"
     ],
     "art_preset": "meghalaya",
-    "asset_url": "/magnets/destinations/meghalaya.svg"
+    "asset_url": "/magnets/destinations/meghalaya.png"
   },
   {
     "slug": "andaman",
@@ -526,7 +526,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E0F2FE"
     ],
     "art_preset": "andaman",
-    "asset_url": "/magnets/destinations/andaman.svg"
+    "asset_url": "/magnets/destinations/andaman.png"
   },
   {
     "slug": "jodhpur",
@@ -561,7 +561,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#DBEAFE"
     ],
     "art_preset": "jodhpur",
-    "asset_url": "/magnets/destinations/jodhpur.svg"
+    "asset_url": "/magnets/destinations/jodhpur.png"
   },
   {
     "slug": "mysore",
@@ -596,7 +596,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF08A"
     ],
     "art_preset": "mysore",
-    "asset_url": "/magnets/destinations/mysore.svg"
+    "asset_url": "/magnets/destinations/mysore.png"
   },
   {
     "slug": "pondicherry",
@@ -631,7 +631,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF9C3"
     ],
     "art_preset": "pondicherry",
-    "asset_url": "/magnets/destinations/pondicherry.svg"
+    "asset_url": "/magnets/destinations/pondicherry.png"
   },
   {
     "slug": "rann-of-kutch",
@@ -666,7 +666,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#9333EA"
     ],
     "art_preset": "rann_of_kutch",
-    "asset_url": "/magnets/destinations/rann-of-kutch.svg"
+    "asset_url": "/magnets/destinations/rann-of-kutch.png"
   },
   {
     "slug": "ooty",
@@ -701,7 +701,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#DCFCE7"
     ],
     "art_preset": "ooty",
-    "asset_url": "/magnets/destinations/ooty.svg"
+    "asset_url": "/magnets/destinations/ooty.png"
   },
   {
     "slug": "paris",
@@ -841,7 +841,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF3C7"
     ],
     "art_preset": "rome",
-    "asset_url": "/magnets/destinations/rome.svg"
+    "asset_url": "/magnets/destinations/rome.png"
   },
   {
     "slug": "venice",
@@ -876,7 +876,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E0F2FE"
     ],
     "art_preset": "venice",
-    "asset_url": "/magnets/destinations/venice.svg"
+    "asset_url": "/magnets/destinations/venice.png"
   },
   {
     "slug": "santorini",
@@ -911,7 +911,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#DBEAFE"
     ],
     "art_preset": "santorini",
-    "asset_url": "/magnets/destinations/santorini.svg"
+    "asset_url": "/magnets/destinations/santorini.png"
   },
   {
     "slug": "barcelona",
@@ -946,7 +946,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FDE047"
     ],
     "art_preset": "barcelona",
-    "asset_url": "/magnets/destinations/barcelona.svg"
+    "asset_url": "/magnets/destinations/barcelona.png"
   },
   {
     "slug": "amsterdam",
@@ -981,7 +981,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF3C7"
     ],
     "art_preset": "amsterdam",
-    "asset_url": "/magnets/destinations/amsterdam.svg"
+    "asset_url": "/magnets/destinations/amsterdam.png"
   },
   {
     "slug": "prague",
@@ -1016,7 +1016,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF3C7"
     ],
     "art_preset": "prague",
-    "asset_url": "/magnets/destinations/prague.svg"
+    "asset_url": "/magnets/destinations/prague.png"
   },
   {
     "slug": "vienna",
@@ -1051,7 +1051,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF9C3"
     ],
     "art_preset": "vienna",
-    "asset_url": "/magnets/destinations/vienna.svg"
+    "asset_url": "/magnets/destinations/vienna.png"
   },
   {
     "slug": "florence",
@@ -1086,7 +1086,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF2F2"
     ],
     "art_preset": "florence",
-    "asset_url": "/magnets/destinations/florence.svg"
+    "asset_url": "/magnets/destinations/florence.png"
   },
   {
     "slug": "edinburgh",
@@ -1121,7 +1121,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#94A3B8"
     ],
     "art_preset": "edinburgh",
-    "asset_url": "/magnets/destinations/edinburgh.svg"
+    "asset_url": "/magnets/destinations/edinburgh.png"
   },
   {
     "slug": "reykjavik",
@@ -1156,7 +1156,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#6EE7B7"
     ],
     "art_preset": "reykjavik",
-    "asset_url": "/magnets/destinations/reykjavik.svg"
+    "asset_url": "/magnets/destinations/reykjavik.png"
   },
   {
     "slug": "dubrovnik",
@@ -1191,7 +1191,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#1E3A8A"
     ],
     "art_preset": "dubrovnik",
-    "asset_url": "/magnets/destinations/dubrovnik.svg"
+    "asset_url": "/magnets/destinations/dubrovnik.png"
   },
   {
     "slug": "athens",
@@ -1226,7 +1226,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#1E3A8A"
     ],
     "art_preset": "athens",
-    "asset_url": "/magnets/destinations/athens.svg"
+    "asset_url": "/magnets/destinations/athens.png"
   },
   {
     "slug": "dublin",
@@ -1261,7 +1261,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#DCFCE7"
     ],
     "art_preset": "dublin",
-    "asset_url": "/magnets/destinations/dublin.svg"
+    "asset_url": "/magnets/destinations/dublin.png"
   },
   {
     "slug": "lisbon",
@@ -1296,7 +1296,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF08A"
     ],
     "art_preset": "lisbon",
-    "asset_url": "/magnets/destinations/lisbon.svg"
+    "asset_url": "/magnets/destinations/lisbon.png"
   },
   {
     "slug": "berlin",
@@ -1331,7 +1331,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF3C7"
     ],
     "art_preset": "berlin",
-    "asset_url": "/magnets/destinations/berlin.svg"
+    "asset_url": "/magnets/destinations/berlin.png"
   },
   {
     "slug": "budapest",
@@ -1366,7 +1366,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E0F2FE"
     ],
     "art_preset": "budapest",
-    "asset_url": "/magnets/destinations/budapest.svg"
+    "asset_url": "/magnets/destinations/budapest.png"
   },
   {
     "slug": "amalfi-coast",
@@ -1401,7 +1401,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E0F2FE"
     ],
     "art_preset": "amalfi",
-    "asset_url": "/magnets/destinations/amalfi-coast.svg"
+    "asset_url": "/magnets/destinations/amalfi-coast.png"
   },
   {
     "slug": "japan",
@@ -1541,7 +1541,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF08A"
     ],
     "art_preset": "bangkok",
-    "asset_url": "/magnets/destinations/bangkok.svg"
+    "asset_url": "/magnets/destinations/bangkok.png"
   },
   {
     "slug": "phuket",
@@ -1576,7 +1576,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#CCFBF1"
     ],
     "art_preset": "phuket",
-    "asset_url": "/magnets/destinations/phuket.svg"
+    "asset_url": "/magnets/destinations/phuket.png"
   },
   {
     "slug": "seoul",
@@ -1611,7 +1611,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#DBEAFE"
     ],
     "art_preset": "seoul",
-    "asset_url": "/magnets/destinations/seoul.svg"
+    "asset_url": "/magnets/destinations/seoul.png"
   },
   {
     "slug": "dubai",
@@ -1646,7 +1646,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF3C7"
     ],
     "art_preset": "dubai",
-    "asset_url": "/magnets/destinations/dubai.svg"
+    "asset_url": "/magnets/destinations/dubai.png"
   },
   {
     "slug": "ha-long-bay",
@@ -1681,7 +1681,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#A7F3D0"
     ],
     "art_preset": "ha_long_bay",
-    "asset_url": "/magnets/destinations/ha-long-bay.svg"
+    "asset_url": "/magnets/destinations/ha-long-bay.png"
   },
   {
     "slug": "angkor-wat",
@@ -1716,7 +1716,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF3C7"
     ],
     "art_preset": "angkor_wat",
-    "asset_url": "/magnets/destinations/angkor-wat.svg"
+    "asset_url": "/magnets/destinations/angkor-wat.png"
   },
   {
     "slug": "petra",
@@ -1751,7 +1751,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEE2E2"
     ],
     "art_preset": "petra",
-    "asset_url": "/magnets/destinations/petra.svg"
+    "asset_url": "/magnets/destinations/petra.png"
   },
   {
     "slug": "cappadocia",
@@ -1786,7 +1786,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF3C7"
     ],
     "art_preset": "cappadocia",
-    "asset_url": "/magnets/destinations/cappadocia.svg"
+    "asset_url": "/magnets/destinations/cappadocia.png"
   },
   {
     "slug": "istanbul",
@@ -1821,7 +1821,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#DBEAFE"
     ],
     "art_preset": "istanbul",
-    "asset_url": "/magnets/destinations/istanbul.svg"
+    "asset_url": "/magnets/destinations/istanbul.png"
   },
   {
     "slug": "maldives",
@@ -1856,7 +1856,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E0F2FE"
     ],
     "art_preset": "maldives",
-    "asset_url": "/magnets/destinations/maldives.svg"
+    "asset_url": "/magnets/destinations/maldives.png"
   },
   {
     "slug": "great-wall",
@@ -1891,7 +1891,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF3C7"
     ],
     "art_preset": "great_wall",
-    "asset_url": "/magnets/destinations/great-wall.svg"
+    "asset_url": "/magnets/destinations/great-wall.png"
   },
   {
     "slug": "hong-kong",
@@ -1926,7 +1926,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF08A"
     ],
     "art_preset": "hong_kong",
-    "asset_url": "/magnets/destinations/hong-kong.svg"
+    "asset_url": "/magnets/destinations/hong-kong.png"
   },
   {
     "slug": "taipei",
@@ -1961,7 +1961,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#D1FAE5"
     ],
     "art_preset": "taipei",
-    "asset_url": "/magnets/destinations/taipei.svg"
+    "asset_url": "/magnets/destinations/taipei.png"
   },
   {
     "slug": "chiang-mai",
@@ -1996,7 +1996,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF08A"
     ],
     "art_preset": "chiang_mai",
-    "asset_url": "/magnets/destinations/chiang-mai.svg"
+    "asset_url": "/magnets/destinations/chiang-mai.png"
   },
   {
     "slug": "luang-prabang",
@@ -2031,7 +2031,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#A7F3D0"
     ],
     "art_preset": "luang_prabang",
-    "asset_url": "/magnets/destinations/luang-prabang.svg"
+    "asset_url": "/magnets/destinations/luang-prabang.png"
   },
   {
     "slug": "kathmandu",
@@ -2066,7 +2066,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF08A"
     ],
     "art_preset": "kathmandu",
-    "asset_url": "/magnets/destinations/kathmandu.svg"
+    "asset_url": "/magnets/destinations/kathmandu.png"
   },
   {
     "slug": "boracay",
@@ -2101,7 +2101,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E0F2FE"
     ],
     "art_preset": "boracay",
-    "asset_url": "/magnets/destinations/boracay.svg"
+    "asset_url": "/magnets/destinations/boracay.png"
   },
   {
     "slug": "new-york",
@@ -2136,7 +2136,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#F8FAFC"
     ],
     "art_preset": "new_york",
-    "asset_url": "/magnets/destinations/new-york.svg"
+    "asset_url": "/magnets/destinations/new-york.png"
   },
   {
     "slug": "grand-canyon",
@@ -2171,7 +2171,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF3C7"
     ],
     "art_preset": "grand_canyon",
-    "asset_url": "/magnets/destinations/grand-canyon.svg"
+    "asset_url": "/magnets/destinations/grand-canyon.png"
   },
   {
     "slug": "san-francisco",
@@ -2206,7 +2206,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FFEDD5"
     ],
     "art_preset": "san_francisco",
-    "asset_url": "/magnets/destinations/san-francisco.svg"
+    "asset_url": "/magnets/destinations/san-francisco.png"
   },
   {
     "slug": "hawaii",
@@ -2241,7 +2241,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E0F2FE"
     ],
     "art_preset": "hawaii",
-    "asset_url": "/magnets/destinations/hawaii.svg"
+    "asset_url": "/magnets/destinations/hawaii.png"
   },
   {
     "slug": "las-vegas",
@@ -2276,7 +2276,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF08A"
     ],
     "art_preset": "las_vegas",
-    "asset_url": "/magnets/destinations/las-vegas.svg"
+    "asset_url": "/magnets/destinations/las-vegas.png"
   },
   {
     "slug": "miami",
@@ -2311,7 +2311,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FDF2F8"
     ],
     "art_preset": "miami",
-    "asset_url": "/magnets/destinations/miami.svg"
+    "asset_url": "/magnets/destinations/miami.png"
   },
   {
     "slug": "yellowstone",
@@ -2346,7 +2346,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF3C7"
     ],
     "art_preset": "yellowstone",
-    "asset_url": "/magnets/destinations/yellowstone.svg"
+    "asset_url": "/magnets/destinations/yellowstone.png"
   },
   {
     "slug": "banff",
@@ -2381,7 +2381,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#CCFBF1"
     ],
     "art_preset": "banff",
-    "asset_url": "/magnets/destinations/banff.svg"
+    "asset_url": "/magnets/destinations/banff.png"
   },
   {
     "slug": "machu-picchu",
@@ -2416,7 +2416,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#DCFCE7"
     ],
     "art_preset": "machu_picchu",
-    "asset_url": "/magnets/destinations/machu-picchu.svg"
+    "asset_url": "/magnets/destinations/machu-picchu.png"
   },
   {
     "slug": "rio-de-janeiro",
@@ -2451,7 +2451,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E0F2FE"
     ],
     "art_preset": "rio",
-    "asset_url": "/magnets/destinations/rio-de-janeiro.svg"
+    "asset_url": "/magnets/destinations/rio-de-janeiro.png"
   },
   {
     "slug": "cancun",
@@ -2486,7 +2486,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#CCFBF1"
     ],
     "art_preset": "cancun",
-    "asset_url": "/magnets/destinations/cancun.svg"
+    "asset_url": "/magnets/destinations/cancun.png"
   },
   {
     "slug": "patagonia",
@@ -2521,7 +2521,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#38BDF8"
     ],
     "art_preset": "patagonia",
-    "asset_url": "/magnets/destinations/patagonia.svg"
+    "asset_url": "/magnets/destinations/patagonia.png"
   },
   {
     "slug": "mexico-city",
@@ -2556,7 +2556,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF3C7"
     ],
     "art_preset": "mexico_city",
-    "asset_url": "/magnets/destinations/mexico-city.svg"
+    "asset_url": "/magnets/destinations/mexico-city.png"
   },
   {
     "slug": "havana",
@@ -2591,7 +2591,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E0F2FE"
     ],
     "art_preset": "havana",
-    "asset_url": "/magnets/destinations/havana.svg"
+    "asset_url": "/magnets/destinations/havana.png"
   },
   {
     "slug": "galapagos",
@@ -2626,7 +2626,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E0F2FE"
     ],
     "art_preset": "galapagos",
-    "asset_url": "/magnets/destinations/galapagos.svg"
+    "asset_url": "/magnets/destinations/galapagos.png"
   },
   {
     "slug": "pyramids-giza",
@@ -2661,7 +2661,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF3C7"
     ],
     "art_preset": "pyramids",
-    "asset_url": "/magnets/destinations/pyramids-giza.svg"
+    "asset_url": "/magnets/destinations/pyramids-giza.png"
   },
   {
     "slug": "cape-town",
@@ -2696,7 +2696,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E0F2FE"
     ],
     "art_preset": "cape_town",
-    "asset_url": "/magnets/destinations/cape-town.svg"
+    "asset_url": "/magnets/destinations/cape-town.png"
   },
   {
     "slug": "serengeti",
@@ -2731,7 +2731,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF3C7"
     ],
     "art_preset": "serengeti",
-    "asset_url": "/magnets/destinations/serengeti.svg"
+    "asset_url": "/magnets/destinations/serengeti.png"
   },
   {
     "slug": "marrakech",
@@ -2766,7 +2766,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF3C7"
     ],
     "art_preset": "marrakech",
-    "asset_url": "/magnets/destinations/marrakech.svg"
+    "asset_url": "/magnets/destinations/marrakech.png"
   },
   {
     "slug": "victoria-falls",
@@ -2801,7 +2801,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E0F2FE"
     ],
     "art_preset": "victoria_falls",
-    "asset_url": "/magnets/destinations/victoria-falls.svg"
+    "asset_url": "/magnets/destinations/victoria-falls.png"
   },
   {
     "slug": "zanzibar",
@@ -2836,7 +2836,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E0F2FE"
     ],
     "art_preset": "zanzibar",
-    "asset_url": "/magnets/destinations/zanzibar.svg"
+    "asset_url": "/magnets/destinations/zanzibar.png"
   },
   {
     "slug": "mauritius",
@@ -2871,7 +2871,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E0F2FE"
     ],
     "art_preset": "mauritius",
-    "asset_url": "/magnets/destinations/mauritius.svg"
+    "asset_url": "/magnets/destinations/mauritius.png"
   },
   {
     "slug": "abu-dhabi",
@@ -2906,7 +2906,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E2E8F0"
     ],
     "art_preset": "abu_dhabi",
-    "asset_url": "/magnets/destinations/abu-dhabi.svg"
+    "asset_url": "/magnets/destinations/abu-dhabi.png"
   },
   {
     "slug": "masai-mara",
@@ -2941,7 +2941,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF3C7"
     ],
     "art_preset": "masai_mara",
-    "asset_url": "/magnets/destinations/masai-mara.svg"
+    "asset_url": "/magnets/destinations/masai-mara.png"
   },
   {
     "slug": "luxor",
@@ -2976,7 +2976,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF3C7"
     ],
     "art_preset": "luxor",
-    "asset_url": "/magnets/destinations/luxor.svg"
+    "asset_url": "/magnets/destinations/luxor.png"
   },
   {
     "slug": "sydney",
@@ -3011,7 +3011,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#DBEAFE"
     ],
     "art_preset": "sydney",
-    "asset_url": "/magnets/destinations/sydney.svg"
+    "asset_url": "/magnets/destinations/sydney.png"
   },
   {
     "slug": "great-barrier-reef",
@@ -3046,7 +3046,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E0F2FE"
     ],
     "art_preset": "great_barrier_reef",
-    "asset_url": "/magnets/destinations/great-barrier-reef.svg"
+    "asset_url": "/magnets/destinations/great-barrier-reef.png"
   },
   {
     "slug": "melbourne",
@@ -3081,7 +3081,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF08A"
     ],
     "art_preset": "melbourne",
-    "asset_url": "/magnets/destinations/melbourne.svg"
+    "asset_url": "/magnets/destinations/melbourne.png"
   },
   {
     "slug": "queenstown",
@@ -3116,7 +3116,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E0F2FE"
     ],
     "art_preset": "queenstown",
-    "asset_url": "/magnets/destinations/queenstown.svg"
+    "asset_url": "/magnets/destinations/queenstown.png"
   },
   {
     "slug": "milford-sound",
@@ -3151,7 +3151,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#A7F3D0"
     ],
     "art_preset": "milford_sound",
-    "asset_url": "/magnets/destinations/milford-sound.svg"
+    "asset_url": "/magnets/destinations/milford-sound.png"
   },
   {
     "slug": "rotorua",
@@ -3186,7 +3186,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEF3C7"
     ],
     "art_preset": "rotorua",
-    "asset_url": "/magnets/destinations/rotorua.svg"
+    "asset_url": "/magnets/destinations/rotorua.png"
   },
   {
     "slug": "fiji",
@@ -3221,7 +3221,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E0F2FE"
     ],
     "art_preset": "fiji",
-    "asset_url": "/magnets/destinations/fiji.svg"
+    "asset_url": "/magnets/destinations/fiji.png"
   },
   {
     "slug": "bora-bora",
@@ -3256,7 +3256,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E0F2FE"
     ],
     "art_preset": "bora_bora",
-    "asset_url": "/magnets/destinations/bora-bora.svg"
+    "asset_url": "/magnets/destinations/bora-bora.png"
   },
   {
     "slug": "uluru",
@@ -3291,7 +3291,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#FEE2E2"
     ],
     "art_preset": "uluru",
-    "asset_url": "/magnets/destinations/uluru.svg"
+    "asset_url": "/magnets/destinations/uluru.png"
   },
   {
     "slug": "auckland",
@@ -3326,7 +3326,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E0F2FE"
     ],
     "art_preset": "auckland",
-    "asset_url": "/magnets/destinations/auckland.svg"
+    "asset_url": "/magnets/destinations/auckland.png"
   },
   {
     "slug": "cairns-daintree",
@@ -3361,7 +3361,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#A7F3D0"
     ],
     "art_preset": "cairns",
-    "asset_url": "/magnets/destinations/cairns-daintree.svg"
+    "asset_url": "/magnets/destinations/cairns-daintree.png"
   },
   {
     "slug": "gold-coast",
@@ -3396,7 +3396,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E0F2FE"
     ],
     "art_preset": "gold_coast",
-    "asset_url": "/magnets/destinations/gold-coast.svg"
+    "asset_url": "/magnets/destinations/gold-coast.png"
   },
   {
     "slug": "tasmania",
@@ -3431,7 +3431,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E2E8F0"
     ],
     "art_preset": "tasmania",
-    "asset_url": "/magnets/destinations/tasmania.svg"
+    "asset_url": "/magnets/destinations/tasmania.png"
   },
   {
     "slug": "cook-islands",
@@ -3466,7 +3466,7 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#E0F2FE"
     ],
     "art_preset": "cook_islands",
-    "asset_url": "/magnets/destinations/cook-islands.svg"
+    "asset_url": "/magnets/destinations/cook-islands.png"
   },
   {
     "slug": "whitehaven-beach",
@@ -3501,6 +3501,6 @@ export const DESTINATIONS_CATALOG: DestinationWithMagnet[] = [
       "#CCFBF1"
     ],
     "art_preset": "whitehaven",
-    "asset_url": "/magnets/destinations/whitehaven-beach.svg"
+    "asset_url": "/magnets/destinations/whitehaven-beach.png"
   }
 ];

@@ -39,9 +39,13 @@ export const MagnetGraphic: React.FC<MagnetGraphicProps> = ({
     xl: 'w-48 sm:w-56 md:w-64 h-auto',
   }[size]
 
-  // Resolve best image URL
   const resolveImgSrc = (): string => {
-    if (assetUrl) return assetUrl
+    if (assetUrl) {
+      if (assetUrl.endsWith('.svg')) {
+        return assetUrl.replace(/\.svg$/, '.png')
+      }
+      return assetUrl
+    }
 
     // Photorealistic Indian Assets
     if (key.includes('taj-mahal') || key === 'agra') return '/assets/magnets/india/taj-mahal.png'
@@ -68,10 +72,15 @@ export const MagnetGraphic: React.FC<MagnetGraphicProps> = ({
       return `/magnets/${key}.png`
     }
 
-    return `/magnets/destinations/${key}.svg`
+    return `/magnets/destinations/${key}.png`
   }
 
-  const imgSrc = resolveImgSrc()
+  const [currentSrc, setCurrentSrc] = useState(resolveImgSrc)
+
+  React.useEffect(() => {
+    setCurrentSrc(resolveImgSrc())
+    setImgError(false)
+  }, [magnetKey, assetUrl])
 
   const floatClass =
     floatVariant === 1
@@ -146,19 +155,16 @@ export const MagnetGraphic: React.FC<MagnetGraphicProps> = ({
       <div className="w-full h-full filter drop-shadow-[0_10px_16px_rgba(0,0,0,0.34)] drop-shadow-[0_3px_5px_rgba(0,0,0,0.22)]">
         {!imgError ? (
           <img
-            src={imgSrc}
+            src={currentSrc}
             alt={`${destinationName} Souvenir Magnet`}
             className="w-full h-auto object-contain pointer-events-none select-none transition-transform"
             onError={() => {
-              if (imgSrc.endsWith('.png') && !imgSrc.includes('/destinations/')) {
+              if (currentSrc.endsWith('.png')) {
                 // If png failed, fallback to svg
                 const fallbackSvg = `/magnets/destinations/${key}.svg`
-                if (imgSrc !== fallbackSvg) {
-                  const img = new Image()
-                  img.src = fallbackSvg
-                  img.onload = () => {
-                    // SVG exists
-                  }
+                if (currentSrc !== fallbackSvg) {
+                  setCurrentSrc(fallbackSvg)
+                  return
                 }
               }
               setImgError(true)

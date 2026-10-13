@@ -97,7 +97,7 @@ export const destinationService = {
               is_featured: !!row.is_featured,
               magnet_shape: primaryAsset?.magnet_shape || 'die-cut',
               dominant_colors: primaryAsset?.dominant_colors || ['#0284C7', '#F59E0B'],
-              asset_url: primaryAsset?.asset_url || `/magnets/destinations/${row.slug}.svg`,
+              asset_url: primaryAsset?.asset_url || `/magnets/destinations/${row.slug}.png`,
               magnet_asset_id: primaryAsset?.id,
             }
           })
