@@ -86,7 +86,7 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
           <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
             Souvenir Magnet Design
           </label>
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2">
             {BUILT_IN_MAGNETS.map((mag) => {
               const isSelected = selectedMagnet === mag.key
               return (

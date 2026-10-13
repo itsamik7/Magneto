@@ -14,7 +14,7 @@ export interface TripWithStats extends TripRow {
   deposit_count: number
 }
 
-export type MagnetKey = 'paris' | 'japan' | 'goa' | 'switzerland' | 'london' | 'bali'
+export type MagnetKey = 'paris' | 'japan' | 'london' | 'switzerland' | 'bali' | 'singapore' | 'goa'
 
 export interface BuiltInMagnet {
   key: MagnetKey
@@ -30,7 +30,7 @@ export const BUILT_IN_MAGNETS: BuiltInMagnet[] = [
     key: 'paris',
     destination: 'Paris',
     title: 'Paris, France',
-    subtitle: 'Eiffel Tower Souvenir',
+    subtitle: 'Sunset Eiffel & Blossom',
     accentColor: '#E98267',
     secondaryColor: '#243447',
   },
@@ -38,40 +38,48 @@ export const BUILT_IN_MAGNETS: BuiltInMagnet[] = [
     key: 'japan',
     destination: 'Japan',
     title: 'Kyoto & Tokyo, Japan',
-    subtitle: 'Mount Fuji & Torii Gate',
+    subtitle: 'Mount Fuji & Red Pagoda',
     accentColor: '#DC2626',
     secondaryColor: '#1E293B',
-  },
-  {
-    key: 'goa',
-    destination: 'Goa',
-    title: 'Goa, India',
-    subtitle: 'Coastal Palm & Wave',
-    accentColor: '#0EA5E9',
-    secondaryColor: '#F59E0B',
-  },
-  {
-    key: 'switzerland',
-    destination: 'Switzerland',
-    title: 'Swiss Alps',
-    subtitle: 'Alpine Peak Souvenir',
-    accentColor: '#EF4444',
-    secondaryColor: '#047857',
   },
   {
     key: 'london',
     destination: 'London',
     title: 'London, UK',
-    subtitle: 'Big Ben Clock Tower',
-    accentColor: '#3B82F6',
-    secondaryColor: '#B45309',
+    subtitle: 'Big Ben & Red Double Decker',
+    accentColor: '#EF4444',
+    secondaryColor: '#1E3A8A',
+  },
+  {
+    key: 'switzerland',
+    destination: 'Switzerland',
+    title: 'Swiss Alps',
+    subtitle: 'Alpine Peak, Chalet & Lake',
+    accentColor: '#0284C7',
+    secondaryColor: '#065F46',
   },
   {
     key: 'bali',
     destination: 'Bali',
     title: 'Bali, Indonesia',
-    subtitle: 'Tropical Candi Bentar Gate',
+    subtitle: 'Candi Bentar Gate & Palms',
     accentColor: '#10B981',
-    secondaryColor: '#8B5CF6',
+    secondaryColor: '#F59E0B',
+  },
+  {
+    key: 'singapore',
+    destination: 'Singapore',
+    title: 'Singapore',
+    subtitle: 'Marina Bay & Merlion',
+    accentColor: '#3B82F6',
+    secondaryColor: '#10B981',
+  },
+  {
+    key: 'goa',
+    destination: 'Goa',
+    title: 'Goa, India',
+    subtitle: 'Coastal Palm & Sunset Beach',
+    accentColor: '#0EA5E9',
+    secondaryColor: '#F59E0B',
   },
 ]

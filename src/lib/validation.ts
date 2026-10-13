@@ -17,7 +17,7 @@ export const signupSchema = z.object({
 
 export const tripSchema = z.object({
   destinationName: z.string().trim().min(2, 'Destination name must be at least 2 characters'),
-  magnetKey: z.enum(['paris', 'japan', 'goa', 'switzerland', 'london', 'bali']),
+  magnetKey: z.enum(['paris', 'japan', 'london', 'switzerland', 'bali', 'singapore', 'goa']),
   targetBudgetRupees: z
     .number()
     .positive('Target budget must be greater than zero')

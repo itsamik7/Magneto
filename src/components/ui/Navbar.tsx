@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { LogOut, User as UserIcon, AlertCircle, Sparkles, Menu, X } from 'lucide-react'
+import { LogOut, User as UserIcon, AlertCircle, Menu, X, ArrowRight } from 'lucide-react'
 
 interface NavbarProps {
   onOpenSetupModal?: () => void
@@ -18,13 +18,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-[#F7F5F0]/95 backdrop-blur-md border-b border-[#E5E2DC]">
+    <header className="sticky top-0 z-40 bg-[#F2EFE8]/95 backdrop-blur-md border-b border-[#E2DCCE]">
       {/* Top Banner if Supabase is not configured */}
       {!isConfigured && (
         <div className="bg-amber-500 text-slate-950 px-4 py-2 text-xs sm:text-sm font-semibold flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-2 mx-auto">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
-            <span>Supabase backend is not connected yet. Real authentication & database persistence require your Supabase URL & anon key.</span>
+            <span>Supabase backend is not connected yet. Add your URL and publishable key to .env.</span>
             {onOpenSetupModal && (
               <button
                 onClick={onOpenSetupModal}
@@ -38,25 +38,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
       )}
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        {/* Brand Logo */}
-        <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-[#243447] flex items-center justify-center shadow-md group-hover:scale-105 transition-transform border border-slate-700">
-            {/* Logo Silhouette */}
-            <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none">
-              <rect x="4" y="2" width="16" height="20" rx="3" stroke="#F7F5F0" strokeWidth="2" />
-              <line x1="4" y1="9" x2="20" y2="9" stroke="#3A8D8C" strokeWidth="1.5" />
-              <circle cx="14" cy="15" r="3" fill="#E98267" stroke="#FFFFFF" strokeWidth="1" />
-              <line x1="7" y1="4" x2="7" y2="7" stroke="#E5E2DC" strokeWidth="1.5" strokeLinecap="round" />
-              <line x1="7" y1="11" x2="7" y2="16" stroke="#E5E2DC" strokeWidth="1.5" strokeLinecap="round" />
+        {/* Brand Logo with Globe Icon & Cursive Tagline Matching Screenshot */}
+        <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-2.5 group">
+          <div className="w-9 h-9 rounded-xl bg-[#059669] flex items-center justify-center text-white shadow-sm group-hover:scale-105 transition-transform">
+            <svg viewBox="0 0 24 24" className="w-5 h-5 stroke-white fill-none stroke-[2]">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 2a14.5 14.5 0 0 0 0 20M12 2a14.5 14.5 0 0 1 0 20M2 12h20" />
             </svg>
           </div>
           <div>
-            <span className="font-heading font-extrabold text-xl tracking-tight text-[#243447] flex items-center gap-1.5">
+            <span className="font-heading font-black text-xl tracking-tight text-[#1E293B]">
               Magneto
-              <span className="w-1.5 h-1.5 rounded-full bg-[#E98267]" />
             </span>
-            <span className="block text-[10px] uppercase tracking-wider font-semibold text-slate-500 -mt-1">
-              Travel Fridge
+            <span className="block text-[10px] text-[#059669] italic font-semibold -mt-1 font-serif">
+              Collect. Save. Explore.
             </span>
           </div>
         </Link>
@@ -67,26 +62,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
             <>
               <Link
                 to="/dashboard"
-                className="text-sm font-semibold text-slate-700 hover:text-[#243447] transition-colors flex items-center gap-1.5"
+                className="text-sm font-bold text-slate-700 hover:text-[#059669] transition-colors"
               >
-                <span>My Fridge</span>
+                My Travel Fridge
               </Link>
 
-              {onOpenSetupModal && !isConfigured && (
-                <button
-                  onClick={onOpenSetupModal}
-                  className="text-xs font-semibold text-amber-700 bg-amber-100 hover:bg-amber-200 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1"
-                >
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  <span>Configure DB</span>
-                </button>
-              )}
-
               {/* User Menu */}
-              <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
+              <div className="flex items-center gap-3 pl-4 border-l border-[#E2DCCE]">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-teal-600/10 border border-teal-500/30 text-teal-800 flex items-center justify-center font-heading font-bold text-xs">
-                    <UserIcon className="w-4 h-4 text-teal-700" />
+                  <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-heading font-bold text-xs">
+                    <UserIcon className="w-4 h-4 text-emerald-700" />
                   </div>
                   <div className="text-left">
                     <p className="text-xs font-bold text-slate-800 leading-tight">
@@ -109,27 +94,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
               </div>
             </>
           ) : (
-            <div className="flex items-center gap-4">
-              {onOpenSetupModal && (
-                <button
-                  onClick={onOpenSetupModal}
-                  className="text-xs font-medium text-slate-600 hover:text-slate-900 px-2.5 py-1 rounded-lg border border-slate-300 hover:border-slate-400 transition-colors"
-                >
-                  Supabase Setup
-                </button>
-              )}
+            <div className="flex items-center gap-3">
               <Link
                 to="/login"
-                className="text-sm font-semibold text-slate-700 hover:text-[#243447] px-3 py-2 transition-colors"
+                className="text-sm font-bold text-slate-700 hover:text-slate-900 px-3 py-2 transition-colors"
               >
                 Log In
               </Link>
               <Link
                 to="/signup"
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#E98267] hover:bg-[#d96d51] text-white text-sm font-bold rounded-xl shadow-md transition-all hover:scale-105 active:scale-95"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold rounded-xl shadow-md transition-all hover:scale-105 active:scale-95"
               >
-                <Sparkles className="w-4 h-4" />
                 <span>Build My Travel Fridge</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
           )}
@@ -147,12 +124,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-[#E5E2DC] bg-[#F7F5F0] px-4 py-4 space-y-3">
+        <div className="md:hidden border-t border-[#E2DCCE] bg-[#F2EFE8] px-4 py-4 space-y-3">
           {user ? (
             <>
               <div className="flex items-center gap-3 pb-3 border-b border-slate-200">
-                <div className="w-8 h-8 rounded-full bg-teal-600/10 text-teal-800 flex items-center justify-center font-bold text-xs">
-                  <UserIcon className="w-4 h-4 text-teal-700" />
+                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">
+                  <UserIcon className="w-4 h-4 text-emerald-700" />
                 </div>
                 <div>
                   <p className="text-xs font-bold text-slate-800">{displayName || user.email}</p>
@@ -162,21 +139,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
               <Link
                 to="/dashboard"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block text-sm font-semibold text-slate-800 py-1.5"
+                className="block text-sm font-bold text-slate-800 py-1.5"
               >
-                My Fridge
+                My Travel Fridge
               </Link>
-              {onOpenSetupModal && !isConfigured && (
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false)
-                    onOpenSetupModal()
-                  }}
-                  className="w-full text-left text-xs font-semibold text-amber-800 bg-amber-100 py-2 px-3 rounded-lg"
-                >
-                  Configure Supabase
-                </button>
-              )}
               <button
                 onClick={() => {
                   setMobileMenuOpen(false)
@@ -193,28 +159,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
               <Link
                 to="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block text-sm font-semibold text-slate-800 py-2"
+                className="block text-sm font-bold text-slate-800 py-2"
               >
                 Log In
               </Link>
               <Link
                 to="/signup"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block text-center py-2.5 bg-[#E98267] text-white font-bold rounded-xl text-sm"
+                className="block text-center py-2.5 bg-[#059669] text-white font-bold rounded-xl text-sm"
               >
                 Build My Travel Fridge
               </Link>
-              {onOpenSetupModal && (
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false)
-                    onOpenSetupModal()
-                  }}
-                  className="w-full text-center text-xs font-medium text-slate-600 py-2 border border-slate-300 rounded-xl"
-                >
-                  Supabase Setup Guide
-                </button>
-              )}
             </>
           )}
         </div>
