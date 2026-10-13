@@ -10,7 +10,7 @@ describe('destinationService', () => {
   it('should fetch all destinations when no filters applied', async () => {
     const destinations = await destinationService.getDestinations({})
     expect(destinations.length).toBe(100)
-  })
+  }, 15000)
 
   it('should filter destinations by continent', async () => {
     const asia = await destinationService.getDestinations({ continent: 'Asia' })

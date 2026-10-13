@@ -202,6 +202,7 @@ export const DashboardPage: React.FC = () => {
       {/* Main Virtual Refrigerator Centerpiece */}
       <section>
         <VirtualFridge
+          userId={user?.id}
           trips={trips}
           magnets={fridgeMagnets}
           isLoading={isLoading}

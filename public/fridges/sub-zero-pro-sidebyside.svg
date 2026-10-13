@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 588" width="100%" height="100%">
+  <defs>
+    <filter id="sbs-shadow" x="-15%" y="-15%" width="130%" height="135%">
+      <feDropShadow dx="0" dy="25" stdDeviation="20" flood-color="rgba(15,23,42,0.38)" />
+    </filter>
+    <linearGradient id="pro-steel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E2E8F0" />
+      <stop offset="50%" stop-color="#94A3B8" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="sbs-chrome" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#334155" />
+      <stop offset="50%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+  </defs>
+  <g filter="url(#sbs-shadow)">
+    <!-- Heavy Louvred Top Grille -->
+    <rect x="15" y="15" width="370" height="42" rx="8" fill="#1E293B" stroke="#475569" />
+    <line x1="25" y1="28" x2="375" y2="28" stroke="#94A3B8" stroke-width="2" />
+    <line x1="25" y1="38" x2="375" y2="38" stroke="#94A3B8" stroke-width="2" />
+    <line x1="25" y1="48" x2="375" y2="48" stroke="#94A3B8" stroke-width="2" />
+    <!-- Left Freezer Door -->
+    <rect x="18" y="65" width="168" height="503" rx="16"
+          fill="url(#pro-steel)" stroke="#FFFFFF" stroke-width="1.5" />
+    <!-- Right Refrigerator Door -->
+    <rect x="180" y="65" width="208" height="503" rx="16"
+          fill="url(#pro-steel)" stroke="#FFFFFF" stroke-width="1.5" />
+    <!-- Dual Tubular Handles -->
+    <rect x="152" y="147" width="10" height="264" rx="5" fill="url(#sbs-chrome)" />
+    <rect x="192" y="147" width="10" height="264" rx="5" fill="url(#sbs-chrome)" />
+  </g>
+</svg>

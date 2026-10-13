@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 625" width="100%" height="100%">
+  <defs>
+    <filter id="french-shadow" x="-15%" y="-15%" width="130%" height="135%">
+      <feDropShadow dx="0" dy="25" stdDeviation="20" flood-color="rgba(15,23,42,0.38)" />
+    </filter>
+    <linearGradient id="fd-steel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#CBD5E1" />
+      <stop offset="50%" stop-color="#94A3B8" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+    <linearGradient id="bar-chrome" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#475569" />
+      <stop offset="50%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#64748B" />
+    </linearGradient>
+  </defs>
+  <g filter="url(#french-shadow)">
+    <!-- Chassis -->
+    <rect x="15" y="15" width="370" height="595" rx="32" fill="#0F172A" stroke="#475569" stroke-width="2" />
+    <!-- Upper Left Door -->
+    <rect x="22" y="22" width="175" height="387" rx="20"
+          fill="url(#fd-steel)" stroke="#CBD5E1" stroke-width="1.5" />
+    <!-- Upper Right Door -->
+    <rect x="203" y="22" width="175" height="387" rx="20"
+          fill="url(#fd-steel)" stroke="#CBD5E1" stroke-width="1.5" />
+    <!-- Center Split Seam -->
+    <line x1="200" y1="22" x2="200" y2="409" stroke="#0F172A" stroke-width="4" />
+    <!-- Lower Pull-Out Freezer Drawer -->
+    <rect x="22" y="425" width="356" height="156" rx="20"
+          fill="url(#fd-steel)" stroke="#CBD5E1" stroke-width="1.5" />
+    <!-- Dual Upper Handles -->
+    <rect x="182" y="112" width="8" height="200" rx="4" fill="url(#bar-chrome)" />
+    <rect x="210" y="112" width="8" height="200" rx="4" fill="url(#bar-chrome)" />
+    <!-- Lower Drawer Handle -->
+    <rect x="140" y="437" width="120" height="8" rx="4" fill="url(#bar-chrome)" />
+  </g>
+</svg>

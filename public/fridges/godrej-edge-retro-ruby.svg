@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 714" width="100%" height="100%">
+  <defs>
+    <filter id="retro-shadow" x="-15%" y="-15%" width="130%" height="135%">
+      <feDropShadow dx="0" dy="25" stdDeviation="20" flood-color="rgba(15,23,42,0.38)" />
+    </filter>
+    <linearGradient id="retro-enamel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#BE123C" />
+      <stop offset="50%" stop-color="#881337" />
+      <stop offset="100%" stop-color="#4C0519" />
+    </linearGradient>
+    <linearGradient id="chrome-latch" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#475569" />
+      <stop offset="50%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#64748B" />
+    </linearGradient>
+  </defs>
+  <g filter="url(#retro-shadow)">
+    <!-- Curvy 1950s Single Door Body -->
+    <rect x="15" y="15" width="370" height="684" rx="46"
+          fill="url(#retro-enamel)" stroke="#FFFFFF" stroke-width="2.5" />
+    <!-- High-Gloss Bubble Specular Sheen -->
+    <path d="M 35,35 Q 200,100 360,40 L 360,180 Q 200,240 35,160 Z"
+          fill="#FFFFFF" opacity="0.24" pointer-events="none" />
+    <!-- Vintage Chrome Teardrop Latch on Right -->
+    <g transform="translate(335, 314)">
+      <rect x="0" y="0" width="36" height="16" rx="8" fill="url(#chrome-latch)" stroke="#334155" stroke-width="1.5" />
+      <circle cx="10" cy="8" r="5" fill="#FFFFFF" />
+    </g>
+    <!-- Chrome Lower Stand Feet -->
+    <rect x="45" y="696" width="40" height="12" rx="4" fill="url(#chrome-latch)" />
+    <rect x="315" y="696" width="40" height="12" rx="4" fill="url(#chrome-latch)" />
+  </g>
+</svg>

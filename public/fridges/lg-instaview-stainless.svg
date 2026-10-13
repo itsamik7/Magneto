@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 689" width="100%" height="100%">
+  <defs>
+    <!-- Appliance Outer Floating Shadow -->
+    <filter id="fridge-body-shadow" x="-15%" y="-15%" width="130%" height="135%">
+      <feDropShadow dx="0" dy="25" stdDeviation="20" flood-color="rgba(30,41,59,0.35)" />
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="rgba(0,0,0,0.18)" />
+    </filter>
+
+    <!-- Brushed Stainless Steel Gradient -->
+    <linearGradient id="steel-body" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E2E8F0" />
+      <stop offset="25%" stop-color="#CBD5E1" />
+      <stop offset="50%" stop-color="#94A3B8" />
+      <stop offset="75%" stop-color="#CBD5E1" />
+      <stop offset="100%" stop-color="#64748B" />
+    </linearGradient>
+
+    <!-- Chrome Outer Bevel Rim -->
+    <linearGradient id="chrome-rim" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#CBD5E1" />
+      <stop offset="50%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#94A3B8" />
+    </linearGradient>
+
+    <!-- Chrome Handle Cylinder Gradient -->
+    <linearGradient id="handle-chrome" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#334155" />
+      <stop offset="25%" stop-color="#94A3B8" />
+      <stop offset="50%" stop-color="#FFFFFF" />
+      <stop offset="75%" stop-color="#CBD5E1" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+
+    <!-- Diagonal Reflection Sheen -->
+    <linearGradient id="specular-sheen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.0" />
+      <stop offset="40%" stop-color="#FFFFFF" stop-opacity="0.18" />
+      <stop offset="60%" stop-color="#FFFFFF" stop-opacity="0.0" />
+    </linearGradient>
+  </defs>
+
+  <g filter="url(#fridge-body-shadow)">
+    <!-- 1. Outer Chassis Casing -->
+    <rect x="15" y="15" width="370" height="659" rx="36"
+          fill="url(#chrome-rim)" stroke="#94A3B8" stroke-width="2" />
+
+    <!-- 2. Main Stainless Door Surface -->
+    <rect x="22" y="22" width="356" height="645" rx="30"
+          fill="url(#steel-body)" stroke="#FFFFFF" stroke-width="1.5" />
+
+    <!-- 3. Horizontal Freezer Split Seam -->
+    <line x1="22" y1="192" x2="378" y2="192"
+          stroke="#475569" stroke-width="2.5" opacity="0.65" />
+    <line x1="22" y1="194" x2="378" y2="194"
+          stroke="#FFFFFF" stroke-width="1" opacity="0.8" />
+
+    <!-- 4. Diagonal Specular Sheen Reflection Layer -->
+    <path d="M 22,22 L 280,22 L 378,539 L 378,667 L 120,667 Z"
+          fill="url(#specular-sheen)" pointer-events="none" />
+
+    <!-- 5. Vertical Cylindrical Chrome Bar Handle on Right Edge -->
+    <g transform="translate(354, 110)">
+      <!-- Mounting Bracket Top -->
+      <rect x="-4" y="-12" width="22" height="18" rx="4"
+            fill="url(#handle-chrome)" stroke="#334155" stroke-width="1" />
+      <!-- Long Cylindrical Bar -->
+      <rect x="0" y="0" width="14" height="447" rx="7"
+            fill="url(#handle-chrome)" stroke="#475569" stroke-width="1.5" />
+      <!-- Mounting Bracket Bottom -->
+      <rect x="-4" y="441" width="22" height="18" rx="4"
+            fill="url(#handle-chrome)" stroke="#334155" stroke-width="1" />
+    </g>
+
+    <!-- 6. Bottom Kickplate Seam -->
+    <line x1="22" y1="647" x2="378" y2="647"
+          stroke="#334155" stroke-width="2" opacity="0.5" />
+  </g>
+</svg>
