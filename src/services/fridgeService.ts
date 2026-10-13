@@ -49,6 +49,19 @@ const safeStorage = {
   },
 }
 
+const DEFAULT_PRESET_POSITIONS: Record<string, { x: number; y: number; scale: number; rotation: number }> = {
+  'paris': { x: 0.28, y: 0.22, scale: 1.0, rotation: -2 },
+  'japan': { x: 0.58, y: 0.23, scale: 1.0, rotation: 1 },
+  'rome': { x: 0.82, y: 0.25, scale: 1.0, rotation: -1 },
+  'new-york': { x: 0.26, y: 0.47, scale: 1.0, rotation: 2 },
+  'goa': { x: 0.58, y: 0.49, scale: 1.0, rotation: -1 },
+  'santorini': { x: 0.82, y: 0.52, scale: 1.0, rotation: 1 },
+  'ladakh': { x: 0.28, y: 0.77, scale: 1.0, rotation: -2 },
+  'bali': { x: 0.58, y: 0.77, scale: 1.0, rotation: 1 },
+  'bangkok': { x: 0.82, y: 0.77, scale: 1.0, rotation: -1 },
+  'thailand': { x: 0.82, y: 0.77, scale: 1.0, rotation: -1 },
+}
+
 export const fridgeService = {
   safeStorage,
   /**
@@ -228,22 +241,28 @@ export const fridgeService = {
       const jitterY = ((globalIdx * 23) % 7 - 3) * 0.015
       const rotation = (((globalIdx * 13) % 15) - 7) // -7 to +7 degrees
 
-      const x = Math.min(0.85, Math.max(0.15, baseX + jitterX))
-      const y = Math.min(0.85, Math.max(0.12, baseY + jitterY))
+      const preset = DEFAULT_PRESET_POSITIONS[magnet.destination_slug.toLowerCase()]
+      const finalX = preset ? preset.x : Math.min(0.85, Math.max(0.15, baseX + jitterX))
+      const finalY = preset ? preset.y : Math.min(0.85, Math.max(0.12, baseY + jitterY))
+      const finalRotation = preset ? preset.rotation : rotation
+      const finalScale = preset ? preset.scale : 1.0
 
       return {
         id: magnet.id,
         magnetSlug: magnet.destination_slug,
         destinationName: magnet.destination_name,
         assetUrl: magnet.asset_url,
-        x,
-        y,
-        scale: 1.0,
-        rotation,
+        x: finalX,
+        y: finalY,
+        scale: finalScale,
+        rotation: finalRotation,
         zIndex: globalIdx + 1,
         tripId: magnet.trip_id,
         unlockState: magnet.unlock_state || 'dreaming',
         progressPercentage: magnet.progress_percentage || 0,
+        totalSavedMinor: magnet.total_saved_minor,
+        targetBudgetMinor: magnet.target_budget_minor,
+        isFundedPending: magnet.progress_percentage === 100 && magnet.unlock_state === 'ready_to_go',
       }
     })
   },

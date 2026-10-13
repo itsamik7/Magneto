@@ -170,7 +170,7 @@ export const FridgeModelModal: React.FC<FridgeModelModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-5xl max-h-[92vh] bg-[#FAF8F5] rounded-3xl shadow-2xl border border-[#E5E2DC] flex flex-col overflow-hidden">
+      <div className="relative w-full max-w-6xl max-h-[92vh] bg-[#FAF8F5] rounded-3xl shadow-2xl border border-[#E5E2DC] flex flex-col overflow-hidden">
         
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4.5 bg-white border-b border-[#E8E5DF]">
@@ -243,189 +243,165 @@ export const FridgeModelModal: React.FC<FridgeModelModalProps> = ({
 
         {/* Content Body */}
         {activeTab === 'catalog' ? (
-          <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
-            
-            {/* Catalog Grid Column */}
-            <div className="flex-1 flex flex-col min-h-0 border-r border-[#E8E5DF]">
-              
-              {/* Search & Style Filter Bar */}
-              <div className="p-4 space-y-3 bg-white border-b border-[#E8E5DF]">
-                <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search by brand (LG, Samsung, Whirlpool, Bosch, Sub-Zero) or model..."
-                    className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-
-                {/* Style Pills Bar */}
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[11px]">
-                  {STYLES.map((st) => (
-                    <button
-                      key={st.value}
-                      onClick={() => setSelectedStyle(st.value)}
-                      className={`px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition-colors ${
-                        selectedStyle === st.value
-                          ? 'bg-slate-800 text-white font-bold'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                      }`}
-                    >
-                      {st.label}
-                    </button>
-                  ))}
-                </div>
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+            {/* Search & Style Filter Bar */}
+            <div className="p-4 space-y-3 bg-white border-b border-[#E8E5DF]">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search by brand (LG, Samsung, Whirlpool, Bosch, Sub-Zero, Godrej, Haier) or model..."
+                  className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
 
-              {/* Models Grid */}
-              <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {filteredModels.length === 0 ? (
-                  <div className="col-span-full py-12 text-center text-slate-500">
-                    <p className="font-heading font-bold text-sm">No refrigerator models matched your search</p>
-                    <p className="text-xs mt-1">Try clearing filters or search terms.</p>
-                  </div>
-                ) : (
-                  filteredModels.map((model) => {
-                    const isCurrent = model.id === currentModelId
-                    const isPreviewed = model.id === previewModel.id
-
-                    return (
-                      <div
-                        key={model.id}
-                        onClick={() => setPreviewModelId(model.id)}
-                        className={`group relative p-3 rounded-2xl border text-left cursor-pointer transition-all flex flex-col justify-between ${
-                          isPreviewed
-                            ? 'bg-emerald-50/50 border-emerald-500 shadow-md ring-1 ring-emerald-500'
-                            : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm'
-                        }`}
-                      >
-                        {/* Top Labels */}
-                        <div className="flex items-center justify-between gap-1 mb-2">
-                          <span className="font-heading font-bold text-[10px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
-                            {model.brand}
-                          </span>
-                          <span className="text-[10px] font-medium text-slate-500">
-                            {model.style}
-                          </span>
-                        </div>
-
-                        {/* Centered Appliance Thumbnail */}
-                        <div className="h-36 w-full flex items-center justify-center p-2 my-1 bg-gradient-to-b from-slate-100/50 to-slate-200/30 rounded-xl overflow-hidden">
-                          <img
-                            src={model.imageUrl}
-                            alt={model.name}
-                            className="max-h-full max-w-full object-contain filter drop-shadow-md group-hover:scale-105 transition-transform"
-                          />
-                        </div>
-
-                        {/* Model Name & Finish */}
-                        <div className="mt-2">
-                          <h4 className="font-heading font-bold text-xs text-slate-900 line-clamp-1">
-                            {model.name}
-                          </h4>
-                          <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
-                            {model.finish}
-                          </p>
-                        </div>
-
-                        {/* Active Badge */}
-                        {isCurrent && (
-                          <div className="absolute top-2 right-2 flex items-center gap-1 bg-emerald-600 text-white font-bold text-[9px] px-1.5 py-0.5 rounded-full shadow-sm">
-                            <Check className="w-2.5 h-2.5" />
-                            <span>Active</span>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })
-                )}
+              {/* Style Pills Bar */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[11px]">
+                {STYLES.map((st) => (
+                  <button
+                    key={st.value}
+                    onClick={() => setSelectedStyle(st.value)}
+                    className={`px-3 py-1 rounded-xl font-medium whitespace-nowrap transition-colors ${
+                      selectedStyle === st.value
+                        ? 'bg-slate-900 text-white font-bold shadow-xs'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {st.label}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Selected Model Details & Large Preview Pane */}
-            <div className="w-full lg:w-80 p-6 bg-white flex flex-col justify-between overflow-y-auto">
-              <div className="space-y-4">
-                <div>
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Selected Model</span>
-                  </div>
-                  <h3 className="font-heading font-black text-lg text-slate-900 leading-tight">
-                    {previewModel.name}
-                  </h3>
-                  <p className="text-xs text-slate-600 font-medium mt-1">
-                    {previewModel.brand} · {previewModel.style}
-                  </p>
+            {/* Models Grid (Full Width) */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">
+              {filteredModels.length === 0 ? (
+                <div className="col-span-full py-16 text-center text-slate-500">
+                  <p className="font-heading font-bold text-sm text-slate-700">No refrigerator models matched your search</p>
+                  <p className="text-xs mt-1">Try clearing filters or search terms.</p>
                 </div>
+              ) : (
+                filteredModels.map((model) => {
+                  const isCurrent = model.id === currentModelId
+                  const isSelected = model.id === previewModel.id
 
-                {/* High-Fidelity Preview Box */}
-                <div className="w-full h-56 rounded-2xl bg-gradient-to-b from-slate-100 to-slate-200/60 p-4 flex items-center justify-center shadow-inner border border-slate-200 overflow-hidden">
+                  return (
+                    <div
+                      key={model.id}
+                      onClick={() => setPreviewModelId(model.id)}
+                      className={`group relative p-3.5 rounded-2xl border text-left cursor-pointer transition-all flex flex-col justify-between ${
+                        isSelected
+                          ? 'bg-emerald-50/60 border-emerald-500 shadow-md ring-2 ring-emerald-500/80'
+                          : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm'
+                      }`}
+                    >
+                      {/* Top Brand & Style Header */}
+                      <div className="flex items-center justify-between gap-1 mb-2">
+                        <span className="font-heading font-bold text-[10px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
+                          {model.brand}
+                        </span>
+                        <span className="text-[10px] font-medium text-slate-500 truncate">
+                          {model.style}
+                        </span>
+                      </div>
+
+                      {/* Centered Appliance Thumbnail */}
+                      <div className="h-40 w-full flex items-center justify-center p-2 my-1 bg-gradient-to-b from-slate-100/40 to-slate-200/30 rounded-xl overflow-hidden">
+                        <img
+                          src={model.imageUrl}
+                          alt={model.name}
+                          className="max-h-full max-w-full object-contain filter drop-shadow-md group-hover:scale-105 transition-transform"
+                        />
+                      </div>
+
+                      {/* Model Name & Finish */}
+                      <div className="mt-2">
+                        <h4 className="font-heading font-bold text-xs text-slate-900 line-clamp-1">
+                          {model.name}
+                        </h4>
+                        <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
+                          {model.finish}
+                        </p>
+                      </div>
+
+                      {/* Selected / Current Badge */}
+                      <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                        {isCurrent ? (
+                          <span className="text-emerald-700 font-bold flex items-center gap-1 text-[10px]">
+                            <Check className="w-3 h-3" /> Current
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 text-[10px]">
+                            {model.countryCategory}
+                          </span>
+                        )}
+
+                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
+                          isSelected
+                            ? 'bg-emerald-600 border-emerald-600 text-white'
+                            : 'border-slate-300 group-hover:border-slate-400'
+                        }`}>
+                          {isSelected && <Check className="w-2.5 h-2.5" />}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+            </div>
+
+            {/* Bottom Action / Confirmation Bar */}
+            <div className="p-4 bg-white border-t border-[#E8E5DF] flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center p-1 border border-slate-200 overflow-hidden flex-shrink-0">
                   <img
                     src={previewModel.imageUrl}
                     alt={previewModel.name}
-                    className="max-h-full max-w-full object-contain filter drop-shadow-xl"
+                    className="max-h-full max-w-full object-contain"
                   />
                 </div>
-
-                {/* Description & Finish */}
-                <div className="space-y-2 text-xs">
-                  <div>
-                    <span className="font-bold text-slate-700">Finish:</span>{' '}
-                    <span className="text-slate-600">{previewModel.finish}</span>
-                  </div>
-                  <p className="text-slate-600 leading-relaxed text-[11px]">
-                    {previewModel.description}
-                  </p>
-                </div>
-
-                {/* Features Pills */}
                 <div>
-                  <span className="font-heading font-bold text-[11px] text-slate-700 block mb-1.5">
-                    Highlights:
-                  </span>
-                  <div className="flex flex-wrap gap-1">
-                    {previewModel.features.map((f, i) => (
-                      <span
-                        key={i}
-                        className="text-[10px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md border border-slate-200"
-                      >
-                        {f}
-                      </span>
-                    ))}
-                  </div>
+                  <p className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                    <span>{previewModel.brand} {previewModel.name}</span>
+                    <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                      {previewModel.style}
+                    </span>
+                  </p>
+                  <p className="text-[11px] text-slate-500">
+                    {previewModel.finish} • Aspect ratio {previewModel.aspectRatio}
+                  </p>
                 </div>
               </div>
 
-              {/* Action Button */}
-              <div className="pt-6 border-t border-slate-100 mt-6">
+              <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                <button
+                  onClick={onClose}
+                  className="flex-1 sm:flex-none px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
                 <button
                   onClick={() => {
                     onSelectModel(previewModel)
                     onClose()
                   }}
-                  className="w-full py-3 bg-[#059669] hover:bg-[#047857] text-white font-heading font-black text-sm rounded-xl shadow-lg transition-all hover:scale-[1.02] active:scale-98 flex items-center justify-center gap-2"
+                  className="flex-1 sm:flex-none px-5 py-2.5 bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-98 flex items-center justify-center gap-1.5"
                 >
                   <Check className="w-4 h-4" />
-                  <span>
-                    {previewModel.id === currentModelId
-                      ? 'Keep Current Fridge'
-                      : 'Use This Refrigerator'}
-                  </span>
+                  <span>Confirm My Fridge</span>
                 </button>
               </div>
-
             </div>
-
           </div>
         ) : (
           /* "Use My Own Fridge" Upload Tab */

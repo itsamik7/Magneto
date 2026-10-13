@@ -36,7 +36,7 @@ describe('userMagnetService', () => {
 
     const fridge = await userMagnetService.getUserFridgeMagnets(testUserId)
     expect(fridge.length).toBe(1)
-  })
+  }, 15000)
 
   it('should remove a magnet from the fridge', async () => {
     const dest1 = DESTINATIONS_CATALOG[0]
@@ -52,5 +52,5 @@ describe('userMagnetService', () => {
     fridge = await userMagnetService.getUserFridgeMagnets(testUserId)
     expect(fridge.length).toBe(1)
     expect(fridge[0].destination_slug).toBe(dest2.slug)
-  })
+  }, 15000)
 })

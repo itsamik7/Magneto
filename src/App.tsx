@@ -9,9 +9,9 @@ import { ProtectedRoute } from './components/layout/ProtectedRoute'
 import { LandingPage } from './pages/LandingPage'
 import { LoginPage } from './pages/LoginPage'
 import { SignupPage } from './pages/SignupPage'
-import { DashboardPage } from './pages/DashboardPage'
+import { MyFridgePage } from './pages/MyFridgePage'
+import { PlanTripPage } from './pages/PlanTripPage'
 import { TripDetailPage } from './pages/TripDetailPage'
-import { AddMagnetPage } from './pages/AddMagnetPage'
 
 export default function App() {
   const [isSetupModalOpen, setIsSetupModalOpen] = useState(false)
@@ -33,9 +33,11 @@ export default function App() {
 
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/catalog" element={<AddMagnetPage />} />
-                <Route path="/add-magnet" element={<AddMagnetPage />} />
+                <Route path="/dashboard" element={<MyFridgePage />} />
+                <Route path="/my-fridge" element={<MyFridgePage />} />
+                <Route path="/plan-trip" element={<PlanTripPage />} />
+                <Route path="/catalog" element={<PlanTripPage />} />
+                <Route path="/add-magnet" element={<PlanTripPage />} />
                 <Route path="/trip/:id" element={<TripDetailPage />} />
               </Route>
 

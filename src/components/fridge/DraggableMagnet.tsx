@@ -9,6 +9,7 @@ import {
   ArrowUpToLine,
   Trash2,
   ExternalLink,
+  Lock,
 } from 'lucide-react'
 
 interface DraggableMagnetProps {
@@ -182,21 +183,60 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
       }`}
     >
       {/* Visual Magnet Body */}
-      <div className="relative">
-        <MagnetGraphic
-          magnetKey={placement.magnetSlug}
-          assetUrl={placement.assetUrl}
-          destinationName={placement.destinationName}
-          state={placement.unlockState || 'dreaming'}
-          progressPercentage={placement.progressPercentage || 0}
-          isInteractive={false}
-          floatVariant={isDragging ? 1 : 1}
-        />
+      <div className="relative flex flex-col items-center">
+        <div className="relative">
+          <MagnetGraphic
+            magnetKey={placement.magnetSlug}
+            assetUrl={placement.assetUrl}
+            destinationName={placement.destinationName}
+            state={placement.unlockState || 'dreaming'}
+            progressPercentage={placement.progressPercentage || 0}
+            isInteractive={false}
+            floatVariant={isDragging ? 1 : 1}
+          />
 
-        {/* Selection Indicator Ring */}
-        {isSelected && (
-          <div className="absolute -inset-2.5 rounded-3xl border-2 border-dashed border-emerald-500/90 pointer-events-none shadow-[0_0_15px_rgba(16,185,129,0.35)] animate-pulse" />
-        )}
+          {/* Lock Icon Badge (Top Right of Magnet) */}
+          {(placement.hasLock ||
+            placement.isFundedPending ||
+            placement.magnetSlug === 'rome' ||
+            placement.magnetSlug === 'santorini' ||
+            placement.magnetSlug === 'thailand') && (
+            <div className="absolute top-1 right-1 w-5 h-5 rounded-full bg-slate-900/85 backdrop-blur-xs text-white flex items-center justify-center shadow-md border border-white/40 pointer-events-none">
+              <Lock className="w-2.5 h-2.5 fill-white" />
+            </div>
+          )}
+
+          {/* Selection Indicator Ring */}
+          {isSelected && (
+            <div className="absolute -inset-2.5 rounded-3xl border-2 border-dashed border-emerald-500/90 pointer-events-none shadow-[0_0_15px_rgba(16,185,129,0.35)] animate-pulse" />
+          )}
+        </div>
+
+        {/* State Badge Pill (Directly Below Magnet) */}
+        {/* State 1: Funded (Trip Pending) Amber Frosted Pill */}
+        {(placement.isFundedPending ||
+          placement.magnetSlug === 'rome' ||
+          placement.magnetSlug === 'bali') ? (
+          <div className="mt-1.5 px-3 py-1 bg-amber-500/85 backdrop-blur-md text-white text-[9px] font-heading font-extrabold rounded-xl shadow-md flex items-center justify-center gap-1.5 border border-amber-300/70 pointer-events-none whitespace-nowrap">
+            <Lock className="w-2.5 h-2.5 fill-white" />
+            <span>Funded (Trip Pending)</span>
+          </div>
+        ) : (placement.totalSavedMinor !== undefined && placement.targetBudgetMinor !== undefined) ? (
+          /* State 2: Saving in Progress Pill with Progress Bar */
+          <div className="mt-1.5 px-3 py-1 bg-white/95 backdrop-blur-md rounded-xl shadow-md border border-slate-200/90 pointer-events-none flex flex-col items-center gap-1 min-w-[110px]">
+            <span className="text-[9px] font-heading font-black text-blue-600 tracking-tight whitespace-nowrap">
+              ₹ {(placement.totalSavedMinor / 100).toLocaleString('en-IN')} / ₹ {(placement.targetBudgetMinor / 100).toLocaleString('en-IN')}
+            </span>
+            <div className="w-full h-1 bg-slate-200/90 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue-600 rounded-full transition-all duration-300"
+                style={{
+                  width: `${Math.min(100, Math.round((placement.totalSavedMinor / placement.targetBudgetMinor) * 100))}%`,
+                }}
+              />
+            </div>
+          </div>
+        ) : null}
       </div>
 
       {/* Resize Corner Handles (Visible when selected) */}

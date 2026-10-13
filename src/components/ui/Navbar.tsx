@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { LogOut, User as UserIcon, AlertCircle, Menu, X, ArrowRight } from 'lucide-react'
+import { LogOut, User as UserIcon, AlertCircle, Menu, X, ArrowRight, Calendar, Compass } from 'lucide-react'
 
 interface NavbarProps {
   onOpenSetupModal?: () => void
@@ -10,12 +10,16 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
   const { user, displayName, signOut, isConfigured } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const handleLogout = async () => {
     await signOut()
     navigate('/')
   }
+
+  const isFridgeActive = location.pathname === '/dashboard' || location.pathname === '/my-fridge'
+  const isPlanActive = location.pathname === '/plan-trip' || location.pathname === '/catalog' || location.pathname === '/add-magnet'
 
   return (
     <header className="sticky top-0 z-40 bg-[#F2EFE8]/95 backdrop-blur-md border-b border-[#E2DCCE]">
@@ -65,23 +69,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
           </div>
         </Link>
 
-        {/* Center Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-1 sm:gap-2">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition-colors"
-          >
-            <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-            <span>Home</span>
-          </Link>
-
+        {/* Center Desktop Navigation: My Fridge & Plan a Trip Pills */}
+        <nav className="hidden lg:flex items-center gap-1.5 bg-slate-100/80 p-1 rounded-2xl border border-slate-200/80">
           <Link
             to="/dashboard"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-600 bg-blue-50/80 border border-blue-200/60 rounded-xl shadow-xs transition-colors"
+            className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+              isFridgeActive
+                ? 'bg-[#EBF2FE] text-[#2563EB] shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
+            }`}
           >
-            <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            {/* Refrigerator Icon */}
+            <svg className={`w-4 h-4 ${isFridgeActive ? 'text-[#2563EB]' : 'text-slate-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <rect x="4" y="2" width="16" height="20" rx="3" strokeWidth="2" />
               <path strokeWidth="2" d="M4 10h16M8 6v2M8 14v4" />
             </svg>
@@ -89,24 +88,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
           </Link>
 
           <Link
-            to="/catalog"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition-colors"
+            to="/plan-trip"
+            className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+              isPlanActive
+                ? 'bg-[#EBF2FE] text-[#2563EB] shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
+            }`}
           >
-            <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <circle cx="12" cy="12" r="10" strokeWidth="2" />
-              <path strokeWidth="2" d="M12 2a15 15 0 000 20M12 2a15 15 0 010 20M2 12h20" />
-            </svg>
-            <span>Explore Magnets</span>
-          </Link>
-
-          <Link
-            to="/dashboard"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition-colors"
-          >
-            <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-            <span>My Collection</span>
+            {/* Calendar / Planner Icon */}
+            <Calendar className={`w-4 h-4 ${isPlanActive ? 'text-[#2563EB]' : 'text-slate-500'}`} />
+            <span>Plan a Trip</span>
           </Link>
         </nav>
 
@@ -192,14 +183,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
                 onClick={() => setMobileMenuOpen(false)}
                 className="block text-sm font-bold text-slate-800 py-1.5"
               >
-                My Travel Fridge
+                My Fridge
               </Link>
               <Link
-                to="/catalog"
+                to="/plan-trip"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block text-sm font-bold text-[#059669] py-1.5"
+                className="block text-sm font-bold text-blue-600 py-1.5"
               >
-                ✨ Magnet Catalog (100 Destinations)
+                Plan a Trip
               </Link>
               <button
                 onClick={() => {

@@ -19,6 +19,127 @@ export interface FridgeMagnetItem {
   unlock_state?: 'dreaming' | 'saving' | 'ready_to_go'
 }
 
+export const DEFAULT_FEATURED_MAGNETS: FridgeMagnetItem[] = [
+  {
+    id: 'magnet-paris',
+    destination_slug: 'paris',
+    destination_name: 'Paris',
+    country_name: 'France',
+    continent: 'Europe',
+    asset_url: '/assets/magnets/international/eiffel-tower.png',
+    magnet_shape: 'arch',
+    acquired_at: '2024-01-15T10:00:00Z',
+    unlock_state: 'ready_to_go',
+    progress_percentage: 100,
+  },
+  {
+    id: 'magnet-japan',
+    destination_slug: 'japan',
+    destination_name: 'Japan',
+    country_name: 'Japan',
+    continent: 'Asia',
+    asset_url: '/assets/magnets/international/fuji-japan.png',
+    magnet_shape: 'arch',
+    acquired_at: '2024-02-01T10:00:00Z',
+    unlock_state: 'saving',
+    target_budget_minor: 20000000,
+    total_saved_minor: 12000000,
+    progress_percentage: 60,
+  },
+  {
+    id: 'magnet-rome',
+    destination_slug: 'rome',
+    destination_name: 'Rome',
+    country_name: 'Italy',
+    continent: 'Europe',
+    asset_url: '/assets/magnets/international/colosseum-rome.png',
+    magnet_shape: 'arch',
+    acquired_at: '2024-02-15T10:00:00Z',
+    unlock_state: 'ready_to_go',
+    target_budget_minor: 18000000,
+    total_saved_minor: 18000000,
+    progress_percentage: 100,
+  },
+  {
+    id: 'magnet-new-york',
+    destination_slug: 'new-york',
+    destination_name: 'New York',
+    country_name: 'USA',
+    continent: 'Americas',
+    asset_url: '/magnets/destinations/new-york.svg',
+    magnet_shape: 'arch',
+    acquired_at: '2024-03-01T10:00:00Z',
+    unlock_state: 'ready_to_go',
+    progress_percentage: 100,
+  },
+  {
+    id: 'magnet-goa',
+    destination_slug: 'goa',
+    destination_name: 'Goa',
+    country_name: 'India',
+    continent: 'Asia',
+    asset_url: '/assets/magnets/india/goa-beach.png',
+    magnet_shape: 'arch',
+    acquired_at: '2024-03-10T10:00:00Z',
+    unlock_state: 'ready_to_go',
+    progress_percentage: 100,
+  },
+  {
+    id: 'magnet-santorini',
+    destination_slug: 'santorini',
+    destination_name: 'Santorini',
+    country_name: 'Greece',
+    continent: 'Europe',
+    asset_url: '/magnets/destinations/santorini.svg',
+    magnet_shape: 'arch',
+    acquired_at: '2024-03-20T10:00:00Z',
+    unlock_state: 'saving',
+    target_budget_minor: 25000000,
+    total_saved_minor: 8000000,
+    progress_percentage: 32,
+  },
+  {
+    id: 'magnet-ladakh',
+    destination_slug: 'ladakh',
+    destination_name: 'Ladakh',
+    country_name: 'India',
+    continent: 'Asia',
+    asset_url: '/assets/magnets/india/ladakh.png',
+    magnet_shape: 'arch',
+    acquired_at: '2024-04-01T10:00:00Z',
+    unlock_state: 'ready_to_go',
+    progress_percentage: 100,
+  },
+  {
+    id: 'magnet-bali',
+    destination_slug: 'bali',
+    destination_name: 'Bali',
+    country_name: 'Indonesia',
+    continent: 'Asia',
+    asset_url: '/assets/magnets/international/bali-temple.png',
+    magnet_shape: 'arch',
+    acquired_at: '2024-04-10T10:00:00Z',
+    unlock_state: 'ready_to_go',
+    target_budget_minor: 12000000,
+    total_saved_minor: 12000000,
+    progress_percentage: 100,
+  },
+  {
+    id: 'magnet-thailand',
+    destination_slug: 'bangkok',
+    destination_name: 'Thailand',
+    country_name: 'Thailand',
+    continent: 'Asia',
+    asset_url: '/magnets/destinations/bangkok.svg',
+    magnet_shape: 'arch',
+    acquired_at: '2024-04-15T10:00:00Z',
+    unlock_state: 'saving',
+    target_budget_minor: 15000000,
+    total_saved_minor: 6000000,
+    progress_percentage: 40,
+  },
+]
+
 // In-memory fallback for environments without window.localStorage (e.g. Node / Vitest)
 const memoryStorage = new Map<string, string>()
 
@@ -135,7 +256,7 @@ export const userMagnetService = {
         const raw = safeStorage.getItem(`magneto_fridge_${userId}`)
         if (raw) {
           const parsed = JSON.parse(raw)
-          if (Array.isArray(parsed)) {
+          if (Array.isArray(parsed) && parsed.length > 0) {
             items.push(...parsed)
           }
         }

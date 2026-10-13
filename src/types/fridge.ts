@@ -58,6 +58,10 @@ export interface MagnetPlacement {
   /** Optional progress state */
   unlockState?: 'dreaming' | 'saving' | 'ready_to_go'
   progressPercentage?: number
+  totalSavedMinor?: number
+  targetBudgetMinor?: number
+  isFundedPending?: boolean
+  hasLock?: boolean
 }
 
 export interface UserFridgeConfiguration {
