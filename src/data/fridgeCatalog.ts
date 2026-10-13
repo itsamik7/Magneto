@@ -2,9 +2,34 @@
 // Indian & International Refrigerator Models with Magnetic Surface Bounds
 import type { FridgeModel } from '../types/fridge'
 
-export const DEFAULT_FRIDGE_ID = 'lg-instaview-stainless'
+export const DEFAULT_FRIDGE_ID = 'lg-kitchen-studio-double'
 
 export const FRIDGE_MODELS: FridgeModel[] = [
+  {
+    "id": "lg-kitchen-studio-double",
+    "name": "LG Studio Double-Door in Kitchen",
+    "brand": "LG",
+    "style": "Double-door",
+    "finish": "Brushed Platinum Stainless Steel in Modern Kitchen",
+    "colorHex": "#94A3B8",
+    "countryCategory": "Indian",
+    "imageUrl": "/fridges/real-kitchen-fridge.jpg",
+    "aspectRatio": 0.671,
+    "magneticRegion": {
+      "top": 0.10,
+      "left": 0.31,
+      "width": 0.44,
+      "height": 0.82
+    },
+    "description": "Photorealistic brushed platinum stainless steel double-door refrigerator centered in a warm cozy modern kitchen setting.",
+    "features": [
+      "Photorealistic Appliance",
+      "Warm Modern Kitchen Setting",
+      "Double Door Split",
+      "Cylindrical Chrome Handles"
+    ],
+    "isCustom": false
+  },
   {
     "id": "samsung-bespoke-double",
     "name": "Samsung Bespoke Dual-Tone",

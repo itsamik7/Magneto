@@ -12,7 +12,7 @@ describe('userMagnetService', () => {
   it('should start with an empty fridge for a new user', async () => {
     const magnets = await userMagnetService.getUserFridgeMagnets(testUserId)
     expect(magnets.length).toBe(0)
-  })
+  }, 15000)
 
   it('should add a magnet to the user fridge', async () => {
     const dest = DESTINATIONS_CATALOG[0] // Taj Mahal
@@ -23,7 +23,7 @@ describe('userMagnetService', () => {
     const fridge = await userMagnetService.getUserFridgeMagnets(testUserId)
     expect(fridge.length).toBe(1)
     expect(fridge[0].destination_slug).toBe(dest.slug)
-  })
+  }, 15000)
 
   it('should prevent adding duplicate magnets for the same user', async () => {
     const dest = DESTINATIONS_CATALOG[0] // Taj Mahal

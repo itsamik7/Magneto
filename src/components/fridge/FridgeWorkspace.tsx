@@ -9,35 +9,48 @@ import {
   LayoutGrid,
   Plus,
   Compass,
-  RotateCcw,
   SlidersHorizontal,
-  Layers,
   ChevronRight,
 } from 'lucide-react'
 
-interface FridgeWorkspaceProps {
+export interface FridgeWorkspaceProps {
   userId?: string
   currentModel: FridgeModel
   magnets: FridgeMagnetItem[]
+  selectedPlacementId?: string | null
+  onSelectPlacementId?: (id: string | null) => void
   onSelectMagnetItem?: (magnet: FridgeMagnetItem) => void
   onAddDestination?: () => void
   onChangeFridgeModel?: (model: FridgeModel) => void
   showControls?: boolean
+  onPlacementsChange?: (placements: MagnetPlacement[]) => void
 }
 
 export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
   userId = 'guest',
   currentModel,
   magnets = [],
+  selectedPlacementId: controlledSelectedId,
+  onSelectPlacementId,
   onSelectMagnetItem,
   onAddDestination,
   onChangeFridgeModel,
   showControls = true,
+  onPlacementsChange,
 }) => {
   const surfaceRef = useRef<HTMLDivElement>(null)
   const [isModelModalOpen, setIsModelModalOpen] = useState(false)
-  const [selectedPlacementId, setSelectedPlacementId] = useState<string | null>(null)
+  const [internalSelectedId, setInternalSelectedId] = useState<string | null>(null)
   const [placements, setPlacements] = useState<MagnetPlacement[]>([])
+
+  const selectedPlacementId = controlledSelectedId !== undefined ? controlledSelectedId : internalSelectedId
+  const setSelectedPlacementId = (id: string | null) => {
+    if (onSelectPlacementId) {
+      onSelectPlacementId(id)
+    } else {
+      setInternalSelectedId(id)
+    }
+  }
 
   // Load / sync placements whenever model or magnets change
   useEffect(() => {
@@ -47,6 +60,9 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
       magnets
     )
     setPlacements(loaded)
+    if (onPlacementsChange) {
+      onPlacementsChange(loaded)
+    }
   }, [userId, currentModel.id, magnets])
 
   // Deselect when clicking outside magnets
@@ -62,10 +78,11 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
       setPlacements((prev) => {
         const next = prev.map((p) => (p.id === updated.id ? updated : p))
         fridgeService.saveFridgePlacements(userId, currentModel.id, next)
+        if (onPlacementsChange) onPlacementsChange(next)
         return next
       })
     },
-    [userId, currentModel.id]
+    [userId, currentModel.id, onPlacementsChange]
   )
 
   // Bring selected magnet to front
@@ -75,10 +92,11 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
         const maxZ = Math.max(0, ...prev.map((p) => p.zIndex))
         const next = prev.map((p) => (p.id === id ? { ...p, zIndex: maxZ + 1 } : p))
         fridgeService.saveFridgePlacements(userId, currentModel.id, next)
+        if (onPlacementsChange) onPlacementsChange(next)
         return next
       })
     },
-    [userId, currentModel.id]
+    [userId, currentModel.id, onPlacementsChange]
   )
 
   // Remove magnet from fridge placement
@@ -87,19 +105,21 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
       setPlacements((prev) => {
         const next = prev.filter((p) => p.id !== id)
         fridgeService.saveFridgePlacements(userId, currentModel.id, next)
+        if (onPlacementsChange) onPlacementsChange(next)
         return next
       })
       if (selectedPlacementId === id) {
         setSelectedPlacementId(null)
       }
     },
-    [userId, currentModel.id, selectedPlacementId]
+    [userId, currentModel.id, selectedPlacementId, onPlacementsChange]
   )
 
   // Auto-arrange all collected magnets
   const handleAutoArrange = () => {
     const arranged = fridgeService.autoArrangeAll(userId, currentModel.id, magnets)
     setPlacements(arranged)
+    if (onPlacementsChange) onPlacementsChange(arranged)
   }
 
   const selectedPlacement = placements.find((p) => p.id === selectedPlacementId)
@@ -110,15 +130,15 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
       
       {/* Top Floating Utility Controls Bar */}
       {showControls && (
-        <div className="w-full max-w-md mb-3 flex items-center justify-between gap-2 px-1 text-xs">
+        <div className="w-full max-w-md mb-2 flex items-center justify-between gap-2 px-1 text-xs">
           {/* Active Model Indicator & Switcher */}
           <button
             onClick={() => setIsModelModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/90 hover:bg-white text-slate-800 rounded-xl shadow-xs border border-slate-200/90 font-medium transition-all hover:border-slate-300"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-800 rounded-xl shadow-xs border border-slate-200 font-medium transition-all hover:border-slate-300"
             title="Choose a different refrigerator model"
           >
-            <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-600" />
-            <span className="font-heading font-bold text-[11px] truncate max-w-[130px] sm:max-w-[160px]">
+            <SlidersHorizontal className="w-3.5 h-3.5 text-blue-600" />
+            <span className="font-heading font-bold text-[11px] truncate max-w-[140px] sm:max-w-[180px]">
               {currentModel.name}
             </span>
             <ChevronRight className="w-3 h-3 text-slate-400" />
@@ -129,7 +149,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
             {magnets.length > 0 && (
               <button
                 onClick={handleAutoArrange}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white/90 hover:bg-white text-slate-700 rounded-xl shadow-xs border border-slate-200/90 font-heading font-bold text-[11px] transition-all hover:scale-105 active:scale-95"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 rounded-xl shadow-xs border border-slate-200 font-heading font-bold text-[11px] transition-all hover:scale-105 active:scale-95"
                 title="Automatically organize magnets evenly across the fridge"
               >
                 <LayoutGrid className="w-3.5 h-3.5 text-slate-500" />
@@ -141,7 +161,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
             {onAddDestination && (
               <button
                 onClick={onAddDestination}
-                className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#059669] hover:bg-[#047857] text-white rounded-xl shadow font-heading font-bold text-[11px] transition-all hover:scale-105 active:scale-95"
+                className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl shadow-xs font-heading font-bold text-[11px] transition-all hover:scale-105 active:scale-95"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Magnet</span>
@@ -160,19 +180,19 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
         stretch the layout, or cause vertical overflow!
       */}
       <div
-        className="relative mx-auto rounded-[2.2rem] sm:rounded-[2.6rem] shadow-[0_30px_70px_-15px_rgba(20,29,47,0.38),0_12px_24px_-8px_rgba(0,0,0,0.22)] border-[3px] border-slate-300/80 overflow-hidden bg-slate-200"
+        className="relative mx-auto rounded-[2rem] sm:rounded-[2.4rem] shadow-[0_25px_60px_-15px_rgba(20,29,47,0.35),0_10px_20px_-8px_rgba(0,0,0,0.18)] border-[3px] border-slate-300/80 overflow-hidden bg-slate-100"
         style={{
           width: '100%',
-          maxWidth: '380px',
+          maxWidth: '430px',
           aspectRatio: `${currentModel.aspectRatio}`,
-          maxHeight: '620px',
+          maxHeight: '640px',
         }}
       >
         {/* Layer 1: Photorealistic Appliance Artwork */}
         <img
           src={currentModel.imageUrl}
           alt={currentModel.name}
-          className="absolute inset-0 w-full h-full object-cover sm:object-contain pointer-events-none select-none"
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
         />
 
         {/* Layer 2: Subtle Specular Lighting Sheen */}
@@ -193,23 +213,23 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
         >
           {/* Empty Fridge Invitation State */}
           {magnets.length === 0 && (
-            <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 p-4 text-center bg-white/80 backdrop-blur-md rounded-2xl border border-white/80 shadow-md">
-              <div className="w-10 h-10 mx-auto rounded-xl bg-emerald-50 text-[#059669] flex items-center justify-center mb-2 shadow-xs">
+            <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 p-4 text-center bg-white/85 backdrop-blur-md rounded-2xl border border-white/80 shadow-md">
+              <div className="w-10 h-10 mx-auto rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-2 shadow-xs">
                 <Compass className="w-5 h-5 animate-spin-slow" />
               </div>
               <h4 className="font-heading font-black text-xs text-slate-800">
                 Your Fridge is Ready!
               </h4>
               <p className="text-[10px] text-slate-600 mt-1 leading-snug">
-                Browse our global travel catalog to add collectible souvenir magnets.
+                Click any souvenir magnet from the collection on the left to add it to your fridge.
               </p>
               {onAddDestination && (
                 <button
                   onClick={onAddDestination}
-                  className="mt-3 inline-flex items-center gap-1 px-3 py-1 bg-[#059669] hover:bg-[#047857] text-white font-heading font-bold text-[10px] rounded-lg shadow-xs transition-transform hover:scale-105"
+                  className="mt-3 inline-flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white font-heading font-bold text-[10px] rounded-lg shadow-xs transition-transform hover:scale-105"
                 >
                   <Sparkles className="w-3 h-3" />
-                  <span>Browse Catalog</span>
+                  <span>Explore Magnets</span>
                 </button>
               )}
             </div>
@@ -231,6 +251,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
                 onRemove={() => handleRemovePlacement(placement.id)}
                 onBringToFront={() => handleBringToFront(placement.id)}
                 onClick={() => {
+                  setSelectedPlacementId(placement.id)
                   if (matchedMagnet && onSelectMagnetItem) {
                     onSelectMagnetItem(matchedMagnet)
                   }
@@ -248,7 +269,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
                 {selectedPlacement.destinationName}
               </p>
               <p className="text-[9px] text-slate-300">
-                Drag to move · Drag corners to resize · Rotate in toolbar
+                Drag to place · Use right panel to scale, rotate & layer
               </p>
             </div>
             <button

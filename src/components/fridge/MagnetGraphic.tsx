@@ -43,6 +43,26 @@ export const MagnetGraphic: React.FC<MagnetGraphicProps> = ({
   const resolveImgSrc = (): string => {
     if (assetUrl) return assetUrl
 
+    // Photorealistic Indian Assets
+    if (key.includes('taj-mahal') || key === 'agra') return '/assets/magnets/india/taj-mahal.png'
+    if (key.includes('india-gate') || key === 'delhi' || key === 'new-delhi') return '/assets/magnets/india/india-gate.png'
+    if (key.includes('hawa-mahal') || key === 'jaipur') return '/assets/magnets/india/hawa-mahal.png'
+    if (key.includes('gateway-of-india') || key === 'mumbai') return '/assets/magnets/india/gateway-of-india.png'
+    if (key.includes('golden-temple') || key === 'amritsar') return '/assets/magnets/india/golden-temple.png'
+    if (key.includes('kerala') || key.includes('houseboat')) return '/assets/magnets/india/kerala-backwaters.png'
+    if (key.includes('goa')) return '/assets/magnets/india/goa-beach.png'
+    if (key.includes('ladakh') || key.includes('leh')) return '/assets/magnets/india/ladakh.png'
+    if (key.includes('elephant') || key.includes('royal')) return '/assets/magnets/india/royal-elephant.png'
+
+    // Photorealistic International Assets
+    if (key.includes('eiffel') || key === 'paris') return '/assets/magnets/international/eiffel-tower.png'
+    if (key.includes('colosseum') || key.includes('roma') || key === 'rome') return '/assets/magnets/international/colosseum-rome.png'
+    if (key.includes('london') || key.includes('bus')) return '/assets/magnets/international/london.png'
+    if (key.includes('japan') || key.includes('fuji') || key === 'tokyo') return '/assets/magnets/international/fuji-japan.png'
+    if (key.includes('bali') || key.includes('indonesia')) return '/assets/magnets/international/bali-temple.png'
+    if (key.includes('switzerland') || key.includes('alps') || key === 'zermatt') return '/assets/magnets/international/swiss-alps.png'
+    if (key.includes('singapore')) return '/assets/magnets/international/singapore.png'
+
     const benchmarkKeys = ['paris', 'japan', 'london', 'switzerland', 'bali', 'singapore']
     if (benchmarkKeys.includes(key)) {
       return `/magnets/${key}.png`

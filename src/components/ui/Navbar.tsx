@@ -37,73 +37,113 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        {/* Brand Logo with Globe Icon & Cursive Tagline Matching Screenshot */}
-        <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-[#059669] flex items-center justify-center text-white shadow-sm group-hover:scale-105 transition-transform">
-            <svg viewBox="0 0 24 24" className="w-5 h-5 stroke-white fill-none stroke-[2]">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 2a14.5 14.5 0 0 0 0 20M12 2a14.5 14.5 0 0 1 0 20M2 12h20" />
+      <div className="max-w-[1700px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+        {/* Brand Logo with Horseshoe Magnet Icon & Tagline */}
+        <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-2.5 group flex-shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-center p-1 group-hover:scale-105 transition-transform">
+            {/* Real Horseshoe Magnet Icon (Blue & Red Poles) */}
+            <svg viewBox="0 0 36 36" className="w-7 h-7">
+              <path
+                d="M8 12 C8 6.5 12.5 2 18 2 C23.5 2 28 6.5 28 12 L28 22 C28 23 27 24 26 24 L22 24 C21 24 20 23 20 22 L20 12 C20 10.9 19.1 10 18 10 C16.9 10 16 10.9 16 12 L16 22 C16 23 15 24 14 24 L10 24 C9 24 8 23 8 22 Z"
+                fill="#2563EB"
+              />
+              <path
+                d="M20 12 C20 10.9 19.1 10 18 10 C18 10 18 10 18 10 L18 2 C23.5 2 28 6.5 28 12 L28 22 C28 23 27 24 26 24 L22 24 C21 24 20 23 20 22 Z"
+                fill="#EF4444"
+              />
+              <rect x="8" y="20" width="6" height="5" rx="1" fill="#93C5FD" />
+              <rect x="22" y="20" width="6" height="5" rx="1" fill="#FCA5A5" />
             </svg>
           </div>
           <div>
             <span className="font-heading font-black text-xl tracking-tight text-[#1E293B]">
               Magneto
             </span>
-            <span className="block text-[10px] text-[#059669] italic font-semibold -mt-1 font-serif">
-              Collect. Save. Explore.
+            <span className="block text-[10px] text-slate-500 font-semibold -mt-1">
+              Collect Memories. Stick Forever.
             </span>
           </div>
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6">
+        {/* Center Desktop Navigation */}
+        <nav className="hidden lg:flex items-center gap-1 sm:gap-2">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition-colors"
+          >
+            <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <span>Home</span>
+          </Link>
+
+          <Link
+            to="/dashboard"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-600 bg-blue-50/80 border border-blue-200/60 rounded-xl shadow-xs transition-colors"
+          >
+            <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <rect x="4" y="2" width="16" height="20" rx="3" strokeWidth="2" />
+              <path strokeWidth="2" d="M4 10h16M8 6v2M8 14v4" />
+            </svg>
+            <span>My Fridge</span>
+          </Link>
+
+          <Link
+            to="/catalog"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition-colors"
+          >
+            <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <circle cx="12" cy="12" r="10" strokeWidth="2" />
+              <path strokeWidth="2" d="M12 2a15 15 0 000 20M12 2a15 15 0 010 20M2 12h20" />
+            </svg>
+            <span>Explore Magnets</span>
+          </Link>
+
+          <Link
+            to="/dashboard"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition-colors"
+          >
+            <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+            <span>My Collection</span>
+          </Link>
+        </nav>
+
+        {/* Right Search Bar & User Profile */}
+        <div className="flex items-center gap-3">
+          <div className="relative hidden md:block">
+            <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search destinations, magnets..."
+              className="pl-9 pr-4 py-1.5 text-xs bg-white border border-slate-200 rounded-xl w-52 xl:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* Notification Bell */}
+          <button className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+          </button>
+
           {user ? (
-            <>
-              <Link
-                to="/dashboard"
-                className="text-sm font-bold text-slate-700 hover:text-[#059669] transition-colors"
-              >
-                My Travel Fridge
-              </Link>
-
-              <Link
-                to="/catalog"
-                className="text-sm font-bold text-slate-700 hover:text-[#059669] transition-colors flex items-center gap-1.5"
-              >
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span>Magnet Catalog</span>
-                <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-1.5 py-0.2 rounded-full border border-emerald-300">
-                  100
-                </span>
-              </Link>
-
-              {/* User Menu */}
-              <div className="flex items-center gap-3 pl-4 border-l border-[#E2DCCE]">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-heading font-bold text-xs">
-                    <UserIcon className="w-4 h-4 text-emerald-700" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-xs font-bold text-slate-800 leading-tight">
-                      {displayName || user.email?.split('@')[0]}
-                    </p>
-                    <p className="text-[10px] text-slate-500 truncate max-w-[130px]">
-                      {user.email}
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={handleLogout}
-                  className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                  title="Log Out"
-                  aria-label="Log out"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-heading font-bold text-xs shadow-xs ring-2 ring-white">
+                {(displayName || user.email || 'U')[0].toUpperCase()}
               </div>
-            </>
+              <button
+                onClick={handleLogout}
+                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                title="Log Out"
+                aria-label="Log out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
           ) : (
             <div className="flex items-center gap-3">
               <Link
@@ -121,7 +161,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
               </Link>
             </div>
           )}
-        </nav>
+        </div>
 
         {/* Mobile Hamburger Button */}
         <button
