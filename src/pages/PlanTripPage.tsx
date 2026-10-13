@@ -376,7 +376,7 @@ export const PlanTripPage: React.FC = () => {
         COLUMN 2 (CENTER):
         Editable Fridge Workspace with Edit Controls & Dotted Slots
       */}
-      <div className="flex-1 w-full flex flex-col items-center justify-between min-h-[760px] relative rounded-3xl p-5 overflow-hidden bg-gradient-to-b from-[#EBE7DF] to-[#DFD9CD] shadow-inner border border-[#D8D2C4]">
+      <div className="flex-1 w-full flex flex-col items-center justify-between min-h-[760px] relative rounded-3xl p-5 overflow-hidden bg-gradient-to-b from-[#F2EFE9] to-[#E5E0D6] shadow-inner border border-[#DCD6C9]">
         
         {/* Top Right "Edit Mode" Pill Button */}
         <div className="w-full flex items-center justify-end mb-2 z-20">

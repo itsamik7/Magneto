@@ -183,9 +183,9 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
         className="relative mx-auto rounded-[2rem] sm:rounded-[2.4rem] shadow-[0_25px_60px_-15px_rgba(20,29,47,0.35),0_10px_20px_-8px_rgba(0,0,0,0.18)] border-[3px] border-slate-300/80 overflow-hidden bg-slate-100"
         style={{
           width: '100%',
-          maxWidth: '430px',
+          maxWidth: '380px',
           aspectRatio: `${currentModel.aspectRatio}`,
-          maxHeight: '640px',
+          maxHeight: '760px',
         }}
       >
         {/* Layer 1: Photorealistic Appliance Artwork */}

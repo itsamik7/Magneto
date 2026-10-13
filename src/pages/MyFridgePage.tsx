@@ -378,57 +378,10 @@ export const MyFridgePage: React.FC = () => {
       
       {/* 
         LEFT & CENTER STAGE:
-        Photorealistic Kitchen Environment with Real Fridge & Ambient Scenery
+        Clean, Focused Refrigerator Stage (Appliance Only)
       */}
-      <div className="flex-1 w-full flex items-center justify-center relative min-h-[660px] lg:min-h-[720px] rounded-3xl p-4 sm:p-8 overflow-hidden bg-gradient-to-b from-[#EBE7DF] to-[#DFD9CD] shadow-inner border border-[#D8D2C4]">
-        
-        {/* Decorative Kitchen Background Architecture */}
-        {/* Left Window with Coastline View */}
-        <div className="hidden lg:flex flex-col absolute left-6 top-8 w-44 h-80 rounded-2xl border-4 border-white/80 shadow-lg overflow-hidden bg-sky-200 pointer-events-none select-none z-0">
-          <img
-            src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80"
-            alt="Window View"
-            className="w-full h-full object-cover"
-          />
-          {/* Window Frame Panes */}
-          <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 pointer-events-none border border-white/50">
-            <div className="border-r-2 border-b-2 border-white/70" />
-            <div className="border-b-2 border-white/70" />
-            <div className="border-r-2 border-white/70" />
-            <div />
-          </div>
-        </div>
-
-        {/* Paper Note / Memo on String: "Small Savings Bigger Journeys ♡" */}
-        <div className="hidden lg:block absolute left-14 top-4 z-10 select-none animate-in fade-in duration-300">
-          <div className="w-1 h-8 bg-amber-800/40 mx-auto" />
-          <div className="w-24 p-3 bg-[#EFE6D5] text-[#5A4634] font-handwriting rounded-lg shadow-md border border-[#DFCBB5] -rotate-2 hover:rotate-0 transition-transform">
-            <p className="text-xs font-bold text-center leading-tight">
-              Small
-              <br />
-              Savings
-              <br />
-              Bigger
-              <br />
-              Journeys
-              <br />
-              <span className="text-rose-500 font-sans text-sm">♡</span>
-            </p>
-          </div>
-        </div>
-
-        {/* Houseplant on the Left Counter */}
-        <div className="hidden lg:block absolute left-8 bottom-6 z-10 pointer-events-none select-none">
-          <div className="w-20 h-28 relative">
-            {/* Plant Pot */}
-            <div className="w-14 h-12 bg-slate-300/80 rounded-b-xl border-t-2 border-slate-400 mx-auto absolute bottom-0 inset-x-0 shadow-md" />
-            {/* Green Leaves */}
-            <div className="w-16 h-20 bg-emerald-700/80 rounded-full blur-[1px] absolute top-0 left-2 transform -rotate-12" />
-            <div className="w-12 h-16 bg-emerald-600 rounded-full absolute top-2 right-1 transform rotate-12" />
-          </div>
-        </div>
-
-        {/* Center: The Photorealistic Kitchen Refrigerator */}
+      <div className="flex-1 w-full flex items-center justify-center relative min-h-[660px] lg:min-h-[760px] rounded-3xl p-4 sm:p-6 overflow-hidden bg-gradient-to-b from-[#F2EFE9] to-[#E5E0D6] shadow-inner border border-[#DCD6C9]">
+        {/* Center: The Photorealistic Refrigerator */}
         <div className="relative z-10 w-full flex flex-col items-center">
           <FridgeWorkspace
             userId={user?.id || 'guest'}

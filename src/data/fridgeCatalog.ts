@@ -7,24 +7,24 @@ export const DEFAULT_FRIDGE_ID = 'lg-kitchen-studio-double'
 export const FRIDGE_MODELS: FridgeModel[] = [
   {
     "id": "lg-kitchen-studio-double",
-    "name": "LG Studio Double-Door in Kitchen",
+    "name": "LG Studio Double-Door Stainless",
     "brand": "LG",
     "style": "Double-door",
-    "finish": "Brushed Platinum Stainless Steel in Modern Kitchen",
+    "finish": "Brushed Platinum Stainless Steel",
     "colorHex": "#94A3B8",
     "countryCategory": "Indian",
-    "imageUrl": "/fridges/real-kitchen-fridge.jpg",
-    "aspectRatio": 0.671,
+    "imageUrl": "/fridges/lg-double-door-isolated.png",
+    "aspectRatio": 0.48,
     "magneticRegion": {
-      "top": 0.10,
-      "left": 0.31,
-      "width": 0.44,
-      "height": 0.82
+      "top": 0.04,
+      "left": 0.08,
+      "width": 0.88,
+      "height": 0.92
     },
-    "description": "Photorealistic brushed platinum stainless steel double-door refrigerator centered in a warm cozy modern kitchen setting.",
+    "description": "Photorealistic brushed platinum stainless steel double-door refrigerator with sleek vertical handles.",
     "features": [
       "Photorealistic Appliance",
-      "Warm Modern Kitchen Setting",
+      "Isolated Double-Door Model",
       "Double Door Split",
       "Cylindrical Chrome Handles"
     ],

@@ -50,16 +50,31 @@ const safeStorage = {
 }
 
 const DEFAULT_PRESET_POSITIONS: Record<string, { x: number; y: number; scale: number; rotation: number }> = {
-  'paris': { x: 0.28, y: 0.22, scale: 1.0, rotation: -2 },
-  'japan': { x: 0.58, y: 0.23, scale: 1.0, rotation: 1 },
-  'rome': { x: 0.82, y: 0.25, scale: 1.0, rotation: -1 },
-  'new-york': { x: 0.26, y: 0.47, scale: 1.0, rotation: 2 },
-  'goa': { x: 0.58, y: 0.49, scale: 1.0, rotation: -1 },
-  'santorini': { x: 0.82, y: 0.52, scale: 1.0, rotation: 1 },
-  'ladakh': { x: 0.28, y: 0.77, scale: 1.0, rotation: -2 },
-  'bali': { x: 0.58, y: 0.77, scale: 1.0, rotation: 1 },
-  'bangkok': { x: 0.82, y: 0.77, scale: 1.0, rotation: -1 },
-  'thailand': { x: 0.82, y: 0.77, scale: 1.0, rotation: -1 },
+  // Top Freezer Door:
+  // Row 1: Ladakh (left), India Gate (center), Royal Elephant (right)
+  'ladakh': { x: 0.22, y: 0.09, scale: 1.0, rotation: -1 },
+  'delhi': { x: 0.52, y: 0.08, scale: 1.0, rotation: 0 },
+  'india-gate': { x: 0.52, y: 0.08, scale: 1.0, rotation: 0 },
+  'elephant': { x: 0.80, y: 0.09, scale: 1.0, rotation: 1 },
+  'royal-elephant': { x: 0.80, y: 0.09, scale: 1.0, rotation: 1 },
+  // Row 2: Goa (left), Taj Mahal (right)
+  'goa': { x: 0.28, y: 0.22, scale: 1.0, rotation: 0 },
+  'taj-mahal': { x: 0.72, y: 0.23, scale: 1.0, rotation: 0 },
+
+  // Bottom Main Door:
+  // Row 1: Paris (left), London Bus (center), New York (right)
+  'paris': { x: 0.24, y: 0.40, scale: 1.0, rotation: 0 },
+  'london': { x: 0.52, y: 0.39, scale: 1.0, rotation: 0 },
+  'new-york': { x: 0.80, y: 0.41, scale: 1.0, rotation: 1 },
+  // Row 2: Bali (center)
+  'bali': { x: 0.52, y: 0.58, scale: 1.0, rotation: 0 },
+  'japan': { x: 0.76, y: 0.58, scale: 1.0, rotation: -1 },
+  // Row 3: Rome / Colosseum (left), Santorini (right)
+  'rome': { x: 0.28, y: 0.76, scale: 1.0, rotation: -1 },
+  'colosseum-rome': { x: 0.28, y: 0.76, scale: 1.0, rotation: -1 },
+  'santorini': { x: 0.72, y: 0.77, scale: 1.0, rotation: 0 },
+  'bangkok': { x: 0.52, y: 0.77, scale: 1.0, rotation: 0 },
+  'thailand': { x: 0.52, y: 0.77, scale: 1.0, rotation: 0 },
 }
 
 export const fridgeService = {
@@ -156,7 +171,7 @@ export const fridgeService = {
     modelId: string,
     currentMagnets: FridgeMagnetItem[] = []
   ): MagnetPlacement[] {
-    const key = `magneto_fridge_placements_${userId}_${modelId}`
+    const key = `magneto_fridge_placements_v2_${userId}_${modelId}`
     let placements: MagnetPlacement[] = []
 
     const raw = safeStorage.getItem(key)
@@ -204,7 +219,7 @@ export const fridgeService = {
     modelId: string,
     placements: MagnetPlacement[]
   ): void {
-    const key = `magneto_fridge_placements_${userId}_${modelId}`
+    const key = `magneto_fridge_placements_v2_${userId}_${modelId}`
     safeStorage.setItem(key, JSON.stringify(placements))
   },
 
