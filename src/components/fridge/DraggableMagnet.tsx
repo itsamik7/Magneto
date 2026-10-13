@@ -16,6 +16,7 @@ interface DraggableMagnetProps {
   placement: MagnetPlacement
   isSelected: boolean
   surfaceRef: React.RefObject<HTMLDivElement | null>
+  isEditable?: boolean
   onSelect: () => void
   onUpdatePlacement: (updated: MagnetPlacement) => void
   onRemove: () => void
@@ -27,6 +28,7 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
   placement,
   isSelected,
   surfaceRef,
+  isEditable = true,
   onSelect,
   onUpdatePlacement,
   onRemove,
@@ -52,6 +54,11 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
     // Prevent propagation so parent container doesn't deselect
     e.stopPropagation()
     onSelect()
+
+    if (!isEditable) {
+      if (onClick) onClick()
+      return
+    }
 
     const surface = surfaceRef.current
     if (!surface) return
@@ -178,9 +185,9 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
         zIndex: isSelected ? 100 : placement.zIndex,
         touchAction: 'none',
       }}
-      className={`group select-none cursor-grab active:cursor-grabbing transition-shadow ${
-        isDragging ? 'opacity-90 scale-105' : ''
-      }`}
+      className={`group select-none ${
+        isEditable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer hover:scale-[1.02]'
+      } transition-all ${isDragging ? 'opacity-90 scale-105' : ''}`}
     >
       {/* Visual Magnet Body */}
       <div className="relative flex flex-col items-center">
@@ -208,7 +215,13 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
 
           {/* Selection Indicator Ring */}
           {isSelected && (
-            <div className="absolute -inset-2.5 rounded-3xl border-2 border-dashed border-emerald-500/90 pointer-events-none shadow-[0_0_15px_rgba(16,185,129,0.35)] animate-pulse" />
+            <div
+              className={`absolute -inset-2.5 rounded-3xl pointer-events-none ${
+                isEditable
+                  ? 'border-2 border-dashed border-emerald-500/90 shadow-[0_0_15px_rgba(16,185,129,0.35)] animate-pulse'
+                  : 'border-2 border-blue-500/80 shadow-[0_0_12px_rgba(59,130,246,0.35)]'
+              }`}
+            />
           )}
         </div>
 
@@ -239,8 +252,8 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
         ) : null}
       </div>
 
-      {/* Resize Corner Handles (Visible when selected) */}
-      {isSelected && (
+      {/* Resize Corner Handles & Floating Actions (Only in Edit Mode) */}
+      {isSelected && isEditable && (
         <>
           <div
             onPointerDown={(e) => handleResizePointerDown(e, 'nw')}

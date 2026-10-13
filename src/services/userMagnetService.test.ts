@@ -53,4 +53,37 @@ describe('userMagnetService', () => {
     expect(fridge.length).toBe(1)
     expect(fridge[0].destination_slug).toBe(dest2.slug)
   }, 15000)
+
+  it('should save and persist a collection of magnets via saveUserFridgeMagnets', async () => {
+    const sample = [
+      {
+        id: 'magnet-paris',
+        destination_slug: 'paris',
+        destination_name: 'Paris',
+        country_name: 'France',
+        continent: 'Europe',
+        asset_url: '/magnets/paris.png',
+        magnet_shape: 'arch',
+        acquired_at: new Date().toISOString(),
+      },
+    ]
+
+    await userMagnetService.saveUserFridgeMagnets(testUserId, sample)
+    const result = await userMagnetService.getUserFridgeMagnets(testUserId)
+    expect(result.length).toBe(1)
+    expect(result[0].destination_slug).toBe('paris')
+  }, 15000)
+
+  it('should remove a magnet using canonical ID (magnet-<slug>)', async () => {
+    const dest = DESTINATIONS_CATALOG[0]
+    await userMagnetService.addMagnetToFridge(testUserId, dest)
+
+    let fridge = await userMagnetService.getUserFridgeMagnets(testUserId)
+    expect(fridge.length).toBe(1)
+
+    // Remove using canonical ID 'magnet-' + slug
+    await userMagnetService.removeMagnetFromFridge(testUserId, `magnet-${dest.slug}`)
+    fridge = await userMagnetService.getUserFridgeMagnets(testUserId)
+    expect(fridge.length).toBe(0)
+  }, 15000)
 })

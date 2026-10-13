@@ -31,7 +31,9 @@ import {
   Sun,
   Landmark,
   Trash2,
+  ChevronRight,
 } from 'lucide-react'
+import { FridgeModelModal } from '../components/fridge/FridgeModelModal'
 
 const FILTER_PILLS = ['All', 'Countries', 'Cities', 'Nature', 'Monuments']
 
@@ -61,6 +63,7 @@ export const PlanTripPage: React.FC = () => {
     const id = fridgeService.getActiveFridgeId(user?.id || 'guest')
     return fridgeService.getFridgeModelById(id, user?.id)
   })
+  const [isModelModalOpen, setIsModelModalOpen] = useState(false)
   const [userMagnets, setUserMagnets] = useState<FridgeMagnetItem[]>([])
   const [placements, setPlacements] = useState<MagnetPlacement[]>([])
   const [selectedPlacementId, setSelectedPlacementId] = useState<string | null>('magnet-santorini')
@@ -109,12 +112,16 @@ export const PlanTripPage: React.FC = () => {
   // Load User Magnets or default collection
   useEffect(() => {
     const load = async () => {
-      const list = await userMagnetService.getUserFridgeMagnets(user?.id || 'guest')
+      const uid = user?.id || 'guest'
+      const list = await userMagnetService.getUserFridgeMagnets(uid)
       if (list.length > 0) {
         setUserMagnets(list)
       } else {
         setUserMagnets(DEFAULT_FEATURED_MAGNETS)
+        await userMagnetService.saveUserFridgeMagnets(uid, DEFAULT_FEATURED_MAGNETS)
       }
+      const activeId = fridgeService.getActiveFridgeId(uid)
+      setActiveModel(fridgeService.getFridgeModelById(activeId, user?.id))
     }
     load()
   }, [user])
@@ -154,6 +161,19 @@ export const PlanTripPage: React.FC = () => {
     })
   }, [searchQuery, activeFilterPill, activeCategoryTile])
 
+  // Current Destination Inspector Item
+  const currentCatalogItem = useMemo(() => {
+    return (
+      SOUVENIR_MAGNETS_CATALOG.find(
+        (item) => item.id.toLowerCase() === selectedDestinationSlug.toLowerCase()
+      ) || SOUVENIR_MAGNETS_CATALOG[0]
+    )
+  }, [selectedDestinationSlug])
+
+  const isCurrentOnFridge =
+    userMagnets.some((m) => m.destination_slug.toLowerCase() === currentCatalogItem.id.toLowerCase()) ||
+    placements.some((p) => p.magnetSlug.toLowerCase() === currentCatalogItem.id.toLowerCase())
+
   // Budget calculations
   const totalEstimatedCost = Object.values(itemizedBreakdown).reduce((a, b) => a + b, 0)
   const remainingBudget = Math.max(0, totalEstimatedCost - savedAmount)
@@ -166,42 +186,127 @@ export const PlanTripPage: React.FC = () => {
   const dailySavingsRequired = remainingBudget > 0 ? Math.ceil(remainingBudget / daysLeft) : 0
 
   // Add Magnet to Fridge action
-  const handleAddMagnetToFridge = (magnet: SouvenirMagnetData) => {
+  const handleAddMagnetToFridge = async (magnet: SouvenirMagnetData) => {
+    const uid = user?.id || 'guest'
+    const cleanSlug = magnet.id.toLowerCase()
+    const canonicalId = `magnet-${cleanSlug}`
+
     // Check if already on fridge
-    const alreadyExists = placements.some((p) => p.magnetSlug === magnet.id)
+    const alreadyExists = userMagnets.some(
+      (m) => m.destination_slug.toLowerCase() === cleanSlug || m.id === canonicalId
+    )
     if (alreadyExists) {
-      setSelectedPlacementId(magnet.id)
-      setSelectedDestinationSlug(magnet.id)
+      setSelectedPlacementId(canonicalId)
+      setSelectedDestinationSlug(cleanSlug)
       return
     }
 
-    // Place on fridge in next slot
-    const newPlacement: MagnetPlacement = {
-      id: `placement-${magnet.id}-${Date.now()}`,
-      magnetSlug: magnet.id,
-      destinationName: magnet.name,
-      assetUrl: magnet.imagePath,
-      x: 0.58,
-      y: 0.52,
-      scale: 1.0,
-      rotation: 0,
-      zIndex: placements.length + 1,
-      totalSavedMinor: 0,
-      targetBudgetMinor: 15000000,
-      unlockState: 'saving',
-      progressPercentage: 0,
+    const newMagnetItem: FridgeMagnetItem = {
+      id: canonicalId,
+      destination_slug: cleanSlug,
+      destination_name: magnet.name,
+      country_name: magnet.destination.split(',')[1]?.trim() || magnet.region,
+      continent: magnet.region === 'India' ? 'Asia' : 'Europe',
+      asset_url: magnet.imagePath,
+      magnet_shape: 'arch',
+      acquired_at: new Date().toISOString(),
+      unlock_state: 'saving',
+      progress_percentage: 0,
+      total_saved_minor: 0,
+      target_budget_minor: 15000000,
     }
 
-    const updatedPlacements = [...placements, newPlacement]
-    setPlacements(updatedPlacements)
-    setSelectedPlacementId(newPlacement.id)
-    setSelectedDestinationSlug(magnet.id)
-    fridgeService.saveFridgePlacements(user?.id || 'guest', activeModel.id, updatedPlacements)
+    // Generate placement with smart positioning
+    const [newPlacement] = fridgeService.generateAutoLayout([newMagnetItem], placements.length, placements)
+    newPlacement.id = canonicalId
+
+    const nextMagnets = [...userMagnets, newMagnetItem]
+    const nextPlacements = [...placements, newPlacement]
+
+    setUserMagnets(nextMagnets)
+    setPlacements(nextPlacements)
+    setSelectedPlacementId(canonicalId)
+    setSelectedDestinationSlug(cleanSlug)
+
+    await userMagnetService.saveUserFridgeMagnets(uid, nextMagnets)
+    fridgeService.saveFridgePlacements(uid, activeModel.id, nextPlacements)
+
+    setSaveSuccessMessage(`${magnet.name} added to fridge!`)
+    setTimeout(() => setSaveSuccessMessage(null), 2500)
+  }
+
+  // Delete / Remove Magnet from Fridge
+  const handleDeleteMagnet = async (idOrSlug: string) => {
+    const uid = user?.id || 'guest'
+    const cleanSlug = idOrSlug.toLowerCase().replace(/^magnet-/, '')
+    const canonicalId = `magnet-${cleanSlug}`
+
+    const nextMagnets = userMagnets.filter(
+      (m) =>
+        m.id !== idOrSlug &&
+        m.id !== canonicalId &&
+        m.destination_slug.toLowerCase() !== cleanSlug
+    )
+    const nextPlacements = placements.filter(
+      (p) =>
+        p.id !== idOrSlug &&
+        p.id !== canonicalId &&
+        p.magnetSlug.toLowerCase() !== cleanSlug
+    )
+
+    setUserMagnets(nextMagnets)
+    setPlacements(nextPlacements)
+
+    if (
+      selectedPlacementId === idOrSlug ||
+      selectedPlacementId === canonicalId ||
+      selectedDestinationSlug === cleanSlug
+    ) {
+      const fallback = nextPlacements[0]
+      setSelectedPlacementId(fallback?.id || null)
+      if (fallback) {
+        setSelectedDestinationSlug(fallback.magnetSlug)
+      }
+    }
+
+    await userMagnetService.saveUserFridgeMagnets(uid, nextMagnets)
+    fridgeService.saveFridgePlacements(uid, activeModel.id, nextPlacements)
+
+    setSaveSuccessMessage('Magnet removed from fridge.')
+    setTimeout(() => setSaveSuccessMessage(null), 2500)
+  }
+
+  // Auto-arrange all magnets cleanly on the fridge
+  const handleAutoArrange = () => {
+    const uid = user?.id || 'guest'
+    const arranged = fridgeService.autoArrangeAll(uid, activeModel.id, userMagnets)
+    setPlacements(arranged)
+    fridgeService.saveFridgePlacements(uid, activeModel.id, arranged)
+    setSaveSuccessMessage('Magnets auto-arranged!')
+    setTimeout(() => setSaveSuccessMessage(null), 2500)
+  }
+
+  // Switch Refrigerator Model
+  const handleSelectFridgeModel = (newModel: FridgeModel) => {
+    setActiveModel(newModel)
+    const uid = user?.id || 'guest'
+    fridgeService.setActiveFridgeId(uid, newModel.id)
+
+    // Adapt existing magnet positions so magnets remain inside the new fridge's bounds
+    const adapted = fridgeService.adaptPlacementsToModel(placements, newModel)
+    setPlacements(adapted)
+    fridgeService.saveFridgePlacements(uid, newModel.id, adapted)
+    setIsModelModalOpen(false)
+
+    setSaveSuccessMessage(`Switched to ${newModel.name}`)
+    setTimeout(() => setSaveSuccessMessage(null), 2500)
   }
 
   // Handle Save Fridge Action
-  const handleSaveFridge = () => {
-    fridgeService.saveFridgePlacements(user?.id || 'guest', activeModel.id, placements)
+  const handleSaveFridge = async () => {
+    const uid = user?.id || 'guest'
+    fridgeService.saveFridgePlacements(uid, activeModel.id, placements)
+    await userMagnetService.saveUserFridgeMagnets(uid, userMagnets)
     setSaveSuccessMessage('Fridge layout & trip plans saved!')
     setTimeout(() => setSaveSuccessMessage(null), 3000)
   }
@@ -307,7 +412,9 @@ export const PlanTripPage: React.FC = () => {
         <div className="flex-1 overflow-y-auto pr-1 scrollbar-thin grid grid-cols-3 gap-2.5">
           {filteredCatalog.map((item) => {
             const isFav = favorites.has(item.id)
-            const isAdded = placements.some((p) => p.magnetSlug === item.id)
+            const isAdded =
+              userMagnets.some((m) => m.destination_slug.toLowerCase() === item.id.toLowerCase()) ||
+              placements.some((p) => p.magnetSlug.toLowerCase() === item.id.toLowerCase())
 
             return (
               <div
@@ -327,7 +434,16 @@ export const PlanTripPage: React.FC = () => {
                 </button>
 
                 {/* Magnet Thumbnail */}
-                <div className="h-16 w-full flex items-center justify-center p-1 my-1">
+                <div
+                  onClick={() => {
+                    setSelectedDestinationSlug(item.id)
+                    const p = placements.find(
+                      (pl) => pl.magnetSlug.toLowerCase() === item.id.toLowerCase()
+                    )
+                    if (p) setSelectedPlacementId(p.id)
+                  }}
+                  className="h-16 w-full flex items-center justify-center p-1 my-1 cursor-pointer"
+                >
                   <img
                     src={item.imagePath}
                     alt={item.name}
@@ -335,7 +451,7 @@ export const PlanTripPage: React.FC = () => {
                   />
                 </div>
 
-                {/* Info & Add Button */}
+                {/* Info & Add / Remove Button */}
                 <div className="mt-1">
                   <h4 className="font-heading font-black text-[11px] text-slate-900 truncate">
                     {item.name}
@@ -344,26 +460,42 @@ export const PlanTripPage: React.FC = () => {
                     {item.destination.split(',')[1]?.trim() || item.region}
                   </p>
 
-                  <button
-                    onClick={() => handleAddMagnetToFridge(item)}
-                    className={`mt-1.5 w-full py-1 text-[10px] font-heading font-bold rounded-lg border transition-all flex items-center justify-center gap-0.5 ${
-                      isAdded
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                        : 'bg-white hover:bg-blue-50 text-blue-600 border-blue-200 shadow-xs hover:border-blue-400'
-                    }`}
-                  >
-                    {isAdded ? (
-                      <>
+                  {isAdded ? (
+                    <div className="mt-1.5 flex items-center gap-1">
+                      <button
+                        onClick={() => {
+                          setSelectedDestinationSlug(item.id)
+                          const p = placements.find(
+                            (pl) => pl.magnetSlug.toLowerCase() === item.id.toLowerCase()
+                          )
+                          if (p) setSelectedPlacementId(p.id)
+                        }}
+                        className="flex-1 py-1 text-[10px] font-heading font-bold rounded-lg border bg-emerald-50 text-emerald-700 border-emerald-300 flex items-center justify-center gap-0.5 hover:bg-emerald-100 transition-colors"
+                        title="Magnet is on fridge. Click to inspect"
+                      >
                         <Check className="w-2.5 h-2.5" />
-                        <span>Added</span>
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="w-2.5 h-2.5" />
-                        <span>Add</span>
-                      </>
-                    )}
-                  </button>
+                        <span>On Fridge</span>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDeleteMagnet(item.id)
+                        }}
+                        className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-slate-200 transition-colors"
+                        title="Remove magnet from fridge"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleAddMagnetToFridge(item)}
+                      className="mt-1.5 w-full py-1 text-[10px] font-heading font-bold rounded-lg border transition-all flex items-center justify-center gap-0.5 bg-white hover:bg-blue-50 text-blue-600 border-blue-200 shadow-xs hover:border-blue-400 active:scale-95"
+                    >
+                      <Plus className="w-2.5 h-2.5" />
+                      <span>Add</span>
+                    </button>
+                  )}
                 </div>
               </div>
             )
@@ -378,15 +510,42 @@ export const PlanTripPage: React.FC = () => {
       */}
       <div className="flex-1 w-full flex flex-col items-center justify-between min-h-[760px] relative rounded-3xl p-5 overflow-hidden bg-gradient-to-b from-[#F2EFE9] to-[#E5E0D6] shadow-inner border border-[#DCD6C9]">
         
-        {/* Top Right "Edit Mode" Pill Button */}
-        <div className="w-full flex items-center justify-end mb-2 z-20">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white text-slate-800 font-heading font-bold text-xs rounded-full shadow-md border border-slate-200">
-            <Edit2 className="w-3 h-3 text-blue-600" />
-            <span>Edit Mode</span>
+        {/* Top Controls Bar: Fridge Selection, Auto Arrange, and Edit Mode Pill */}
+        <div className="w-full flex items-center justify-between mb-3 z-20 px-1 gap-2 flex-wrap">
+          {/* Fridge Model Switcher Button */}
+          <button
+            onClick={() => setIsModelModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-800 rounded-xl shadow-xs border border-slate-200 font-medium transition-all hover:border-slate-300 active:scale-95 text-xs"
+            title="Switch refrigerator model"
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5 text-blue-600" />
+            <span className="font-heading font-bold text-xs truncate max-w-[130px] sm:max-w-[180px]">
+              {activeModel.name}
+            </span>
+            <ChevronRight className="w-3 h-3 text-slate-400" />
+          </button>
+
+          <div className="flex items-center gap-2">
+            {/* Auto Arrange Layout Button */}
+            <button
+              onClick={handleAutoArrange}
+              disabled={userMagnets.length === 0}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 rounded-xl shadow-xs border border-slate-200 font-heading font-bold text-xs transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+              title="Automatically organize magnets evenly across the fridge"
+            >
+              <LayoutGrid className="w-3.5 h-3.5 text-blue-600" />
+              <span>Auto Arrange</span>
+            </button>
+
+            {/* Edit Mode Badge */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 font-heading font-bold text-xs rounded-xl shadow-xs border border-blue-200">
+              <Edit2 className="w-3 h-3 text-blue-600" />
+              <span>Edit Mode</span>
+            </div>
           </div>
         </div>
 
-        {/* Center Fridge Workspace with Draggable Magnets & Dotted Placeholder Slots */}
+        {/* Center Fridge Workspace with Draggable Magnets */}
         <div className="relative z-10 w-full flex flex-col items-center">
           <FridgeWorkspace
             userId={user?.id || 'guest'}
@@ -394,9 +553,16 @@ export const PlanTripPage: React.FC = () => {
             magnets={userMagnets}
             selectedPlacementId={selectedPlacementId}
             onSelectPlacementId={setSelectedPlacementId}
-            onChangeFridgeModel={setActiveModel}
-            onPlacementsChange={setPlacements}
+            onSelectMagnetItem={(magnet) => {
+              setSelectedDestinationSlug(magnet.destination_slug)
+            }}
+            onChangeFridgeModel={handleSelectFridgeModel}
+            onRemoveMagnet={handleDeleteMagnet}
+            onPlacementsChange={(next) => {
+              setPlacements(next)
+            }}
             showControls={false}
+            readOnly={false}
           />
         </div>
 
@@ -441,21 +607,26 @@ export const PlanTripPage: React.FC = () => {
       */}
       <div className="w-full xl:w-[420px] bg-white rounded-3xl p-5 shadow-xl border border-slate-200/90 flex flex-col h-[760px] flex-shrink-0 overflow-y-auto scrollbar-thin">
         
-        {/* Destination Banner */}
-        <div className="relative w-full h-36 rounded-2xl overflow-hidden shadow-md group mb-3">
+        {/* Destination Magnet Hero Display */}
+        <div className="relative w-full h-36 rounded-2xl overflow-hidden shadow-md group mb-3 bg-gradient-to-tr from-slate-900 via-slate-800 to-slate-700 flex items-center justify-center p-3">
           <img
-            src="https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=1200&q=80"
-            alt="Santorini, Greece"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            src={currentCatalogItem.imagePath}
+            alt={currentCatalogItem.name}
+            className="max-h-24 max-w-24 object-contain filter drop-shadow-xl group-hover:scale-110 transition-transform duration-300"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent pointer-events-none" />
 
           {/* Top Right Heart Favorite Button */}
           <button
-            onClick={(e) => toggleFavorite('santorini', e)}
-            className="absolute top-2.5 right-2.5 p-1.5 rounded-full bg-white/90 hover:bg-white text-slate-700 shadow-md transition-transform hover:scale-110"
+            onClick={(e) => toggleFavorite(currentCatalogItem.id, e)}
+            className="absolute top-2.5 right-2.5 p-1.5 rounded-full bg-white/90 hover:bg-white text-slate-700 shadow-md transition-transform hover:scale-110 z-10"
+            title="Favorite Destination"
           >
-            <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500" />
+            <Heart
+              className={`w-3.5 h-3.5 ${
+                favorites.has(currentCatalogItem.id) ? 'fill-rose-500 text-rose-500' : ''
+              }`}
+            />
           </button>
         </div>
 
@@ -463,10 +634,10 @@ export const PlanTripPage: React.FC = () => {
         <div className="flex items-start justify-between gap-2 mb-1.5">
           <div className="flex items-center gap-2">
             <h3 className="font-heading font-black text-lg text-slate-900">
-              Santorini, Greece
+              {currentCatalogItem.name}
             </h3>
             <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
-              International
+              {currentCatalogItem.region}
             </span>
           </div>
           <button
@@ -477,9 +648,32 @@ export const PlanTripPage: React.FC = () => {
           </button>
         </div>
 
-        <p className="text-[11px] text-slate-600 leading-relaxed mb-3">
-          A dream destination with stunning white buildings, blue domes and breathtaking sunsets over the Aegean Sea.
+        <p className="text-[11px] text-slate-600 leading-relaxed mb-2.5">
+          {currentCatalogItem.description}
         </p>
+
+        {/* Fridge Status & Action Bar (Add or Remove Magnet) */}
+        <div className="mb-3">
+          {isCurrentOnFridge ? (
+            <button
+              onClick={() => handleDeleteMagnet(currentCatalogItem.id)}
+              className="w-full py-1.5 px-3 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl font-heading font-bold text-xs flex items-center justify-center gap-1.5 transition-colors active:scale-95"
+              title="Remove this magnet from your fridge"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+              <span>Remove from Fridge</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => handleAddMagnetToFridge(currentCatalogItem)}
+              className="w-full py-1.5 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-heading font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-colors active:scale-95"
+              title="Add this magnet to your fridge"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Magnet to Fridge</span>
+            </button>
+          )}
+        </div>
 
         {/* 4 Tabs: Trip Plan | Savings | Checklist | Notes */}
         <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100 rounded-xl mb-4 text-xs font-bold">
@@ -826,6 +1020,15 @@ export const PlanTripPage: React.FC = () => {
         totalSavedMinor={savedAmount * 100}
         daysRemaining={daysLeft}
         onSaveAmount={handleSaveMoneySuccess}
+      />
+
+      {/* Refrigerator Model Selection Modal */}
+      <FridgeModelModal
+        isOpen={isModelModalOpen}
+        onClose={() => setIsModelModalOpen(false)}
+        currentModelId={activeModel.id}
+        userId={user?.id || 'guest'}
+        onSelectModel={handleSelectFridgeModel}
       />
 
     </div>

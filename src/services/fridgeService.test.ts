@@ -148,4 +148,60 @@ describe('fridgeService & Fridge Architecture', () => {
       expect(p.scale).toBeLessThanOrEqual(2.0)
     })
   })
+
+  it('should remove a magnet placement and persist changes', () => {
+    const sample: FridgeMagnetItem[] = [
+      {
+        id: 'mag-goa',
+        destination_slug: 'goa',
+        destination_name: 'Goa',
+        country_name: 'India',
+        continent: 'Asia',
+        asset_url: '/magnets/goa.png',
+        magnet_shape: 'arch',
+        acquired_at: new Date().toISOString(),
+      },
+      {
+        id: 'mag-paris',
+        destination_slug: 'paris',
+        destination_name: 'Paris',
+        country_name: 'France',
+        continent: 'Europe',
+        asset_url: '/magnets/paris.png',
+        magnet_shape: 'arch',
+        acquired_at: new Date().toISOString(),
+      },
+    ]
+
+    const initial = fridgeService.getFridgePlacements(testUserId, DEFAULT_FRIDGE_ID, sample)
+    expect(initial.length).toBe(2)
+
+    const updated = fridgeService.removeMagnetPlacement(testUserId, DEFAULT_FRIDGE_ID, 'mag-goa')
+    expect(updated.length).toBe(1)
+    expect(updated[0].magnetSlug).toBe('paris')
+
+    const reloaded = fridgeService.getFridgePlacements(testUserId, DEFAULT_FRIDGE_ID)
+    expect(reloaded.length).toBe(1)
+  })
+
+  it('should adapt magnet placements to stay cleanly in bounds when changing fridge models', () => {
+    const targetModel = FRIDGE_MODELS[0]
+    const placements = [
+      {
+        id: 'mag-out-of-bounds',
+        magnetSlug: 'test',
+        destinationName: 'Test',
+        assetUrl: '/test.png',
+        x: 0.99,
+        y: 0.01,
+        scale: 1.0,
+        rotation: 0,
+        zIndex: 1,
+      },
+    ]
+
+    const adapted = fridgeService.adaptPlacementsToModel(placements, targetModel)
+    expect(adapted[0].x).toBeLessThanOrEqual(0.88)
+    expect(adapted[0].y).toBeGreaterThanOrEqual(0.12)
+  })
 })

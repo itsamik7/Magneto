@@ -169,7 +169,7 @@ export const fridgeService = {
   getFridgePlacements(
     userId: string,
     modelId: string,
-    currentMagnets: FridgeMagnetItem[] = []
+    currentMagnets?: FridgeMagnetItem[]
   ): MagnetPlacement[] {
     const key = `magneto_fridge_placements_v2_${userId}_${modelId}`
     let placements: MagnetPlacement[] = []
@@ -186,29 +186,80 @@ export const fridgeService = {
       }
     }
 
-    // Filter out placements for magnets that the user no longer possesses
-    if (currentMagnets.length > 0) {
-      const currentIds = new Set(currentMagnets.map((m) => m.id))
-      placements = placements.filter((p) => currentIds.has(p.id))
-
-      // Identify unplaced magnets
-      const placedIds = new Set(placements.map((p) => p.id))
-      const unplaced = currentMagnets.filter((m) => !placedIds.has(m.id))
-
-      if (unplaced.length > 0) {
-        // Compute positions for newly added magnets
-        const newPlacements = this.generateAutoLayout(
-          unplaced,
-          placements.length,
-          placements
+    // Only reconcile against currentMagnets if explicitly provided by caller
+    if (currentMagnets !== undefined) {
+      if (currentMagnets.length > 0) {
+        const currentIds = new Set(currentMagnets.map((m) => m.id))
+        const currentSlugs = new Set(currentMagnets.map((m) => m.destination_slug.toLowerCase()))
+        placements = placements.filter(
+          (p) => currentIds.has(p.id) || currentSlugs.has(p.magnetSlug.toLowerCase())
         )
-        placements = [...placements, ...newPlacements]
-        // Persist updated list
+
+        // Identify unplaced magnets
+        const placedKeys = new Set([
+          ...placements.map((p) => p.id),
+          ...placements.map((p) => p.magnetSlug.toLowerCase()),
+        ])
+        const unplaced = currentMagnets.filter(
+          (m) => !placedKeys.has(m.id) && !placedKeys.has(m.destination_slug.toLowerCase())
+        )
+
+        if (unplaced.length > 0) {
+          // Compute positions for newly added magnets
+          const newPlacements = this.generateAutoLayout(
+            unplaced,
+            placements.length,
+            placements
+          )
+          placements = [...placements, ...newPlacements]
+          // Persist updated list
+          this.saveFridgePlacements(userId, modelId, placements)
+        }
+      } else if (placements.length > 0) {
+        placements = []
         this.saveFridgePlacements(userId, modelId, placements)
       }
     }
 
     return placements
+  },
+
+  /**
+   * Remove a specific placement by ID or slug and persist
+   */
+  removeMagnetPlacement(
+    userId: string,
+    modelId: string,
+    placementIdOrSlug: string
+  ): MagnetPlacement[] {
+    const clean = placementIdOrSlug.toLowerCase().replace(/^magnet-/, '')
+    const current = this.getFridgePlacements(userId, modelId)
+    const updated = current.filter(
+      (p) =>
+        p.id !== placementIdOrSlug &&
+        p.magnetSlug.toLowerCase() !== placementIdOrSlug.toLowerCase() &&
+        p.magnetSlug.toLowerCase() !== clean
+    )
+    this.saveFridgePlacements(userId, modelId, updated)
+    return updated
+  },
+
+  /**
+   * Adapt existing magnet positions when switching to a new fridge model
+   */
+  adaptPlacementsToModel(
+    placements: MagnetPlacement[],
+    _targetModel: FridgeModel
+  ): MagnetPlacement[] {
+    return placements.map((p) => {
+      const x = Math.min(0.88, Math.max(0.12, p.x))
+      const y = Math.min(0.88, Math.max(0.12, p.y))
+      return {
+        ...p,
+        x,
+        y,
+      }
+    })
   },
 
   /**

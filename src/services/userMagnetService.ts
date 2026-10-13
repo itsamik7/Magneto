@@ -362,7 +362,7 @@ export const userMagnetService = {
     }
 
     const newMagnetItem: FridgeMagnetItem = {
-      id: crypto.randomUUID(),
+      id: `magnet-${destination.slug}`,
       destination_slug: destination.slug,
       destination_name: destination.name,
       country_name: destination.country_name,
@@ -429,12 +429,31 @@ export const userMagnetService = {
   },
 
   /**
-   * Remove a magnet from the fridge.
+   * Save the complete list of fridge magnets for a user.
    */
-  async removeMagnetFromFridge(userId: string, destinationSlug: string): Promise<boolean> {
+  async saveUserFridgeMagnets(userId: string, magnets: FridgeMagnetItem[]): Promise<void> {
+    try {
+      safeStorage.setItem(`magneto_fridge_${userId}`, JSON.stringify(magnets))
+      const collectedSlugs = magnets.map((m) => m.destination_slug)
+      safeStorage.setItem(`magneto_collected_${userId}`, JSON.stringify(collectedSlugs))
+    } catch {
+      // Ignore
+    }
+  },
+
+  /**
+   * Remove a magnet from the fridge. Supports destination slug or canonical ID.
+   */
+  async removeMagnetFromFridge(userId: string, identifier: string): Promise<boolean> {
     try {
       const existing = await userMagnetService.getUserFridgeMagnets(userId)
-      const filtered = existing.filter((m) => m.destination_slug !== destinationSlug)
+      const cleanSlug = identifier.toLowerCase().replace(/^magnet-/, '')
+      const filtered = existing.filter(
+        (m) =>
+          m.id !== identifier &&
+          m.destination_slug.toLowerCase() !== identifier.toLowerCase() &&
+          m.destination_slug.toLowerCase() !== cleanSlug
+      )
       safeStorage.setItem(`magneto_fridge_${userId}`, JSON.stringify(filtered))
 
       const collectedSlugs = filtered.map((m) => m.destination_slug)
@@ -444,7 +463,7 @@ export const userMagnetService = {
         const { data: dRow } = await supabase
           .from('destinations')
           .select('id')
-          .eq('slug', destinationSlug)
+          .eq('slug', cleanSlug)
           .maybeSingle()
 
         if (dRow) {

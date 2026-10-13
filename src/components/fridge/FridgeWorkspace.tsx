@@ -23,6 +23,8 @@ export interface FridgeWorkspaceProps {
   onAddDestination?: () => void
   onChangeFridgeModel?: (model: FridgeModel) => void
   showControls?: boolean
+  readOnly?: boolean
+  onRemoveMagnet?: (placementIdOrSlug: string) => void
   onPlacementsChange?: (placements: MagnetPlacement[]) => void
 }
 
@@ -36,6 +38,8 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
   onAddDestination,
   onChangeFridgeModel,
   showControls = true,
+  readOnly = false,
+  onRemoveMagnet,
   onPlacementsChange,
 }) => {
   const surfaceRef = useRef<HTMLDivElement>(null)
@@ -102,6 +106,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
   // Remove magnet from fridge placement
   const handleRemovePlacement = useCallback(
     (id: string) => {
+      const toRemove = placements.find((p) => p.id === id)
       setPlacements((prev) => {
         const next = prev.filter((p) => p.id !== id)
         fridgeService.saveFridgePlacements(userId, currentModel.id, next)
@@ -111,8 +116,11 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
       if (selectedPlacementId === id) {
         setSelectedPlacementId(null)
       }
+      if (onRemoveMagnet) {
+        onRemoveMagnet(toRemove?.magnetSlug || id)
+      }
     },
-    [userId, currentModel.id, selectedPlacementId, onPlacementsChange]
+    [userId, currentModel.id, selectedPlacementId, placements, onPlacementsChange, onRemoveMagnet]
   )
 
   // Auto-arrange all collected magnets
@@ -238,7 +246,11 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
           {/* Render all Draggable, Resizable, Rotatable Magnets */}
           {placements.map((placement) => {
             const isSelected = placement.id === selectedPlacementId
-            const matchedMagnet = magnets.find((m) => m.id === placement.id)
+            const matchedMagnet = magnets.find(
+              (m) =>
+                m.id === placement.id ||
+                m.destination_slug.toLowerCase() === placement.magnetSlug.toLowerCase()
+            )
 
             return (
               <DraggableMagnet
@@ -246,6 +258,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
                 placement={placement}
                 isSelected={isSelected}
                 surfaceRef={surfaceRef}
+                isEditable={!readOnly}
                 onSelect={() => setSelectedPlacementId(placement.id)}
                 onUpdatePlacement={handleUpdatePlacement}
                 onRemove={() => handleRemovePlacement(placement.id)}
@@ -261,8 +274,8 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
           })}
         </div>
 
-        {/* Selected Magnet Status Toast Overlay (Bottom Edge) */}
-        {selectedPlacement && (
+        {/* Selected Magnet Status Toast Overlay (Bottom Edge - Edit Mode Only) */}
+        {!readOnly && selectedPlacement && (
           <div className="absolute bottom-2.5 inset-x-3 z-50 p-2 bg-slate-900/90 backdrop-blur-md border border-white/20 rounded-xl text-white flex items-center justify-between text-[10px] shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-150">
             <div className="min-w-0 pr-2">
               <p className="font-heading font-bold text-white truncate">

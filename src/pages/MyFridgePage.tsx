@@ -275,12 +275,16 @@ export const MyFridgePage: React.FC = () => {
   // Load User Magnets or default starter collection
   useEffect(() => {
     const load = async () => {
-      const list = await userMagnetService.getUserFridgeMagnets(user?.id || 'guest')
+      const uid = user?.id || 'guest'
+      const list = await userMagnetService.getUserFridgeMagnets(uid)
       if (list.length > 0) {
         setUserMagnets(list)
       } else {
         setUserMagnets(DEFAULT_FEATURED_MAGNETS)
+        await userMagnetService.saveUserFridgeMagnets(uid, DEFAULT_FEATURED_MAGNETS)
       }
+      const activeId = fridgeService.getActiveFridgeId(uid)
+      setActiveModel(fridgeService.getFridgeModelById(activeId, user?.id))
     }
     load()
   }, [user])
@@ -391,7 +395,8 @@ export const MyFridgePage: React.FC = () => {
             onSelectPlacementId={handleSelectPlacement}
             onChangeFridgeModel={setActiveModel}
             onPlacementsChange={setPlacements}
-            showControls={true}
+            showControls={false}
+            readOnly={true}
           />
         </div>
 
