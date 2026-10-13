@@ -9,26 +9,24 @@
   --color-teal-dark: #2c6e6d;
   --color-teal-light: #4ba8a7;
 
+  --color-emerald-brand: #059669;
+
   --color-coral: #E98267;
   --color-coral-dark: #d96d51;
   --color-coral-light: #f19b84;
 
-  --color-porcelain: #F7F5F0;
+  --color-porcelain: #F3EFE6;
   --color-softwhite: #FFFFFF;
-
-  --color-text-main: #202833;
-  --color-text-muted: #68717D;
-  --color-border-subtle: #E5E2DC;
 
   --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-heading: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Base resets & typography */
+/* Base resets & Studio Warm Beige Canvas */
 html, body {
   min-height: 100%;
-  background-color: #F7F5F0;
-  color: #202833;
+  background: radial-gradient(circle at 65% 45%, #F6F2EA 0%, #ECE4D6 60%, #E4DAC8 100%);
+  color: #1E293B;
   font-family: var(--font-sans);
 }
 
@@ -36,67 +34,98 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
 }
 
-/* Realistic Brushed Stainless Steel Effects */
+/* Realistic Brushed Stainless Steel Refrigerator Surface */
 .fridge-steel-finish {
   background: 
     linear-gradient(
-      115deg, 
+      120deg, 
       rgba(255, 255, 255, 0.45) 0%, 
-      rgba(225, 230, 236, 0.1) 25%, 
-      rgba(185, 195, 206, 0.3) 45%, 
-      rgba(255, 255, 255, 0.5) 50%, 
-      rgba(190, 200, 210, 0.2) 60%, 
-      rgba(240, 244, 248, 0.4) 80%, 
-      rgba(180, 190, 200, 0.25) 100%
+      rgba(215, 222, 230, 0.15) 20%, 
+      rgba(175, 185, 196, 0.25) 40%, 
+      rgba(255, 255, 255, 0.55) 48%, 
+      rgba(170, 180, 192, 0.2) 58%, 
+      rgba(235, 240, 246, 0.35) 75%, 
+      rgba(170, 180, 192, 0.3) 100%
     ),
     repeating-linear-gradient(
       0deg, 
-      #cbd5e1 0px, 
-      #cbd5e1 1px, 
-      #dbe2ea 1px, 
-      #dbe2ea 2px
+      #c4ccd5 0px, 
+      #c4ccd5 1px, 
+      #d0d7e0 1px, 
+      #d0d7e0 2px
     );
   box-shadow: 
-    inset 0 2px 4px rgba(255, 255, 255, 0.8),
-    inset 0 -4px 8px rgba(36, 52, 71, 0.2),
-    inset 4px 0 8px rgba(255, 255, 255, 0.4),
-    inset -4px 0 8px rgba(36, 52, 71, 0.25),
-    0 25px 50px -12px rgba(36, 52, 71, 0.35);
+    inset 0 1px 3px rgba(255, 255, 255, 0.8),
+    inset 0 -3px 6px rgba(36, 52, 71, 0.15),
+    inset 2px 0 5px rgba(255, 255, 255, 0.4),
+    inset -2px 0 5px rgba(36, 52, 71, 0.2);
 }
 
-/* Fridge handle metallic 3D sheen */
+/* Chrome handle sheen */
 .fridge-handle {
   background: linear-gradient(
     90deg,
-    #718096 0%,
-    #E2E8F0 30%,
+    #64748B 0%,
+    #CBD5E1 25%,
     #FFFFFF 50%,
-    #CBD5E1 70%,
-    #4A5568 100%
+    #E2E8F0 75%,
+    #475569 100%
   );
   box-shadow: 
-    2px 4px 8px rgba(0, 0, 0, 0.25),
-    inset 0 1px 1px rgba(255, 255, 255, 0.8);
+    2px 4px 10px rgba(0, 0, 0, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9);
 }
 
-/* Tactile magnet 3D physics on hover & active */
-.magnet-tactile {
-  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease, filter 0.22s ease;
+/* Subtle magnetic floating animations */
+@keyframes float-gentle-1 {
+  0%, 100% {
+    transform: translateY(0px) rotate(-0.5deg);
+  }
+  50% {
+    transform: translateY(-4px) rotate(0.8deg);
+  }
 }
 
-.magnet-tactile:hover {
-  transform: translateY(-4px) scale(1.03);
-  filter: drop-shadow(0 14px 18px rgba(36, 52, 71, 0.28));
+@keyframes float-gentle-2 {
+  0%, 100% {
+    transform: translateY(0px) rotate(0.5deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(-0.7deg);
+  }
 }
 
-.magnet-tactile:active {
-  transform: translateY(-1px) scale(0.99);
-  filter: drop-shadow(0 6px 8px rgba(36, 52, 71, 0.2));
+@keyframes float-gentle-3 {
+  0%, 100% {
+    transform: translateY(0px) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-4.5px) rotate(0.5deg);
+  }
 }
 
-/* Glassmorphism utility */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(229, 226, 220, 0.8);
+.magnet-float-1 {
+  animation: float-gentle-1 4.5s ease-in-out infinite;
+}
+
+.magnet-float-2 {
+  animation: float-gentle-2 5.2s ease-in-out infinite 0.5s;
+}
+
+.magnet-float-3 {
+  animation: float-gentle-3 4.8s ease-in-out infinite 1s;
+}
+
+.magnet-tactile-lift {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.25s ease;
+}
+
+.magnet-tactile-lift:hover {
+  transform: translateY(-7px) scale(1.06) !important;
+  filter: drop-shadow(0 16px 20px rgba(0, 0, 0, 0.42)) drop-shadow(0 4px 6px rgba(0, 0, 0, 0.25)) !important;
+}
+
+.magnet-tactile-lift:active {
+  transform: translateY(-1px) scale(0.99) !important;
+  filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.3)) !important;
 }
