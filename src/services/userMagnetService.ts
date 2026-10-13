@@ -1,0 +1,323 @@
+import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import type { DestinationWithMagnet } from '../types/destination'
+import { DESTINATIONS_CATALOG } from '../data/destinationsCatalog'
+import { tripService } from './tripService'
+
+export interface FridgeMagnetItem {
+  id: string
+  destination_slug: string
+  destination_name: string
+  country_name: string
+  continent: string
+  asset_url: string
+  magnet_shape: string
+  acquired_at: string
+  trip_id?: string | null
+  target_budget_minor?: number
+  total_saved_minor?: number
+  progress_percentage?: number
+  unlock_state?: 'dreaming' | 'saving' | 'ready_to_go'
+}
+
+// In-memory fallback for environments without window.localStorage (e.g. Node / Vitest)
+const memoryStorage = new Map<string, string>()
+
+const safeStorage = {
+  getItem(key: string): string | null {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        return window.localStorage.getItem(key)
+      } catch {
+        // Fallback
+      }
+    }
+    return memoryStorage.get(key) || null
+  },
+  setItem(key: string, val: string): void {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        window.localStorage.setItem(key, val)
+        return
+      } catch {
+        // Fallback
+      }
+    }
+    memoryStorage.set(key, val)
+  },
+  removeItem(key: string): void {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        window.localStorage.removeItem(key)
+        return
+      } catch {
+        // Fallback
+      }
+    }
+    memoryStorage.delete(key)
+  },
+  clear(): void {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        window.localStorage.clear()
+      } catch {
+        // Fallback
+      }
+    }
+    memoryStorage.clear()
+  },
+}
+
+export const userMagnetService = {
+  safeStorage,
+
+  /**
+   * Get all collected magnets for a user's fridge.
+   */
+  async getUserFridgeMagnets(userId: string): Promise<FridgeMagnetItem[]> {
+    const items: FridgeMagnetItem[] = []
+
+    // 1. Try Supabase user_magnets table
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('user_magnets')
+          .select(`
+            id,
+            destination_id,
+            trip_id,
+            acquired_at,
+            destinations (
+              slug,
+              name,
+              continent,
+              countries (
+                name
+              )
+            ),
+            magnet_assets (
+              asset_url,
+              magnet_shape
+            )
+          `)
+          .eq('user_id', userId)
+          .order('acquired_at', { ascending: false })
+
+        if (!error && data && data.length > 0) {
+          for (const row of data as any[]) {
+            const dest = row.destinations
+            const asset = row.magnet_assets
+            if (!dest) continue
+
+            const slug = dest.slug
+            const catalogItem = DESTINATIONS_CATALOG.find((c) => c.slug === slug)
+
+            items.push({
+              id: row.id,
+              destination_slug: slug,
+              destination_name: dest.name,
+              country_name: dest.countries?.name || catalogItem?.country_name || '',
+              continent: dest.continent || catalogItem?.continent || '',
+              asset_url: asset?.asset_url || catalogItem?.asset_url || `/magnets/destinations/${slug}.svg`,
+              magnet_shape: asset?.magnet_shape || catalogItem?.magnet_shape || 'arch',
+              acquired_at: row.acquired_at,
+              trip_id: row.trip_id,
+            })
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to query user_magnets from Supabase, checking local storage:', err)
+      }
+    }
+
+    // 2. Fallback to storage
+    if (items.length === 0) {
+      try {
+        const raw = safeStorage.getItem(`magneto_fridge_${userId}`)
+        if (raw) {
+          const parsed = JSON.parse(raw)
+          if (Array.isArray(parsed)) {
+            items.push(...parsed)
+          }
+        }
+      } catch {
+        // Ignore
+      }
+    }
+
+    // 3. Enrich with Trip data if trips exist for the user
+    try {
+      const userTrips = await tripService.getUserTrips(userId)
+      items.forEach((item) => {
+        const matchedTrip = userTrips.find(
+          (t) =>
+            (item.trip_id && t.id === item.trip_id) ||
+            t.magnet_key.toLowerCase() === item.destination_slug.toLowerCase() ||
+            t.destination_name.toLowerCase().includes(item.destination_slug.toLowerCase()) ||
+            item.destination_name.toLowerCase().includes(t.destination_name.toLowerCase())
+        )
+
+        if (matchedTrip) {
+          item.trip_id = matchedTrip.id
+          item.target_budget_minor = matchedTrip.target_budget_minor
+          item.total_saved_minor = matchedTrip.total_saved_minor
+          item.progress_percentage = matchedTrip.progress_percentage
+          item.unlock_state = matchedTrip.unlock_state
+        } else {
+          item.unlock_state = 'dreaming'
+          item.progress_percentage = 0
+        }
+      })
+    } catch {
+      // Trips service enrichment failed, proceed with magnet souvenirs
+    }
+
+    return items
+  },
+
+  /**
+   * Add a destination magnet to the user's fridge with duplicate prevention.
+   */
+  async addMagnetToFridge(
+    userId: string,
+    destination: DestinationWithMagnet,
+    options?: {
+      createTrip?: boolean
+      targetBudgetMinor?: number
+      startDate?: string
+      endDate?: string
+    }
+  ): Promise<{ success: boolean; message: string; magnetItem?: FridgeMagnetItem }> {
+    // 1. Check if already collected
+    const existing = await userMagnetService.getUserFridgeMagnets(userId)
+    const alreadyCollected = existing.some(
+      (m) => m.destination_slug.toLowerCase() === destination.slug.toLowerCase()
+    )
+
+    if (alreadyCollected) {
+      return {
+        success: false,
+        message: `${destination.name} is already on your fridge!`,
+      }
+    }
+
+    let linkedTripId: string | null = null
+
+    // 2. Optionally create a trip in the database
+    if (options?.createTrip && options.targetBudgetMinor) {
+      try {
+        const trip = await tripService.createTrip({
+          user_id: userId,
+          destination_name: destination.name,
+          magnet_key: destination.slug,
+          target_budget_minor: options.targetBudgetMinor,
+          currency: 'INR',
+          start_date: options.startDate || null,
+          end_date: options.endDate || null,
+          notes: `Added from destination catalog: ${destination.short_description || ''}`,
+        })
+        linkedTripId = trip.id
+      } catch (err) {
+        console.warn('Failed to auto-create linked trip:', err)
+      }
+    }
+
+    const newMagnetItem: FridgeMagnetItem = {
+      id: crypto.randomUUID(),
+      destination_slug: destination.slug,
+      destination_name: destination.name,
+      country_name: destination.country_name,
+      continent: destination.continent,
+      asset_url: destination.asset_url,
+      magnet_shape: destination.magnet_shape,
+      acquired_at: new Date().toISOString(),
+      trip_id: linkedTripId,
+      unlock_state: 'dreaming',
+      progress_percentage: 0,
+    }
+
+    // 3. Save to Supabase user_magnets if configured
+    if (isSupabaseConfigured) {
+      try {
+        let destId = destination.id
+        let magnetAssetId = destination.magnet_asset_id
+
+        if (!destId) {
+          const { data: dRow } = await supabase
+            .from('destinations')
+            .select('id, magnet_assets(id)')
+            .eq('slug', destination.slug)
+            .maybeSingle()
+
+          if (dRow) {
+            destId = dRow.id
+            const assets = (dRow as any).magnet_assets
+            magnetAssetId = assets?.[0]?.id
+          }
+        }
+
+        if (destId) {
+          await supabase.from('user_magnets').insert({
+            user_id: userId,
+            destination_id: destId,
+            magnet_asset_id: magnetAssetId || crypto.randomUUID(),
+            trip_id: linkedTripId,
+            acquired_at: newMagnetItem.acquired_at,
+          })
+        }
+      } catch (err) {
+        console.warn('Failed to insert user_magnets to Supabase, saving locally:', err)
+      }
+    }
+
+    // 4. Update storage cache
+    try {
+      const localFridge = [...existing, newMagnetItem]
+      safeStorage.setItem(`magneto_fridge_${userId}`, JSON.stringify(localFridge))
+
+      const collectedSlugs = existing.map((m) => m.destination_slug)
+      collectedSlugs.push(destination.slug)
+      safeStorage.setItem(`magneto_collected_${userId}`, JSON.stringify(collectedSlugs))
+    } catch {
+      // Ignore
+    }
+
+    return {
+      success: true,
+      message: `${destination.name} magnet added to your fridge!`,
+      magnetItem: newMagnetItem,
+    }
+  },
+
+  /**
+   * Remove a magnet from the fridge.
+   */
+  async removeMagnetFromFridge(userId: string, destinationSlug: string): Promise<boolean> {
+    try {
+      const existing = await userMagnetService.getUserFridgeMagnets(userId)
+      const filtered = existing.filter((m) => m.destination_slug !== destinationSlug)
+      safeStorage.setItem(`magneto_fridge_${userId}`, JSON.stringify(filtered))
+
+      const collectedSlugs = filtered.map((m) => m.destination_slug)
+      safeStorage.setItem(`magneto_collected_${userId}`, JSON.stringify(collectedSlugs))
+
+      if (isSupabaseConfigured) {
+        const { data: dRow } = await supabase
+          .from('destinations')
+          .select('id')
+          .eq('slug', destinationSlug)
+          .maybeSingle()
+
+        if (dRow) {
+          await supabase
+            .from('user_magnets')
+            .delete()
+            .eq('user_id', userId)
+            .eq('destination_id', dRow.id)
+        }
+      }
+      return true
+    } catch {
+      return false
+    }
+  },
+}

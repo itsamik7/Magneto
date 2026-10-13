@@ -1,13 +1,14 @@
 import React, { useState } from 'react'
-import type { MagnetKey, MagnetUnlockState } from '../../types/trip'
+import type { MagnetUnlockState } from '../../types/trip'
 import { Sparkles, CheckCircle2, Compass, Moon } from 'lucide-react'
 
 interface MagnetGraphicProps {
-  magnetKey: MagnetKey | string
+  magnetKey?: string
+  assetUrl?: string
   destinationName: string
   state?: MagnetUnlockState
   progressPercentage?: number
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
   isInteractive?: boolean
   onClick?: () => void
   className?: string
@@ -15,7 +16,8 @@ interface MagnetGraphicProps {
 }
 
 export const MagnetGraphic: React.FC<MagnetGraphicProps> = ({
-  magnetKey,
+  magnetKey = 'paris',
+  assetUrl,
   destinationName,
   state = 'dreaming',
   progressPercentage = 0,
@@ -26,23 +28,37 @@ export const MagnetGraphic: React.FC<MagnetGraphicProps> = ({
   floatVariant = 1,
 }) => {
   const [imgError, setImgError] = useState(false)
-  const key = (magnetKey.toLowerCase() as MagnetKey) || 'paris'
+  const key = (magnetKey || 'paris').toLowerCase()
 
   // Proportions matching real souvenir badges from the screenshot
   const dimensions = {
-    sm: 'w-24 h-28',
+    xs: 'w-20 h-auto',
+    sm: 'w-24 sm:w-28 h-auto',
     md: 'w-28 sm:w-32 md:w-36 h-auto',
     lg: 'w-36 sm:w-44 md:w-48 h-auto',
+    xl: 'w-48 sm:w-56 md:w-64 h-auto',
   }[size]
 
-  // Image source path from extracted authentic high-definition assets
-  const imgSrc = `/magnets/${key}.png`
+  // Resolve best image URL
+  const resolveImgSrc = (): string => {
+    if (assetUrl) return assetUrl
 
-  const floatClass = floatVariant === 1
-    ? 'magnet-float-1'
-    : floatVariant === 2
-    ? 'magnet-float-2'
-    : 'magnet-float-3'
+    const benchmarkKeys = ['paris', 'japan', 'london', 'switzerland', 'bali', 'singapore']
+    if (benchmarkKeys.includes(key)) {
+      return `/magnets/${key}.png`
+    }
+
+    return `/magnets/destinations/${key}.svg`
+  }
+
+  const imgSrc = resolveImgSrc()
+
+  const floatClass =
+    floatVariant === 1
+      ? 'magnet-float-1'
+      : floatVariant === 2
+      ? 'magnet-float-2'
+      : 'magnet-float-3'
 
   // State Badge Overlay
   const getStateBadge = () => {
@@ -92,10 +108,10 @@ export const MagnetGraphic: React.FC<MagnetGraphicProps> = ({
     <div
       onClick={isInteractive ? onClick : undefined}
       className={`relative select-none ${dimensions} ${floatClass} ${
-        isInteractive ? 'cursor-pointer magnet-tactile-lift focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-2xl' : ''
-      } ${
-        state === 'dreaming' ? 'opacity-95' : 'saturate-[1.12]'
-      } ${className}`}
+        isInteractive
+          ? 'cursor-pointer magnet-tactile-lift focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-2xl'
+          : ''
+      } ${state === 'dreaming' ? 'opacity-95' : 'saturate-[1.12]'} ${className}`}
       role={isInteractive ? 'button' : undefined}
       tabIndex={isInteractive ? 0 : undefined}
       aria-label={`${destinationName} collectible souvenir magnet`}
@@ -107,19 +123,36 @@ export const MagnetGraphic: React.FC<MagnetGraphicProps> = ({
       }}
     >
       {/* Real 3D Die-Cut Souvenir Magnet with Floating Drop Shadows */}
-      <div className="w-full h-full filter drop-shadow-[0_8px_14px_rgba(0,0,0,0.32)] drop-shadow-[0_2px_4px_rgba(0,0,0,0.22)]">
+      <div className="w-full h-full filter drop-shadow-[0_10px_16px_rgba(0,0,0,0.34)] drop-shadow-[0_3px_5px_rgba(0,0,0,0.22)]">
         {!imgError ? (
           <img
             src={imgSrc}
             alt={`${destinationName} Souvenir Magnet`}
             className="w-full h-auto object-contain pointer-events-none select-none transition-transform"
-            onError={() => setImgError(true)}
-            loading="eager"
+            onError={() => {
+              if (imgSrc.endsWith('.png') && !imgSrc.includes('/destinations/')) {
+                // If png failed, fallback to svg
+                const fallbackSvg = `/magnets/destinations/${key}.svg`
+                if (imgSrc !== fallbackSvg) {
+                  const img = new Image()
+                  img.src = fallbackSvg
+                  img.onload = () => {
+                    // SVG exists
+                  }
+                }
+              }
+              setImgError(true)
+            }}
+            loading="lazy"
           />
         ) : (
-          <div className="w-full h-28 bg-white border-4 border-white rounded-2xl shadow flex flex-col items-center justify-center p-2 text-center">
-            <Compass className="w-8 h-8 text-emerald-600 mb-1" />
-            <span className="font-heading font-black text-xs uppercase tracking-wider">{destinationName}</span>
+          <div className="w-full min-h-[120px] bg-white border-4 border-white rounded-2xl shadow-lg flex flex-col items-center justify-center p-3 text-center">
+            <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-1">
+              <Compass className="w-5 h-5" />
+            </div>
+            <span className="font-heading font-black text-xs uppercase tracking-wider text-slate-800 line-clamp-1">
+              {destinationName}
+            </span>
           </div>
         )}
       </div>

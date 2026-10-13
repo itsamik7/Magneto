@@ -66,16 +66,21 @@ VITE_SUPABASE_ANON_KEY=your-actual-anon-key`
             <div>
               <h4 className="font-heading font-bold text-slate-900 flex items-center gap-1.5">
                 <Database className="w-4 h-4 text-teal-600" />
-                Run the Database Migration Script
+                Run the Database Migration Scripts
               </h4>
               <p className="text-xs text-slate-600 mt-0.5 mb-2">
-                In your Supabase Dashboard, open the <strong>SQL Editor</strong>, and paste the content from:
+                In your Supabase Dashboard, open the <strong>SQL Editor</strong>, and run these two migration scripts:
               </p>
-              <div className="p-2.5 bg-slate-900 text-slate-200 rounded-xl font-mono text-xs flex items-center justify-between">
-                <span>supabase/migrations/20261013000000_init_magneto.sql</span>
+              <div className="space-y-1.5 font-mono text-xs">
+                <div className="p-2.5 bg-slate-900 text-slate-200 rounded-xl flex items-center justify-between">
+                  <span>1. supabase/migrations/20261013000000_init_magneto.sql</span>
+                </div>
+                <div className="p-2.5 bg-slate-900 text-emerald-300 rounded-xl flex items-center justify-between">
+                  <span>2. supabase/migrations/20261013000001_destination_catalog.sql</span>
+                </div>
               </div>
               <p className="text-[11px] text-slate-500 mt-1">
-                This creates the <code>profiles</code>, <code>trips</code>, <code>savings_transactions</code>, <code>itinerary_items</code>, and <code>checklist_items</code> tables with strict RLS policies.
+                Script 1 creates core profiles, trips, and savings. Script 2 creates the 100-destination catalog, countries, magnet assets, and user fridge collections with strict RLS policies.
               </p>
             </div>
           </div>

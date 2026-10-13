@@ -67,6 +67,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
                 My Travel Fridge
               </Link>
 
+              <Link
+                to="/catalog"
+                className="text-sm font-bold text-slate-700 hover:text-[#059669] transition-colors flex items-center gap-1.5"
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span>Magnet Catalog</span>
+                <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-1.5 py-0.2 rounded-full border border-emerald-300">
+                  100
+                </span>
+              </Link>
+
               {/* User Menu */}
               <div className="flex items-center gap-3 pl-4 border-l border-[#E2DCCE]">
                 <div className="flex items-center gap-2">
@@ -142,6 +153,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
                 className="block text-sm font-bold text-slate-800 py-1.5"
               >
                 My Travel Fridge
+              </Link>
+              <Link
+                to="/catalog"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-sm font-bold text-[#059669] py-1.5"
+              >
+                ✨ Magnet Catalog (100 Destinations)
               </Link>
               <button
                 onClick={() => {

@@ -2,30 +2,44 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { tripService } from '../services/tripService'
+import { userMagnetService, type FridgeMagnetItem } from '../services/userMagnetService'
 import type { TripInsert, TripWithStats } from '../types/trip'
 import { VirtualFridge } from '../components/fridge/VirtualFridge'
 import { AddTripModal } from '../components/trips/AddTripModal'
 import { formatINR } from '../lib/utils'
-import { MapPin, PiggyBank, Target, Percent, Sparkles, AlertCircle, RefreshCw } from 'lucide-react'
+import {
+  MapPin,
+  PiggyBank,
+  Target,
+  Sparkles,
+  AlertCircle,
+  RefreshCw,
+  Compass,
+} from 'lucide-react'
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
 
   const [trips, setTrips] = useState<TripWithStats[]>([])
+  const [fridgeMagnets, setFridgeMagnets] = useState<FridgeMagnetItem[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false)
 
-  const loadTrips = useCallback(async () => {
+  const loadDashboardData = useCallback(async () => {
     if (!user) return
     setIsLoading(true)
     setError(null)
     try {
-      const data = await tripService.getUserTrips(user.id)
-      setTrips(data)
+      const [tripsData, magnetsData] = await Promise.all([
+        tripService.getUserTrips(user.id),
+        userMagnetService.getUserFridgeMagnets(user.id),
+      ])
+      setTrips(tripsData)
+      setFridgeMagnets(magnetsData)
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to load trips'
+      const msg = err instanceof Error ? err.message : 'Failed to load fridge data'
       setError(msg)
     } finally {
       setIsLoading(false)
@@ -33,15 +47,26 @@ export const DashboardPage: React.FC = () => {
   }, [user])
 
   useEffect(() => {
-    loadTrips()
-  }, [loadTrips])
+    loadDashboardData()
+  }, [loadDashboardData])
 
   const handleCreateTrip = async (newTrip: TripInsert) => {
     await tripService.createTrip(newTrip)
-    await loadTrips()
+    await loadDashboardData()
+  }
+
+  // Handle clicking a magnet on the fridge
+  const handleSelectMagnet = (magnet: FridgeMagnetItem) => {
+    if (magnet.trip_id) {
+      navigate(`/trip/${magnet.trip_id}`)
+    } else {
+      // If souvenir without active trip, prompt user to add a trip or view catalog
+      navigate(`/catalog?highlight=${magnet.destination_slug}`)
+    }
   }
 
   // Summary Metrics calculations
+  const totalMagnets = Math.max(fridgeMagnets.length, trips.length)
   const totalTrips = trips.length
   const combinedBudgetMinor = trips.reduce((sum, t) => sum + Number(t.target_budget_minor), 0)
   const totalSavedMinor = trips.reduce((sum, t) => sum + Number(t.total_saved_minor), 0)
@@ -60,13 +85,13 @@ export const DashboardPage: React.FC = () => {
               My Travel Fridge
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 font-medium">
-              Collect destination souvenirs and track your journey to departure.
+              Collect 3D souvenir magnets from world destinations and track your savings.
             </p>
           </div>
 
           <div className="flex items-center gap-2">
             <button
-              onClick={() => loadTrips()}
+              onClick={() => loadDashboardData()}
               disabled={isLoading}
               className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-200/50 rounded-xl transition-all"
               title="Refresh Fridge"
@@ -74,12 +99,21 @@ export const DashboardPage: React.FC = () => {
             >
               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
             </button>
+
+            <button
+              onClick={() => navigate('/catalog')}
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#059669] hover:bg-[#047857] text-white font-heading font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all hover:scale-105 active:scale-95"
+            >
+              <Compass className="w-4 h-4" />
+              <span>Browse 100 Magnets</span>
+            </button>
+
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#E98267] hover:bg-[#d96d51] text-white font-heading font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all hover:scale-105 active:scale-95"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-white border border-[#E2DCCE] hover:bg-slate-50 text-slate-800 font-heading font-bold text-xs sm:text-sm rounded-xl shadow-sm transition-all"
             >
-              <Sparkles className="w-4 h-4" />
-              <span>Add Destination</span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span>Quick Trip</span>
             </button>
           </div>
         </div>
@@ -93,7 +127,7 @@ export const DashboardPage: React.FC = () => {
               <p className="mt-0.5 text-xs text-rose-700">{error}</p>
             </div>
             <button
-              onClick={() => loadTrips()}
+              onClick={() => loadDashboardData()}
               className="px-3 py-1 bg-rose-100 hover:bg-rose-200 text-rose-900 font-semibold rounded-lg text-xs"
             >
               Retry
@@ -103,17 +137,17 @@ export const DashboardPage: React.FC = () => {
 
         {/* 4 Summary Metrics Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          {/* 1. Planned Trips */}
+          {/* 1. Magnets Collected */}
           <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#E5E2DC] shadow-sm flex items-center gap-4">
-            <div className="w-11 h-11 rounded-xl bg-teal-50 border border-teal-200/60 text-[#3A8D8C] flex items-center justify-center flex-shrink-0">
-              <MapPin className="w-5 h-5" />
+            <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-200/60 text-[#059669] flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-5 h-5" />
             </div>
             <div className="min-w-0">
               <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">
-                Planned Trips
+                Fridge Magnets
               </p>
               <p className="font-heading font-black text-xl sm:text-2xl text-[#243447]">
-                {totalTrips}
+                {totalMagnets}
               </p>
             </div>
           </div>
@@ -148,17 +182,17 @@ export const DashboardPage: React.FC = () => {
             </div>
           </div>
 
-          {/* 4. Overall Progress */}
+          {/* 4. Active Planned Trips */}
           <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#E5E2DC] shadow-sm flex items-center gap-4">
-            <div className="w-11 h-11 rounded-xl bg-coral/10 border border-coral/30 text-[#E98267] flex items-center justify-center flex-shrink-0">
-              <Percent className="w-5 h-5" />
+            <div className="w-11 h-11 rounded-xl bg-teal-50 border border-teal-200/60 text-[#3A8D8C] flex items-center justify-center flex-shrink-0">
+              <MapPin className="w-5 h-5" />
             </div>
             <div className="min-w-0">
               <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">
-                Overall Progress
+                Trip Plans ({overallProgressPercentage}%)
               </p>
-              <p className="font-heading font-black text-xl sm:text-2xl text-[#E98267]">
-                {overallProgressPercentage}%
+              <p className="font-heading font-black text-xl sm:text-2xl text-[#3A8D8C]">
+                {totalTrips}
               </p>
             </div>
           </div>
@@ -169,13 +203,15 @@ export const DashboardPage: React.FC = () => {
       <section>
         <VirtualFridge
           trips={trips}
+          magnets={fridgeMagnets}
           isLoading={isLoading}
           onSelectTrip={(trip) => navigate(`/trip/${trip.id}`)}
-          onAddDestination={() => setIsAddModalOpen(true)}
+          onSelectMagnet={handleSelectMagnet}
+          onAddDestination={() => navigate('/catalog')}
         />
       </section>
 
-      {/* Add Destination Modal */}
+      {/* Quick Add Destination Modal */}
       {user && (
         <AddTripModal
           isOpen={isAddModalOpen}

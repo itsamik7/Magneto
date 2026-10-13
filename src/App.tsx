@@ -11,6 +11,7 @@ import { LoginPage } from './pages/LoginPage'
 import { SignupPage } from './pages/SignupPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { TripDetailPage } from './pages/TripDetailPage'
+import { AddMagnetPage } from './pages/AddMagnetPage'
 
 export default function App() {
   const [isSetupModalOpen, setIsSetupModalOpen] = useState(false)
@@ -33,6 +34,8 @@ export default function App() {
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/catalog" element={<AddMagnetPage />} />
+                <Route path="/add-magnet" element={<AddMagnetPage />} />
                 <Route path="/trip/:id" element={<TripDetailPage />} />
               </Route>
 
@@ -55,12 +58,12 @@ export default function App() {
                 >
                   Supabase Setup
                 </button>
-                <span>v1.0.0 Minimal Working Prototype</span>
+                <span>v2.0.0 Global Souvenir Collection</span>
               </div>
             </div>
           </footer>
 
-          {/* Global Supabase Setup Modal */}
+          {/* Supabase Migration & Credentials Setup Modal */}
           <SupabaseSetupModal
             isOpen={isSetupModalOpen}
             onClose={() => setIsSetupModalOpen(false)}
