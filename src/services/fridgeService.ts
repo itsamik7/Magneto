@@ -125,12 +125,12 @@ export function resolveMagnetOverlaps(
 ): MagnetPlacement[] {
   if (placements.length <= 1) return placements
 
-  const minDistX = options?.minDistX ?? 0.22
-  const minDistY = options?.minDistY ?? 0.15
-  const minX = options?.minX ?? 0.12
-  const maxX = options?.maxX ?? 0.88
-  const minY = options?.minY ?? 0.08
-  const maxY = options?.maxY ?? 0.90
+  const minDistX = options?.minDistX ?? 0.20
+  const minDistY = options?.minDistY ?? 0.14
+  const minX = options?.minX ?? 0.05
+  const maxX = options?.maxX ?? 0.95
+  const minY = options?.minY ?? 0.03
+  const maxY = options?.maxY ?? 0.97
   const maxPasses = options?.maxPasses ?? 40
 
   const resolved = placements.map((p) => ({ ...p }))
@@ -383,7 +383,7 @@ export const fridgeService = {
         y,
       }
     })
-    return resolveMagnetOverlaps(adapted)
+    return resolveMagnetOverlaps(adapted, { minX: 0.08, maxX: 0.88, minY: 0.12, maxY: 0.88 })
   },
 
   /**
@@ -485,7 +485,12 @@ export const fridgeService = {
 
     // Strict collision resolution pass over all placements
     const combined = [...existingPlacements, ...newPlacements]
-    const resolvedCombined = resolveMagnetOverlaps(combined)
+    const resolvedCombined = resolveMagnetOverlaps(combined, {
+      minX: 0.08,
+      maxX: 0.92,
+      minY: 0.08,
+      maxY: 0.92,
+    })
 
     return resolvedCombined.slice(existingPlacements.length)
   },

@@ -99,9 +99,31 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
       const normDeltaX = deltaX / rect.width
       const normDeltaY = deltaY / rect.height
 
-      // Clamp coordinates so magnet remains on usable fridge door
-      const newX = Math.min(0.92, Math.max(0.08, pointerStartRef.current.startX + normDeltaX))
-      const newY = Math.min(0.92, Math.max(0.08, pointerStartRef.current.startY + normDeltaY))
+      // Dynamically compute visual half-dimensions relative to the surface
+      let halfW = 0.05
+      let halfH = 0.035
+      if (magnetRef.current && rect.width > 0 && rect.height > 0) {
+        const mRect = magnetRef.current.getBoundingClientRect()
+        // mRect and rect scale identically with any zoom factor
+        halfW = (mRect.width / 2) / rect.width
+        halfH = (mRect.height / 2) / rect.height
+      } else {
+        halfW = 0.055 * placement.scale
+        halfH = 0.04 * placement.scale
+      }
+
+      // Permitted bounds: magnet's visible bounding box stays strictly inside the usable surface [0, 1]
+      // Top edge of the magnet can reach 0.00 (the very upper edge of the door)
+      const minX = Math.max(0.015, halfW)
+      const maxX = Math.min(0.985, 1 - halfW)
+      const minY = Math.max(0.015, halfH)
+      const maxY = Math.min(0.985, 1 - halfH)
+
+      const targetX = pointerStartRef.current.startX + normDeltaX
+      const targetY = pointerStartRef.current.startY + normDeltaY
+
+      const newX = Math.min(maxX, Math.max(minX, targetX))
+      const newY = Math.min(maxY, Math.max(minY, targetY))
 
       lastCoords = { x: newX, y: newY }
 
@@ -295,10 +317,11 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
             title="Resize Magnet"
           />
 
-          {/* Floating Quick Action Controls Bar */}
           <div
             onPointerDown={(e) => e.stopPropagation()}
-            className="absolute left-1/2 -top-12 -translate-x-1/2 flex items-center gap-1 px-2 py-1 bg-slate-900/95 backdrop-blur-md rounded-xl shadow-2xl border border-white/20 text-white z-50 text-[11px] whitespace-nowrap animate-in fade-in zoom-in-95 duration-150"
+            className={`absolute left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-1 bg-slate-900/95 backdrop-blur-md rounded-xl shadow-2xl border border-white/20 text-white z-50 text-[11px] whitespace-nowrap animate-in fade-in zoom-in-95 duration-150 ${
+              placement.y < 0.16 ? 'top-full mt-3.5' : '-top-12'
+            }`}
           >
             <button
               onClick={(e) => handleRotateDelta(-15, e)}

@@ -233,8 +233,8 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
     const rect = surface.getBoundingClientRect()
     if (rect.width === 0 || rect.height === 0) return
 
-    const dropX = Math.min(0.88, Math.max(0.12, (e.clientX - rect.left) / rect.width))
-    const dropY = Math.min(0.88, Math.max(0.12, (e.clientY - rect.top) / rect.height))
+    const dropX = Math.min(0.95, Math.max(0.05, (e.clientX - rect.left) / rect.width))
+    const dropY = Math.min(0.97, Math.max(0.03, (e.clientY - rect.top) / rect.height))
 
     let magnetData: any = null
     try {
@@ -467,6 +467,8 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
         >
           {/* Universal Photorealistic Steel Fridge with 3D Openable Doors */}
           <UniversalSteelFridge
+            isDoorOpen={isMainDoorOpen}
+            onToggleDoor={handleToggleAllDoors}
             isMainDoorOpen={isMainDoorOpen}
             isFreezerDoorOpen={isFreezerDoorOpen}
             onToggleMainDoor={handleToggleMainDoor}
