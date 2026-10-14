@@ -16,6 +16,8 @@ import {
   ZoomOut,
   RotateCcw,
   Move,
+  Rotate3d,
+  Undo2,
 } from 'lucide-react'
 
 export interface FridgeWorkspaceProps {
@@ -65,11 +67,6 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
 
   // 3D Turntable / Rotation Angle to inspect fridge exterior & illuminated interior
   const [fridgeYaw, setFridgeYaw] = useState<number>(0)
-  const catalogDragRef = useRef<{ startX: number; startYaw: number; isDown: boolean }>({
-    startX: 0,
-    startYaw: 0,
-    isDown: false,
-  })
 
   // Zoom & Pan Engine for inspecting magnets in large view
   const [zoomLevel, setZoomLevel] = useState<number>(1.0)
@@ -452,7 +449,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
             transformOrigin: 'center center',
             transition: isPanning ? 'none' : 'transform 200ms cubic-bezier(0.2, 0.9, 0.3, 1)',
           }}
-          className="relative w-full max-w-[430px]"
+          className="relative w-full max-w-[360px]"
         >
           {/* Check whether active model is the Universal 3D Studio model or another catalog model */}
           {activeModel.id === 'universal-steel-studio' ? (
@@ -531,41 +528,20 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
             </UniversalSteelFridge>
           ) : (
             /* Selected Catalog or Custom Uploaded Fridge Model with 3D Turntable Rotation */
-            <div
-              className="relative mx-auto select-none cursor-grab active:cursor-grabbing"
-              style={{
-                width: '100%',
-                maxWidth: '430px',
-                aspectRatio: `${activeModel.aspectRatio}`,
-                maxHeight: '820px',
-                perspective: '1400px',
-                transformStyle: 'preserve-3d',
-                transform: `rotateY(${fridgeYaw}deg)`,
-                transition: catalogDragRef.current.isDown ? 'none' : 'transform 300ms cubic-bezier(0.25, 1, 0.4, 1)',
-              }}
-              onPointerDown={(e) => {
-                const target = e.target as HTMLElement
-                if (target.closest('button') || target.closest('[data-magnet="true"]')) return
-                catalogDragRef.current = {
-                  startX: e.clientX,
-                  startYaw: fridgeYaw,
-                  isDown: true,
-                }
-              }}
-              onPointerMove={(e) => {
-                if (!catalogDragRef.current.isDown) return
-                const deltaX = e.clientX - catalogDragRef.current.startX
-                if (Math.abs(deltaX) > 3) {
-                  setFridgeYaw(Math.max(-60, Math.min(60, catalogDragRef.current.startYaw + deltaX * 0.35)))
-                }
-              }}
-              onPointerUp={() => {
-                catalogDragRef.current.isDown = false
-              }}
-              onPointerCancel={() => {
-                catalogDragRef.current.isDown = false
-              }}
-            >
+            <div className="w-full flex flex-col items-center select-none">
+              <div
+                className="relative mx-auto select-none"
+                style={{
+                  width: '100%',
+                  maxWidth: '360px',
+                  aspectRatio: `${activeModel.aspectRatio}`,
+                  maxHeight: '780px',
+                  perspective: '1400px',
+                  transformStyle: 'preserve-3d',
+                  transform: `rotateY(${fridgeYaw}deg)`,
+                  transition: 'transform 200ms cubic-bezier(0.2, 0.9, 0.3, 1)',
+                }}
+              >
               {/* 3D Side Depth Panels for authentic appliance perspective */}
               <div
                 style={{
@@ -679,6 +655,79 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
                       />
                     )
                   })}
+                </div>
+              </div>
+            </div>
+
+              {/* 3D Rotation Slider for Catalog Models */}
+              <div className="w-full max-w-[360px] mt-4 px-4 py-3 bg-white/95 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col gap-2.5">
+                <div className="flex items-center justify-between text-xs font-heading font-bold text-slate-800">
+                  <div className="flex items-center gap-1.5">
+                    <Rotate3d className="w-3.5 h-3.5 text-blue-600" />
+                    <span>3D Angle Rotation</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-mono text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
+                      {fridgeYaw === 0 ? 'Front (0°)' : `${fridgeYaw > 0 ? '+' : ''}${fridgeYaw}°`}
+                    </span>
+                    {fridgeYaw !== 0 && (
+                      <button
+                        onClick={() => setFridgeYaw(0)}
+                        className="text-[10px] text-slate-500 hover:text-slate-800 flex items-center gap-0.5 font-bold cursor-pointer transition-colors"
+                        title="Reset angle to 0°"
+                      >
+                        <Undo2 className="w-3 h-3" />
+                        <span>Reset</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5">
+                  <span className="text-[10px] font-medium text-slate-400 shrink-0">-60°</span>
+                  <input
+                    type="range"
+                    min="-60"
+                    max="60"
+                    step="1"
+                    value={fridgeYaw}
+                    onChange={(e) => setFridgeYaw(Number(e.target.value))}
+                    className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-hidden"
+                  />
+                  <span className="text-[10px] font-medium text-slate-400 shrink-0">+60°</span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-1.5 pt-1 border-t border-slate-100 text-[10px]">
+                  <button
+                    onClick={() => setFridgeYaw(-30)}
+                    className={`py-1 px-1.5 rounded-lg text-center font-heading font-bold transition-all cursor-pointer ${
+                      fridgeYaw === -30
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/80'
+                    }`}
+                  >
+                    Left (-30°)
+                  </button>
+                  <button
+                    onClick={() => setFridgeYaw(0)}
+                    className={`py-1 px-1.5 rounded-lg text-center font-heading font-bold transition-all cursor-pointer ${
+                      fridgeYaw === 0
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/80'
+                    }`}
+                  >
+                    Front (0°)
+                  </button>
+                  <button
+                    onClick={() => setFridgeYaw(30)}
+                    className={`py-1 px-1.5 rounded-lg text-center font-heading font-bold transition-all cursor-pointer ${
+                      fridgeYaw === 30
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/80'
+                    }`}
+                  >
+                    Right (+30°)
+                  </button>
                 </div>
               </div>
             </div>

@@ -14,7 +14,7 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "colorHex": "#94A3B8",
     "countryCategory": "Indian",
     "imageUrl": "/fridges/premium-steel-door-closed.png",
-    "aspectRatio": 0.56,
+    "aspectRatio": 0.47,
     "magneticRegion": {
       "top": 0.03,
       "left": 0.05,
