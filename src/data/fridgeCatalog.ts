@@ -89,12 +89,12 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "colorHex": "#475569",
     "countryCategory": "Indian",
     "imageUrl": "/fridges/whirlpool-intellifresh-pro.png",
-    "aspectRatio": 0.5,
+    "aspectRatio": 0.53,
     "magneticRegion": {
-      "top": 0.06,
-      "left": 0.1,
-      "width": 0.82,
-      "height": 0.88
+      "top": 0.05,
+      "left": 0.08,
+      "width": 0.84,
+      "height": 0.9
     },
     "description": "Advanced 3D airflow with Zeolite technology and recessed pocket handles in sleek dark steel.",
     "features": [
@@ -114,11 +114,11 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "colorHex": "#BE123C",
     "countryCategory": "Indian",
     "imageUrl": "/fridges/godrej-edge-retro-ruby.png",
-    "aspectRatio": 0.53,
+    "aspectRatio": 0.54,
     "magneticRegion": {
       "top": 0.06,
-      "left": 0.1,
-      "width": 0.8,
+      "left": 0.08,
+      "width": 0.84,
       "height": 0.88
     },
     "description": "Curved single-door vintage classic with chrome teardrop latch and deep ruby enamel luster.",
@@ -139,12 +139,12 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "colorHex": "#64748B",
     "countryCategory": "Indian",
     "imageUrl": "/fridges/haier-bottom-mounted.png",
-    "aspectRatio": 0.46,
+    "aspectRatio": 0.51,
     "magneticRegion": {
-      "top": 0.06,
+      "top": 0.05,
       "left": 0.08,
       "width": 0.84,
-      "height": 0.88
+      "height": 0.9
     },
     "description": "Ergonomic bottom freezer refrigerator that reduces bending by 90% with spacious upper refrigerator surface.",
     "features": [
@@ -238,13 +238,13 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "finish": "Titanium Silver Metal Finish",
     "colorHex": "#CBD5E1",
     "countryCategory": "Indian",
-    "imageUrl": "/fridges/ifb-fastcool-inverter.svg",
-    "aspectRatio": 0.58,
+    "imageUrl": "/fridges/ifb-fastcool-inverter.png",
+    "aspectRatio": 0.46,
     "magneticRegion": {
-      "top": 0.08,
+      "top": 0.05,
       "left": 0.08,
-      "width": 0.82,
-      "height": 0.84
+      "width": 0.84,
+      "height": 0.89
     },
     "description": "Durable metal door refrigerator with 360-degree surround cooling and metal ice trays.",
     "features": [
@@ -263,13 +263,13 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "finish": "SmartSteel Satin Finish",
     "colorHex": "#64748B",
     "countryCategory": "Indian",
-    "imageUrl": "/fridges/liebherr-duotone-premium.svg",
-    "aspectRatio": 0.58,
+    "imageUrl": "/fridges/liebherr-duotone-premium.png",
+    "aspectRatio": 0.42,
     "magneticRegion": {
-      "top": 0.08,
-      "left": 0.08,
-      "width": 0.82,
-      "height": 0.84
+      "top": 0.05,
+      "left": 0.1,
+      "width": 0.8,
+      "height": 0.89
     },
     "description": "Swiss-engineered precision refrigeration with SmartSteel scratch-resistant magnetic finish.",
     "features": [
@@ -288,13 +288,13 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "finish": "Pastel Mint Green High-Gloss Enamel",
     "colorHex": "#A7F3D0",
     "countryCategory": "International",
-    "imageUrl": "/fridges/retro-mint-smeg.svg",
-    "aspectRatio": 0.56,
+    "imageUrl": "/fridges/retro-mint-smeg.png",
+    "aspectRatio": 0.49,
     "magneticRegion": {
-      "top": 0.08,
+      "top": 0.06,
       "left": 0.08,
-      "width": 0.8,
-      "height": 0.84
+      "width": 0.84,
+      "height": 0.88
     },
     "description": "Mid-century iconic curved profile with chrome horizontal pull handle and cheerful pastel enamel.",
     "features": [
@@ -313,10 +313,10 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "finish": "Commercial Heavy-Gauge Stainless Steel",
     "colorHex": "#94A3B8",
     "countryCategory": "International",
-    "imageUrl": "/fridges/sub-zero-pro-sidebyside.svg",
-    "aspectRatio": 0.68,
+    "imageUrl": "/fridges/sub-zero-pro-sidebyside.png",
+    "aspectRatio": 0.55,
     "magneticRegion": {
-      "top": 0.08,
+      "top": 0.12,
       "left": 0.06,
       "width": 0.88,
       "height": 0.84
@@ -338,13 +338,13 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "finish": "Fingerprint Resistant Stainless Steel",
     "colorHex": "#CBD5E1",
     "countryCategory": "International",
-    "imageUrl": "/fridges/ge-profile-french-door.svg",
-    "aspectRatio": 0.64,
+    "imageUrl": "/fridges/ge-profile-french-door.png",
+    "aspectRatio": 0.56,
     "magneticRegion": {
-      "top": 0.08,
+      "top": 0.05,
       "left": 0.06,
       "width": 0.88,
-      "height": 0.84
+      "height": 0.88
     },
     "description": "Spacious American French door design with dual magnetic upper doors and lower freezer pull drawer.",
     "features": [
@@ -363,13 +363,13 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "finish": "Monochrome Stainless with Satin Textured Handles",
     "colorHex": "#94A3B8",
     "countryCategory": "International",
-    "imageUrl": "/fridges/kitchenaid-architect-series.svg",
-    "aspectRatio": 0.64,
+    "imageUrl": "/fridges/kitchenaid-architect-series.png",
+    "aspectRatio": 0.58,
     "magneticRegion": {
-      "top": 0.08,
+      "top": 0.05,
       "left": 0.06,
       "width": 0.88,
-      "height": 0.84
+      "height": 0.88
     },
     "description": "Signature red medallion knurled handles on commercial stainless steel doors for serious home chefs.",
     "features": [
