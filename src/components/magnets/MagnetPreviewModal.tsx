@@ -78,7 +78,7 @@ export const MagnetPreviewModal: React.FC<MagnetPreviewModalProps> = ({
     >
       <div className="space-y-6 -mt-4">
         {/* Top Header Badge */}
-        <div className="flex items-center justify-between border-b border-[#E2DCCE] pb-3">
+        <div className="flex items-center justify-between border-b border-slate-200 pb-3">
           <div className="flex items-center gap-2">
             <span className="text-xl" role="img" aria-label={destination.country_name}>
               {destination.flag_emoji || '✈️'}

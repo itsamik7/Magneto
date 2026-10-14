@@ -166,15 +166,15 @@ export const LandingPage: React.FC = () => {
 
           {/* Feature Pills Matching Screenshot */}
           <div className="flex flex-wrap gap-2.5 pt-1">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/90 border border-[#E2DCCE] text-xs font-semibold text-slate-700 shadow-sm">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/90 border border-slate-200 text-xs font-semibold text-slate-700 shadow-sm">
               <MapPin className="w-3.5 h-3.5 text-[#059669]" />
               <span>Collect destinations</span>
             </div>
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/90 border border-[#E2DCCE] text-xs font-semibold text-slate-700 shadow-sm">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/90 border border-slate-200 text-xs font-semibold text-slate-700 shadow-sm">
               <PiggyBank className="w-3.5 h-3.5 text-[#059669]" />
               <span>Save toward trips</span>
             </div>
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/90 border border-[#E2DCCE] text-xs font-semibold text-slate-700 shadow-sm">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/90 border border-slate-200 text-xs font-semibold text-slate-700 shadow-sm">
               <Sparkles className="w-3.5 h-3.5 text-[#059669]" />
               <span>Unlock & remember</span>
             </div>

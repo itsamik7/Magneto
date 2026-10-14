@@ -251,7 +251,7 @@ export const PlanTripPage: React.FC = () => {
     newPlacement.magnetSlug = cleanSlug
 
     const nextMagnets = [...userMagnets, newMagnetItem]
-    const nextPlacements = [...placements, newPlacement]
+    const nextPlacements = fridgeService.resolveMagnetOverlaps([...placements, newPlacement])
 
     setUserMagnets(nextMagnets)
     setPlacements(nextPlacements)
@@ -282,9 +282,10 @@ export const PlanTripPage: React.FC = () => {
 
     if (existingPlacementIndex >= 0) {
       // Reposition already placed magnet to exact drop coordinates
-      const nextPlacements = placements.map((p, idx) =>
+      const candidatePlacements = placements.map((p, idx) =>
         idx === existingPlacementIndex ? { ...p, x: coords.x, y: coords.y } : p
       )
+      const nextPlacements = fridgeService.resolveMagnetOverlaps(candidatePlacements)
       setPlacements(nextPlacements)
       setSelectedPlacementId(nextPlacements[existingPlacementIndex].id)
       setSelectedDestinationSlug(cleanSlug)
@@ -327,7 +328,7 @@ export const PlanTripPage: React.FC = () => {
     }
 
     const nextMagnets = [...userMagnets, newMagnetItem]
-    const nextPlacements = [...placements, newPlacement]
+    const nextPlacements = fridgeService.resolveMagnetOverlaps([...placements, newPlacement])
 
     setUserMagnets(nextMagnets)
     setPlacements(nextPlacements)
@@ -621,7 +622,7 @@ export const PlanTripPage: React.FC = () => {
         COLUMN 2 (CENTER):
         Editable Fridge Workspace with Edit Controls & Dotted Slots
       */}
-      <div className="flex-1 w-full flex flex-col items-center justify-between min-h-[760px] relative rounded-3xl p-5 overflow-hidden bg-gradient-to-b from-[#F2EFE9] to-[#E5E0D6] shadow-inner border border-[#DCD6C9]">
+      <div className="flex-1 w-full flex flex-col items-center justify-between min-h-[760px] relative rounded-3xl p-5 overflow-hidden bg-white border border-slate-200/90 shadow-sm">
         
         {/* Top Controls Bar: Fridge Selection, Auto Arrange, and Edit Mode Pill */}
         <div className="w-full flex items-center justify-between mb-3 z-20 px-1 gap-2 flex-wrap">

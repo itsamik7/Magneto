@@ -204,4 +204,69 @@ describe('fridgeService & Fridge Architecture', () => {
     expect(adapted[0].x).toBeLessThanOrEqual(0.88)
     expect(adapted[0].y).toBeGreaterThanOrEqual(0.12)
   })
+
+  it('should detect and push apart overlapping magnets using resolveMagnetOverlaps', () => {
+    // Two magnets deliberately placed at identical coordinates
+    const overlapping = [
+      {
+        id: 'mag-1',
+        magnetSlug: 'paris',
+        destinationName: 'Paris',
+        assetUrl: '/paris.png',
+        x: 0.50,
+        y: 0.50,
+        scale: 1.0,
+        rotation: 0,
+        zIndex: 1,
+      },
+      {
+        id: 'mag-2',
+        magnetSlug: 'london',
+        destinationName: 'London',
+        assetUrl: '/london.png',
+        x: 0.50,
+        y: 0.50,
+        scale: 1.0,
+        rotation: 0,
+        zIndex: 2,
+      },
+    ]
+
+    const resolved = fridgeService.resolveMagnetOverlaps(overlapping)
+    expect(resolved.length).toBe(2)
+
+    // They must no longer be at identical coordinates
+    const dx = Math.abs(resolved[0].x - resolved[1].x)
+    const dy = Math.abs(resolved[0].y - resolved[1].y)
+    expect(dx >= 0.20 || dy >= 0.14).toBe(true)
+  })
+
+  it('guarantees that starter magnets and auto-arranged magnets do not overlap', () => {
+    const starterMagnets: FridgeMagnetItem[] = [
+      { id: '1', destination_slug: 'ladakh', destination_name: 'Ladakh', country_name: 'India', continent: 'Asia', asset_url: '/ladakh.png', magnet_shape: 'arch', acquired_at: '' },
+      { id: '2', destination_slug: 'delhi', destination_name: 'Delhi', country_name: 'India', continent: 'Asia', asset_url: '/delhi.png', magnet_shape: 'arch', acquired_at: '' },
+      { id: '3', destination_slug: 'royal-elephant', destination_name: 'Elephant', country_name: 'India', continent: 'Asia', asset_url: '/elephant.png', magnet_shape: 'arch', acquired_at: '' },
+      { id: '4', destination_slug: 'goa', destination_name: 'Goa', country_name: 'India', continent: 'Asia', asset_url: '/goa.png', magnet_shape: 'arch', acquired_at: '' },
+      { id: '5', destination_slug: 'taj-mahal', destination_name: 'Taj Mahal', country_name: 'India', continent: 'Asia', asset_url: '/taj.png', magnet_shape: 'arch', acquired_at: '' },
+      { id: '6', destination_slug: 'paris', destination_name: 'Paris', country_name: 'France', continent: 'Europe', asset_url: '/paris.png', magnet_shape: 'arch', acquired_at: '' },
+      { id: '7', destination_slug: 'london', destination_name: 'London', country_name: 'UK', continent: 'Europe', asset_url: '/london.png', magnet_shape: 'arch', acquired_at: '' },
+      { id: '8', destination_slug: 'new-york', destination_name: 'New York', country_name: 'USA', continent: 'Americas', asset_url: '/ny.png', magnet_shape: 'arch', acquired_at: '' },
+      { id: '9', destination_slug: 'bali', destination_name: 'Bali', country_name: 'Indonesia', continent: 'Asia', asset_url: '/bali.png', magnet_shape: 'arch', acquired_at: '' },
+      { id: '10', destination_slug: 'rome', destination_name: 'Rome', country_name: 'Italy', continent: 'Europe', asset_url: '/rome.png', magnet_shape: 'arch', acquired_at: '' },
+    ]
+
+    const placements = fridgeService.generateAutoLayout(starterMagnets, 0, [])
+    expect(placements.length).toBe(10)
+
+    // Check every pair for overlap
+    for (let i = 0; i < placements.length; i++) {
+      for (let j = i + 1; j < placements.length; j++) {
+        const dx = Math.abs(placements[i].x - placements[j].x)
+        const dy = Math.abs(placements[i].y - placements[j].y)
+        // Must either have horizontal separation >= 0.18 or vertical separation >= 0.12
+        const hasSeparation = dx >= 0.18 || dy >= 0.12
+        expect(hasSeparation).toBe(true)
+      }
+    }
+  })
 })

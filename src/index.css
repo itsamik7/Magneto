@@ -22,10 +22,10 @@
   --font-heading: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Base resets & Studio Warm Beige Canvas */
+/* Base resets & Clean Pure White Canvas */
 html, body {
   min-height: 100%;
-  background: radial-gradient(circle at 65% 45%, #F6F2EA 0%, #ECE4D6 60%, #E4DAC8 100%);
+  background: #ffffff;
   color: #1E293B;
   font-family: var(--font-sans);
 }

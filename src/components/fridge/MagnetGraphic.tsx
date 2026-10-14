@@ -32,11 +32,11 @@ export const MagnetGraphic: React.FC<MagnetGraphicProps> = ({
 
   // Proportions matching real souvenir badges from the physical fridge reference
   const dimensions = {
-    xs: 'w-14 sm:w-16 h-auto',
-    sm: 'w-16 sm:w-18 h-auto',
-    md: 'w-18 sm:w-20 md:w-22 h-auto',
-    lg: 'w-22 sm:w-24 md:w-26 h-auto',
-    xl: 'w-28 sm:w-30 md:w-34 h-auto',
+    xs: 'w-12 sm:w-14 h-auto',
+    sm: 'w-14 sm:w-15 h-auto',
+    md: 'w-14 sm:w-16 md:w-[66px] h-auto',
+    lg: 'w-20 sm:w-22 h-auto',
+    xl: 'w-26 sm:w-28 h-auto',
   }[size]
 
   const resolveImgSrc = (): string => {

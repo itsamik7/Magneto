@@ -202,7 +202,7 @@ export const TripDetailPage: React.FC = () => {
       </div>
 
       {/* Hero Trip Overview Card */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#E5E2DC] shadow-sm flex flex-col md:flex-row items-center gap-6 sm:gap-10">
+      <div className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200 shadow-sm flex flex-col md:flex-row items-center gap-6 sm:gap-10">
         {/* Large Souvenir Magnet Artwork */}
         <div className="flex-shrink-0">
           <MagnetGraphic

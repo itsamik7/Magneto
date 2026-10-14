@@ -159,7 +159,12 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
         onPlacementsChange(next)
       }
       if (isCommit) {
-        fridgeService.saveFridgePlacements(userId, currentModel.id, next, 'FridgeWorkspace')
+        const nonOverlapping = fridgeService.resolveMagnetOverlaps(next)
+        setPlacements(nonOverlapping)
+        if (onPlacementsChange) {
+          onPlacementsChange(nonOverlapping)
+        }
+        fridgeService.saveFridgePlacements(userId, currentModel.id, nonOverlapping, 'FridgeWorkspace')
       }
     },
     [userId, currentModel.id, onPlacementsChange]
@@ -264,7 +269,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
         stretch the layout, or cause vertical overflow!
       */}
       <div
-        className="relative mx-auto rounded-[2rem] sm:rounded-[2.4rem] shadow-[0_25px_60px_-15px_rgba(20,29,47,0.35),0_10px_20px_-8px_rgba(0,0,0,0.18)] border-[3px] border-slate-300/80 overflow-hidden bg-slate-100"
+        className="relative mx-auto rounded-[2rem] sm:rounded-[2.4rem] shadow-[0_20px_50px_-12px_rgba(15,23,42,0.15)] border border-slate-200/90 overflow-hidden bg-white"
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}

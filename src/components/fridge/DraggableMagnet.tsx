@@ -249,17 +249,17 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
         {(placement.isFundedPending ||
           placement.magnetSlug === 'rome' ||
           placement.magnetSlug === 'bali') ? (
-          <div className="mt-1.5 px-3 py-1 bg-amber-500/85 backdrop-blur-md text-white text-[9px] font-heading font-extrabold rounded-xl shadow-md flex items-center justify-center gap-1.5 border border-amber-300/70 pointer-events-none whitespace-nowrap">
-            <Lock className="w-2.5 h-2.5 fill-white" />
-            <span>Funded (Trip Pending)</span>
+          <div className="mt-1 px-2 py-0.5 bg-amber-500/90 backdrop-blur-md text-white text-[8px] font-heading font-extrabold rounded-lg shadow-sm flex items-center justify-center gap-1 border border-amber-300/70 pointer-events-none whitespace-nowrap">
+            <Lock className="w-2 h-2 fill-white" />
+            <span>Funded</span>
           </div>
         ) : (placement.totalSavedMinor !== undefined && placement.targetBudgetMinor !== undefined) ? (
           /* State 2: Saving in Progress Pill with Progress Bar */
-          <div className="mt-1.5 px-3 py-1 bg-white/95 backdrop-blur-md rounded-xl shadow-md border border-slate-200/90 pointer-events-none flex flex-col items-center gap-1 min-w-[110px]">
-            <span className="text-[9px] font-heading font-black text-blue-600 tracking-tight whitespace-nowrap">
-              ₹ {(placement.totalSavedMinor / 100).toLocaleString('en-IN')} / ₹ {(placement.targetBudgetMinor / 100).toLocaleString('en-IN')}
+          <div className="mt-1 px-2 py-0.5 bg-white/95 backdrop-blur-md rounded-lg shadow-xs border border-slate-200/90 pointer-events-none flex flex-col items-center gap-0.5 max-w-[85px]">
+            <span className="text-[8px] font-heading font-black text-blue-600 tracking-tight whitespace-nowrap">
+              ₹ {(placement.totalSavedMinor / 100).toLocaleString('en-IN')}
             </span>
-            <div className="w-full h-1 bg-slate-200/90 rounded-full overflow-hidden">
+            <div className="w-full h-0.5 bg-slate-200/90 rounded-full overflow-hidden">
               <div
                 className="h-full bg-blue-600 rounded-full transition-all duration-300"
                 style={{

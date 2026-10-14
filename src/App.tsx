@@ -19,7 +19,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <div className="min-h-screen flex flex-col bg-[#F2EFE8] text-[#1E293B]">
+        <div className="min-h-screen flex flex-col bg-white text-[#1E293B]">
           {/* Top Navbar */}
           <Navbar onOpenSetupModal={() => setIsSetupModalOpen(true)} />
 
@@ -47,7 +47,7 @@ export default function App() {
           </main>
 
           {/* Footer */}
-          <footer className="border-t border-[#E2DCCE] bg-[#F2EFE8] py-8 text-xs text-slate-500">
+          <footer className="border-t border-slate-200 bg-white py-8 text-xs text-slate-500">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <span className="font-heading font-extrabold text-[#243447]">Magneto</span>

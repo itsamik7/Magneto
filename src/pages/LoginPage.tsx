@@ -40,7 +40,7 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md p-8 bg-white rounded-3xl border border-[#E5E2DC] shadow-xl space-y-6">
+      <div className="w-full max-w-md p-8 bg-white rounded-3xl border border-slate-200 shadow-xl space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
           <div className="w-12 h-12 mx-auto rounded-2xl bg-[#243447] text-white flex items-center justify-center shadow-md">

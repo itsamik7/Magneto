@@ -50,11 +50,11 @@ export const Modal: React.FC<ModalProps> = ({
       aria-labelledby="modal-title"
     >
       <div
-        className={`relative w-full ${widthClass} bg-white rounded-3xl shadow-2xl border border-[#E5E2DC] overflow-hidden transition-all transform scale-100 max-h-[90vh] flex flex-col`}
+        className={`relative w-full ${widthClass} bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden transition-all transform scale-100 max-h-[90vh] flex flex-col`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-start justify-between p-6 pb-4 border-b border-[#E5E2DC]">
+        <div className="flex items-start justify-between p-6 pb-4 border-b border-slate-200">
           <div>
             <h3 id="modal-title" className="font-heading font-extrabold text-xl text-[#243447]">
               {title}

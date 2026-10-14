@@ -171,7 +171,7 @@ export const AddMagnetPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="px-3.5 py-2 rounded-xl bg-white border border-[#E2DCCE] shadow-sm text-xs font-bold text-slate-700">
+          <div className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 shadow-sm text-xs font-bold text-slate-700">
             <span className="text-[#059669] font-black">{collectedCount}</span> collected
           </div>
           <button
@@ -184,7 +184,7 @@ export const AddMagnetPage: React.FC = () => {
       </div>
 
       {/* Search & Filter Toolbar */}
-      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#E2DCCE] shadow-sm space-y-4">
+      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-4">
         {/* Search Bar */}
         <div className="relative">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -276,7 +276,7 @@ export const AddMagnetPage: React.FC = () => {
               <div
                 key={dest.slug}
                 onClick={() => setPreviewDestination(dest)}
-                className="cursor-pointer group relative rounded-2xl bg-white border border-[#E2DCCE] p-4 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-all hover:-translate-y-1"
+                className="cursor-pointer group relative rounded-2xl bg-white border border-slate-200 p-4 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-all hover:-translate-y-1"
               >
                 <div className="h-28 flex items-center justify-center my-1 group-hover:scale-105 transition-transform">
                   <MagnetGraphic
@@ -334,7 +334,7 @@ export const AddMagnetPage: React.FC = () => {
 
         {/* Empty State */}
         {!isLoading && destinations.length === 0 && (
-          <div className="text-center py-16 bg-white rounded-3xl border border-[#E2DCCE] max-w-md mx-auto p-6 space-y-3">
+          <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 max-w-md mx-auto p-6 space-y-3">
             <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 mx-auto flex items-center justify-center">
               <Compass className="w-6 h-6" />
             </div>
@@ -366,7 +366,7 @@ export const AddMagnetPage: React.FC = () => {
               return (
                 <div
                   key={dest.slug}
-                  className="group relative rounded-2xl bg-white border border-[#E2DCCE] p-3.5 flex flex-col justify-between shadow-sm hover:shadow-lg transition-all hover:-translate-y-1 hover:border-emerald-300"
+                  className="group relative rounded-2xl bg-white border border-slate-200 p-3.5 flex flex-col justify-between shadow-sm hover:shadow-lg transition-all hover:-translate-y-1 hover:border-emerald-300"
                 >
                   {/* Top Badge: Country Flag & Type */}
                   <div className="flex items-center justify-between text-[10px] text-slate-500 font-semibold mb-2">

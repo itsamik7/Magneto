@@ -22,7 +22,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
   const isPlanActive = location.pathname === '/plan-trip' || location.pathname === '/catalog' || location.pathname === '/add-magnet'
 
   return (
-    <header className="sticky top-0 z-40 bg-[#F2EFE8]/95 backdrop-blur-md border-b border-[#E2DCCE]">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200">
       {/* Top Banner if Supabase is not configured */}
       {!isConfigured && (
         <div className="bg-amber-500 text-slate-950 px-4 py-2 text-xs sm:text-sm font-semibold flex items-center justify-between shadow-sm">
@@ -166,7 +166,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-[#E2DCCE] bg-[#F2EFE8] px-4 py-4 space-y-3">
+        <div className="md:hidden border-t border-slate-200 bg-white px-4 py-4 space-y-3">
           {user ? (
             <>
               <div className="flex items-center gap-3 pb-3 border-b border-slate-200">
