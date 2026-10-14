@@ -13,7 +13,6 @@ import {
   Heart,
   Plus,
   Check,
-  X,
   Compass,
   Sparkles,
   Calendar,
@@ -696,13 +695,13 @@ export const PlanTripPage: React.FC = () => {
       <div className="w-full xl:w-[420px] bg-white rounded-3xl p-5 shadow-xl border border-slate-200/90 flex flex-col h-[760px] flex-shrink-0 overflow-y-auto scrollbar-thin">
         
         {/* Destination Magnet Hero Display */}
-        <div className="relative w-full h-36 rounded-2xl overflow-hidden shadow-md group mb-3 bg-gradient-to-tr from-slate-900 via-slate-800 to-slate-700 flex items-center justify-center p-3">
+        <div className="relative w-full h-44 flex-shrink-0 rounded-2xl overflow-hidden shadow-md group mb-3.5 bg-gradient-to-tr from-slate-900 via-slate-800 to-slate-700 flex items-center justify-center p-4">
           <img
             src={currentCatalogItem.imagePath}
             alt={currentCatalogItem.name}
-            className="max-h-24 max-w-24 object-contain filter drop-shadow-xl group-hover:scale-110 transition-transform duration-300"
+            className="max-h-32 max-w-32 object-contain filter drop-shadow-2xl group-hover:scale-105 transition-transform duration-300 relative z-10"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent pointer-events-none" />
 
           {/* Top Right Heart Favorite Button */}
           <button
@@ -719,22 +718,13 @@ export const PlanTripPage: React.FC = () => {
         </div>
 
         {/* Header Title & Tags */}
-        <div className="flex items-start justify-between gap-2 mb-1.5">
-          <div className="flex items-center gap-2">
-            <h3 className="font-heading font-black text-lg text-slate-900">
-              {currentCatalogItem.name}
-            </h3>
-            <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
-              {currentCatalogItem.region}
-            </span>
-          </div>
-          <button
-            onClick={() => setSelectedPlacementId(null)}
-            className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
-            title="Close inspector"
-          >
-            <X className="w-4 h-4" />
-          </button>
+        <div className="flex items-center gap-2 mb-1.5">
+          <h3 className="font-heading font-black text-lg text-slate-900">
+            {currentCatalogItem.name}
+          </h3>
+          <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
+            {currentCatalogItem.region}
+          </span>
         </div>
 
         <p className="text-[11px] text-slate-600 leading-relaxed mb-2.5">
