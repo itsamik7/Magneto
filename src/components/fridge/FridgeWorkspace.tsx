@@ -49,6 +49,8 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
   const [isModelModalOpen, setIsModelModalOpen] = useState(false)
   const [internalSelectedId, setInternalSelectedId] = useState<string | null>(null)
   const [placements, setPlacements] = useState<MagnetPlacement[]>([])
+  const placementsRef = useRef<MagnetPlacement[]>([])
+  placementsRef.current = placements
 
   const selectedPlacementId = controlledSelectedId !== undefined ? controlledSelectedId : internalSelectedId
   const setSelectedPlacementId = (id: string | null) => {
@@ -71,7 +73,10 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
       onPlacementsChange(loaded)
     }
 
-    const handleSync = () => {
+    const handleSync = (e: Event) => {
+      const detail = (e as CustomEvent)?.detail
+      if (detail?.source === 'FridgeWorkspace') return
+
       const refreshed = fridgeService.getFridgePlacements(
         userId,
         currentModel.id,
@@ -145,15 +150,17 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
     }
   }
 
-  // Update a single magnet placement
+  // Update a single magnet placement cleanly outside state updater
   const handleUpdatePlacement = useCallback(
-    (updated: MagnetPlacement) => {
-      setPlacements((prev) => {
-        const next = prev.map((p) => (p.id === updated.id ? updated : p))
-        fridgeService.saveFridgePlacements(userId, currentModel.id, next)
-        if (onPlacementsChange) onPlacementsChange(next)
-        return next
-      })
+    (updated: MagnetPlacement, isCommit: boolean = true) => {
+      const next = placementsRef.current.map((p) => (p.id === updated.id ? updated : p))
+      setPlacements(next)
+      if (onPlacementsChange) {
+        onPlacementsChange(next)
+      }
+      if (isCommit) {
+        fridgeService.saveFridgePlacements(userId, currentModel.id, next, 'FridgeWorkspace')
+      }
     },
     [userId, currentModel.id, onPlacementsChange]
   )
@@ -161,13 +168,13 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
   // Bring selected magnet to front
   const handleBringToFront = useCallback(
     (id: string) => {
-      setPlacements((prev) => {
-        const maxZ = Math.max(0, ...prev.map((p) => p.zIndex))
-        const next = prev.map((p) => (p.id === id ? { ...p, zIndex: maxZ + 1 } : p))
-        fridgeService.saveFridgePlacements(userId, currentModel.id, next)
-        if (onPlacementsChange) onPlacementsChange(next)
-        return next
-      })
+      const maxZ = Math.max(0, ...placementsRef.current.map((p) => p.zIndex))
+      const next = placementsRef.current.map((p) => (p.id === id ? { ...p, zIndex: maxZ + 1 } : p))
+      setPlacements(next)
+      fridgeService.saveFridgePlacements(userId, currentModel.id, next, 'FridgeWorkspace')
+      if (onPlacementsChange) {
+        onPlacementsChange(next)
+      }
     },
     [userId, currentModel.id, onPlacementsChange]
   )
@@ -175,13 +182,13 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
   // Remove magnet from fridge placement
   const handleRemovePlacement = useCallback(
     (id: string) => {
-      const toRemove = placements.find((p) => p.id === id)
-      setPlacements((prev) => {
-        const next = prev.filter((p) => p.id !== id)
-        fridgeService.saveFridgePlacements(userId, currentModel.id, next)
-        if (onPlacementsChange) onPlacementsChange(next)
-        return next
-      })
+      const toRemove = placementsRef.current.find((p) => p.id === id)
+      const next = placementsRef.current.filter((p) => p.id !== id)
+      setPlacements(next)
+      fridgeService.saveFridgePlacements(userId, currentModel.id, next, 'FridgeWorkspace')
+      if (onPlacementsChange) {
+        onPlacementsChange(next)
+      }
       if (selectedPlacementId === id) {
         setSelectedPlacementId(null)
       }
@@ -189,7 +196,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
         onRemoveMagnet(toRemove?.magnetSlug || id)
       }
     },
-    [userId, currentModel.id, selectedPlacementId, placements, onPlacementsChange, onRemoveMagnet]
+    [userId, currentModel.id, selectedPlacementId, onPlacementsChange, onRemoveMagnet]
   )
 
   // Auto-arrange all collected magnets

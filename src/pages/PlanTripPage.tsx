@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { fridgeService } from '../services/fridgeService'
+import { fridgeService, areSlugsEquivalent } from '../services/fridgeService'
 import { userMagnetService, type FridgeMagnetItem, DEFAULT_FEATURED_MAGNETS } from '../services/userMagnetService'
 import { SOUVENIR_MAGNETS_CATALOG, type SouvenirMagnetData } from '../data/photorealisticMagnets'
 import type { FridgeModel, MagnetPlacement } from '../types/fridge'
@@ -119,24 +119,31 @@ export const PlanTripPage: React.FC = () => {
     const uid = user?.id || 'guest'
     const load = async () => {
       const raw = userMagnetService.safeStorage.getItem(`magneto_fridge_${uid}`)
+      let list: FridgeMagnetItem[]
       if (raw === null) {
-        setUserMagnets(DEFAULT_FEATURED_MAGNETS)
-        await userMagnetService.saveUserFridgeMagnets(uid, DEFAULT_FEATURED_MAGNETS)
+        list = DEFAULT_FEATURED_MAGNETS
+        setUserMagnets(list)
+        await userMagnetService.saveUserFridgeMagnets(uid, list, 'PlanTripPage')
       } else {
-        const list = await userMagnetService.getUserFridgeMagnets(uid)
+        list = await userMagnetService.getUserFridgeMagnets(uid)
         setUserMagnets(list)
       }
       const activeId = fridgeService.getActiveFridgeId(uid)
       setActiveModel(fridgeService.getFridgeModelById(activeId, user?.id))
+      const loadedPlacements = fridgeService.getFridgePlacements(uid, activeId, list)
+      setPlacements(loadedPlacements)
     }
     load()
 
-    const handleSync = () => {
+    const handleSync = (e: Event) => {
+      const detail = (e as CustomEvent)?.detail
+      if (detail?.source === 'PlanTripPage') return
+
       const activeId = fridgeService.getActiveFridgeId(uid)
       setActiveModel(fridgeService.getFridgeModelById(activeId, user?.id))
       const syncMagnets = userMagnetService.getUserFridgeMagnetsSync(uid)
       setUserMagnets(syncMagnets)
-      const syncPlacements = fridgeService.getFridgePlacements(uid, activeId)
+      const syncPlacements = fridgeService.getFridgePlacements(uid, activeId, syncMagnets)
       setPlacements(syncPlacements)
     }
 
@@ -187,14 +194,14 @@ export const PlanTripPage: React.FC = () => {
   const currentCatalogItem = useMemo(() => {
     return (
       SOUVENIR_MAGNETS_CATALOG.find(
-        (item) => item.id.toLowerCase() === selectedDestinationSlug.toLowerCase()
+        (item) => areSlugsEquivalent(item.id, selectedDestinationSlug)
       ) || SOUVENIR_MAGNETS_CATALOG[0]
     )
   }, [selectedDestinationSlug])
 
   const isCurrentOnFridge =
-    userMagnets.some((m) => m.destination_slug.toLowerCase() === currentCatalogItem.id.toLowerCase()) ||
-    placements.some((p) => p.magnetSlug.toLowerCase() === currentCatalogItem.id.toLowerCase())
+    userMagnets.some((m) => areSlugsEquivalent(m.destination_slug, currentCatalogItem.id)) ||
+    placements.some((p) => areSlugsEquivalent(p.magnetSlug, currentCatalogItem.id))
 
   // Budget calculations
   const totalEstimatedCost = Object.values(itemizedBreakdown).reduce((a, b) => a + b, 0)
@@ -213,12 +220,12 @@ export const PlanTripPage: React.FC = () => {
     const cleanSlug = magnet.id.toLowerCase()
     const canonicalId = `magnet-${cleanSlug}`
 
-    // Check if already on fridge
-    const alreadyExists = userMagnets.some(
-      (m) => m.destination_slug.toLowerCase() === cleanSlug || m.id === canonicalId
+    // Check if already on fridge (using areSlugsEquivalent)
+    const existingIndex = placements.findIndex(
+      (p) => areSlugsEquivalent(p.magnetSlug, cleanSlug) || areSlugsEquivalent(p.id, canonicalId)
     )
-    if (alreadyExists) {
-      setSelectedPlacementId(canonicalId)
+    if (existingIndex >= 0) {
+      setSelectedPlacementId(placements[existingIndex].id)
       setSelectedDestinationSlug(cleanSlug)
       return
     }
@@ -241,6 +248,7 @@ export const PlanTripPage: React.FC = () => {
     // Generate placement with smart positioning
     const [newPlacement] = fridgeService.generateAutoLayout([newMagnetItem], placements.length, placements)
     newPlacement.id = canonicalId
+    newPlacement.magnetSlug = cleanSlug
 
     const nextMagnets = [...userMagnets, newMagnetItem]
     const nextPlacements = [...placements, newPlacement]
@@ -250,8 +258,8 @@ export const PlanTripPage: React.FC = () => {
     setSelectedPlacementId(canonicalId)
     setSelectedDestinationSlug(cleanSlug)
 
-    await userMagnetService.saveUserFridgeMagnets(uid, nextMagnets)
-    fridgeService.saveFridgePlacements(uid, activeModel.id, nextPlacements)
+    fridgeService.saveFridgePlacements(uid, activeModel.id, nextPlacements, 'PlanTripPage')
+    await userMagnetService.saveUserFridgeMagnets(uid, nextMagnets, 'PlanTripPage')
 
     setSaveSuccessMessage(`${magnet.name} added to fridge!`)
     setTimeout(() => setSaveSuccessMessage(null), 2500)
@@ -263,13 +271,13 @@ export const PlanTripPage: React.FC = () => {
     if (!cleanSlug) return
 
     const catalogItem =
-      SOUVENIR_MAGNETS_CATALOG.find((m) => m.id.toLowerCase() === cleanSlug) || rawItem
+      SOUVENIR_MAGNETS_CATALOG.find((m) => areSlugsEquivalent(m.id, cleanSlug)) || rawItem
 
     const uid = user?.id || 'guest'
     const canonicalId = `magnet-${cleanSlug}`
 
     const existingPlacementIndex = placements.findIndex(
-      (p) => p.magnetSlug.toLowerCase() === cleanSlug || p.id === canonicalId
+      (p) => areSlugsEquivalent(p.magnetSlug, cleanSlug) || areSlugsEquivalent(p.id, canonicalId)
     )
 
     if (existingPlacementIndex >= 0) {
@@ -278,9 +286,9 @@ export const PlanTripPage: React.FC = () => {
         idx === existingPlacementIndex ? { ...p, x: coords.x, y: coords.y } : p
       )
       setPlacements(nextPlacements)
-      setSelectedPlacementId(canonicalId)
+      setSelectedPlacementId(nextPlacements[existingPlacementIndex].id)
       setSelectedDestinationSlug(cleanSlug)
-      fridgeService.saveFridgePlacements(uid, activeModel.id, nextPlacements)
+      fridgeService.saveFridgePlacements(uid, activeModel.id, nextPlacements, 'PlanTripPage')
       setSaveSuccessMessage(`${catalogItem.name || cleanSlug} repositioned on fridge!`)
       setTimeout(() => setSaveSuccessMessage(null), 2500)
       return
@@ -326,8 +334,8 @@ export const PlanTripPage: React.FC = () => {
     setSelectedPlacementId(canonicalId)
     setSelectedDestinationSlug(cleanSlug)
 
-    await userMagnetService.saveUserFridgeMagnets(uid, nextMagnets)
-    fridgeService.saveFridgePlacements(uid, activeModel.id, nextPlacements)
+    fridgeService.saveFridgePlacements(uid, activeModel.id, nextPlacements, 'PlanTripPage')
+    await userMagnetService.saveUserFridgeMagnets(uid, nextMagnets, 'PlanTripPage')
 
     setSaveSuccessMessage(`${catalogItem.name} placed on fridge!`)
     setTimeout(() => setSaveSuccessMessage(null), 2500)
@@ -343,13 +351,13 @@ export const PlanTripPage: React.FC = () => {
       (m) =>
         m.id !== idOrSlug &&
         m.id !== canonicalId &&
-        m.destination_slug.toLowerCase() !== cleanSlug
+        !areSlugsEquivalent(m.destination_slug, cleanSlug)
     )
     const nextPlacements = placements.filter(
       (p) =>
         p.id !== idOrSlug &&
         p.id !== canonicalId &&
-        p.magnetSlug.toLowerCase() !== cleanSlug
+        !areSlugsEquivalent(p.magnetSlug, cleanSlug)
     )
 
     setUserMagnets(nextMagnets)
@@ -358,7 +366,7 @@ export const PlanTripPage: React.FC = () => {
     if (
       selectedPlacementId === idOrSlug ||
       selectedPlacementId === canonicalId ||
-      selectedDestinationSlug === cleanSlug
+      areSlugsEquivalent(selectedDestinationSlug, cleanSlug)
     ) {
       const fallback = nextPlacements[0]
       setSelectedPlacementId(fallback?.id || null)
@@ -367,8 +375,8 @@ export const PlanTripPage: React.FC = () => {
       }
     }
 
-    await userMagnetService.saveUserFridgeMagnets(uid, nextMagnets)
-    fridgeService.saveFridgePlacements(uid, activeModel.id, nextPlacements)
+    fridgeService.saveFridgePlacements(uid, activeModel.id, nextPlacements, 'PlanTripPage')
+    await userMagnetService.saveUserFridgeMagnets(uid, nextMagnets, 'PlanTripPage')
 
     setSaveSuccessMessage('Magnet removed from fridge.')
     setTimeout(() => setSaveSuccessMessage(null), 2500)
@@ -379,7 +387,7 @@ export const PlanTripPage: React.FC = () => {
     const uid = user?.id || 'guest'
     const arranged = fridgeService.autoArrangeAll(uid, activeModel.id, userMagnets)
     setPlacements(arranged)
-    fridgeService.saveFridgePlacements(uid, activeModel.id, arranged)
+    fridgeService.saveFridgePlacements(uid, activeModel.id, arranged, 'PlanTripPage')
     setSaveSuccessMessage('Magnets auto-arranged!')
     setTimeout(() => setSaveSuccessMessage(null), 2500)
   }
@@ -393,7 +401,7 @@ export const PlanTripPage: React.FC = () => {
     // Adapt existing magnet positions so magnets remain inside the new fridge's bounds
     const adapted = fridgeService.adaptPlacementsToModel(placements, newModel)
     setPlacements(adapted)
-    fridgeService.saveFridgePlacements(uid, newModel.id, adapted)
+    fridgeService.saveFridgePlacements(uid, newModel.id, adapted, 'PlanTripPage')
     setIsModelModalOpen(false)
 
     setSaveSuccessMessage(`Switched to ${newModel.name}`)
@@ -511,8 +519,8 @@ export const PlanTripPage: React.FC = () => {
           {filteredCatalog.map((item) => {
             const isFav = favorites.has(item.id)
             const isAdded =
-              userMagnets.some((m) => m.destination_slug.toLowerCase() === item.id.toLowerCase()) ||
-              placements.some((p) => p.magnetSlug.toLowerCase() === item.id.toLowerCase())
+              userMagnets.some((m) => areSlugsEquivalent(m.destination_slug, item.id)) ||
+              placements.some((p) => areSlugsEquivalent(p.magnetSlug, item.id))
 
             return (
               <div
@@ -542,7 +550,7 @@ export const PlanTripPage: React.FC = () => {
                   onClick={() => {
                     setSelectedDestinationSlug(item.id)
                     const p = placements.find(
-                      (pl) => pl.magnetSlug.toLowerCase() === item.id.toLowerCase()
+                      (pl) => areSlugsEquivalent(pl.magnetSlug, item.id)
                     )
                     if (p) setSelectedPlacementId(p.id)
                   }}
@@ -571,7 +579,7 @@ export const PlanTripPage: React.FC = () => {
                         onClick={() => {
                           setSelectedDestinationSlug(item.id)
                           const p = placements.find(
-                            (pl) => pl.magnetSlug.toLowerCase() === item.id.toLowerCase()
+                            (pl) => areSlugsEquivalent(pl.magnetSlug, item.id)
                           )
                           if (p) setSelectedPlacementId(p.id)
                         }}

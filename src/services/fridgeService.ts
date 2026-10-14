@@ -49,6 +49,32 @@ const safeStorage = {
   },
 }
 
+export const MAGNET_SLUG_ALIASES: Record<string, string[]> = {
+  'delhi': ['delhi', 'india-gate'],
+  'india-gate': ['delhi', 'india-gate'],
+  'goa': ['goa', 'goa-beach'],
+  'goa-beach': ['goa', 'goa-beach'],
+  'paris': ['paris', 'eiffel-tower'],
+  'eiffel-tower': ['paris', 'eiffel-tower'],
+  'rome': ['rome', 'colosseum-rome'],
+  'colosseum-rome': ['rome', 'colosseum-rome'],
+  'bali': ['bali', 'bali-temple'],
+  'bali-temple': ['bali', 'bali-temple'],
+  'royal-elephant': ['elephant', 'royal-elephant'],
+  'elephant': ['elephant', 'royal-elephant'],
+  'thailand': ['thailand', 'bangkok'],
+  'bangkok': ['thailand', 'bangkok'],
+}
+
+export function areSlugsEquivalent(slug1?: string | null, slug2?: string | null): boolean {
+  if (!slug1 || !slug2) return false
+  const s1 = slug1.toLowerCase().replace(/^magnet-/, '')
+  const s2 = slug2.toLowerCase().replace(/^magnet-/, '')
+  if (s1 === s2) return true
+  const aliases = MAGNET_SLUG_ALIASES[s1]
+  return aliases ? aliases.includes(s2) : false
+}
+
 const DEFAULT_PRESET_POSITIONS: Record<string, { x: number; y: number; scale: number; rotation: number }> = {
   // Top Freezer Door:
   // Row 1: Ladakh (left), India Gate (center), Royal Elephant (right)
@@ -59,15 +85,18 @@ const DEFAULT_PRESET_POSITIONS: Record<string, { x: number; y: number; scale: nu
   'royal-elephant': { x: 0.80, y: 0.09, scale: 1.0, rotation: 1 },
   // Row 2: Goa (left), Taj Mahal (right)
   'goa': { x: 0.28, y: 0.22, scale: 1.0, rotation: 0 },
+  'goa-beach': { x: 0.28, y: 0.22, scale: 1.0, rotation: 0 },
   'taj-mahal': { x: 0.72, y: 0.23, scale: 1.0, rotation: 0 },
 
   // Bottom Main Door:
   // Row 1: Paris (left), London Bus (center), New York (right)
   'paris': { x: 0.24, y: 0.40, scale: 1.0, rotation: 0 },
+  'eiffel-tower': { x: 0.24, y: 0.40, scale: 1.0, rotation: 0 },
   'london': { x: 0.52, y: 0.39, scale: 1.0, rotation: 0 },
   'new-york': { x: 0.80, y: 0.41, scale: 1.0, rotation: 1 },
   // Row 2: Bali (center)
   'bali': { x: 0.52, y: 0.58, scale: 1.0, rotation: 0 },
+  'bali-temple': { x: 0.52, y: 0.58, scale: 1.0, rotation: 0 },
   'japan': { x: 0.76, y: 0.58, scale: 1.0, rotation: -1 },
   // Row 3: Rome / Colosseum (left), Santorini (right)
   'rome': { x: 0.28, y: 0.76, scale: 1.0, rotation: -1 },
@@ -192,19 +221,25 @@ export const fridgeService = {
     // Only reconcile against currentMagnets if explicitly provided by caller
     if (currentMagnets !== undefined) {
       if (currentMagnets.length > 0) {
-        const currentIds = new Set(currentMagnets.map((m) => m.id))
-        const currentSlugs = new Set(currentMagnets.map((m) => m.destination_slug.toLowerCase()))
-        placements = placements.filter(
-          (p) => currentIds.has(p.id) || currentSlugs.has(p.magnetSlug.toLowerCase())
+        // Retain placements that correspond to currentMagnets (using alias equivalence)
+        placements = placements.filter((p) =>
+          currentMagnets.some(
+            (m) =>
+              m.id === p.id ||
+              areSlugsEquivalent(m.destination_slug, p.magnetSlug) ||
+              areSlugsEquivalent(m.id, p.id)
+          )
         )
 
         // Identify unplaced magnets
-        const placedKeys = new Set([
-          ...placements.map((p) => p.id),
-          ...placements.map((p) => p.magnetSlug.toLowerCase()),
-        ])
         const unplaced = currentMagnets.filter(
-          (m) => !placedKeys.has(m.id) && !placedKeys.has(m.destination_slug.toLowerCase())
+          (m) =>
+            !placements.some(
+              (p) =>
+                p.id === m.id ||
+                areSlugsEquivalent(p.magnetSlug, m.destination_slug) ||
+                areSlugsEquivalent(p.id, m.id)
+            )
         )
 
         if (unplaced.length > 0) {
@@ -216,11 +251,11 @@ export const fridgeService = {
           )
           placements = [...placements, ...newPlacements]
           // Persist updated list
-          this.saveFridgePlacements(userId, modelId, placements)
+          this.saveFridgePlacements(userId, modelId, placements, 'getFridgePlacements')
         }
       } else if (placements.length > 0) {
         placements = []
-        this.saveFridgePlacements(userId, modelId, placements)
+        this.saveFridgePlacements(userId, modelId, placements, 'getFridgePlacements')
       }
     }
 
@@ -235,13 +270,12 @@ export const fridgeService = {
     modelId: string,
     placementIdOrSlug: string
   ): MagnetPlacement[] {
-    const clean = placementIdOrSlug.toLowerCase().replace(/^magnet-/, '')
     const current = this.getFridgePlacements(userId, modelId)
     const updated = current.filter(
       (p) =>
         p.id !== placementIdOrSlug &&
-        p.magnetSlug.toLowerCase() !== placementIdOrSlug.toLowerCase() &&
-        p.magnetSlug.toLowerCase() !== clean
+        !areSlugsEquivalent(p.magnetSlug, placementIdOrSlug) &&
+        !areSlugsEquivalent(p.id, placementIdOrSlug)
     )
     this.saveFridgePlacements(userId, modelId, updated)
     return updated
@@ -271,12 +305,13 @@ export const fridgeService = {
   saveFridgePlacements(
     userId: string,
     modelId: string,
-    placements: MagnetPlacement[]
+    placements: MagnetPlacement[],
+    source?: string
   ): void {
     const key = `magneto_fridge_placements_v2_${userId}_${modelId}`
     safeStorage.setItem(key, JSON.stringify(placements))
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('magneto_sync', { detail: { userId, modelId } }))
+      window.dispatchEvent(new CustomEvent('magneto_sync', { detail: { userId, modelId, source } }))
     }
   },
 

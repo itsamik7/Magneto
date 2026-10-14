@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { fridgeService } from '../services/fridgeService'
+import { fridgeService, areSlugsEquivalent } from '../services/fridgeService'
 import { userMagnetService, type FridgeMagnetItem, DEFAULT_FEATURED_MAGNETS } from '../services/userMagnetService'
 import type { FridgeModel, MagnetPlacement } from '../types/fridge'
 import { FridgeWorkspace } from '../components/fridge/FridgeWorkspace'
@@ -279,23 +279,32 @@ export const MyFridgePage: React.FC = () => {
     const uid = user?.id || 'guest'
     const load = async () => {
       const raw = userMagnetService.safeStorage.getItem(`magneto_fridge_${uid}`)
+      let list: FridgeMagnetItem[]
       if (raw === null) {
-        setUserMagnets(DEFAULT_FEATURED_MAGNETS)
-        await userMagnetService.saveUserFridgeMagnets(uid, DEFAULT_FEATURED_MAGNETS)
+        list = DEFAULT_FEATURED_MAGNETS
+        setUserMagnets(list)
+        await userMagnetService.saveUserFridgeMagnets(uid, list, 'MyFridgePage')
       } else {
-        const list = await userMagnetService.getUserFridgeMagnets(uid)
+        list = await userMagnetService.getUserFridgeMagnets(uid)
         setUserMagnets(list)
       }
       const activeId = fridgeService.getActiveFridgeId(uid)
       setActiveModel(fridgeService.getFridgeModelById(activeId, user?.id))
+      const loadedPlacements = fridgeService.getFridgePlacements(uid, activeId, list)
+      setPlacements(loadedPlacements)
     }
     load()
 
-    const handleSync = () => {
+    const handleSync = (e: Event) => {
+      const detail = (e as CustomEvent)?.detail
+      if (detail?.source === 'MyFridgePage') return
+
       const activeId = fridgeService.getActiveFridgeId(uid)
       setActiveModel(fridgeService.getFridgeModelById(activeId, user?.id))
       const syncMagnets = userMagnetService.getUserFridgeMagnetsSync(uid)
       setUserMagnets(syncMagnets)
+      const syncPlacements = fridgeService.getFridgePlacements(uid, activeId, syncMagnets)
+      setPlacements(syncPlacements)
     }
 
     window.addEventListener('magneto_sync', handleSync)
@@ -308,8 +317,9 @@ export const MyFridgePage: React.FC = () => {
 
   // Current Destination Details
   const currentDetail = useMemo(() => {
-    const base = FEATURED_DETAILS[selectedSlug] || FEATURED_DETAILS['santorini']
-    const override = destinationOverrides[selectedSlug]
+    const key = Object.keys(FEATURED_DETAILS).find((k) => areSlugsEquivalent(k, selectedSlug)) || 'santorini'
+    const base = FEATURED_DETAILS[key] || FEATURED_DETAILS['santorini']
+    const override = destinationOverrides[key] || destinationOverrides[selectedSlug]
     if (override) {
       return {
         ...base,
@@ -365,7 +375,7 @@ export const MyFridgePage: React.FC = () => {
     // Update placements on fridge canvas if matches
     setPlacements((prev) =>
       prev.map((p) => {
-        if (p.magnetSlug === selectedSlug) {
+        if (areSlugsEquivalent(p.magnetSlug, selectedSlug)) {
           const newPct = Math.min(100, Math.round((newSaved / currentDetail.targetBudgetMinor) * 100))
           return {
             ...p,
@@ -388,8 +398,9 @@ export const MyFridgePage: React.FC = () => {
     const matchedPlacement = placements.find((p) => p.id === placementId)
     if (matchedPlacement) {
       const slug = matchedPlacement.magnetSlug.toLowerCase()
-      if (FEATURED_DETAILS[slug]) {
-        setSelectedSlug(slug)
+      const key = Object.keys(FEATURED_DETAILS).find((k) => areSlugsEquivalent(k, slug))
+      if (key && FEATURED_DETAILS[key]) {
+        setSelectedSlug(key)
       }
     }
   }

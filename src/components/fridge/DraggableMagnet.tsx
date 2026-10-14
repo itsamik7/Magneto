@@ -18,7 +18,7 @@ interface DraggableMagnetProps {
   surfaceRef: React.RefObject<HTMLDivElement | null>
   isEditable?: boolean
   onSelect: () => void
-  onUpdatePlacement: (updated: MagnetPlacement) => void
+  onUpdatePlacement: (updated: MagnetPlacement, isCommit?: boolean) => void
   onRemove: () => void
   onBringToFront: () => void
   onClick?: () => void
@@ -67,6 +67,9 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
     setIsDragging(true)
     hasMovedRef.current = false
 
+    const basePlacement = { ...placement }
+    let lastCoords = { x: placement.x, y: placement.y }
+
     pointerStartRef.current = {
       clientX: e.clientX,
       clientY: e.clientY,
@@ -100,11 +103,14 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
       const newX = Math.min(0.92, Math.max(0.08, pointerStartRef.current.startX + normDeltaX))
       const newY = Math.min(0.92, Math.max(0.08, pointerStartRef.current.startY + normDeltaY))
 
+      lastCoords = { x: newX, y: newY }
+
+      // Update position visually without saving to disk on every frame
       onUpdatePlacement({
-        ...placement,
+        ...basePlacement,
         x: newX,
         y: newY,
-      })
+      }, false)
     }
 
     const onPointerUp = (upEvt: PointerEvent) => {
@@ -121,8 +127,14 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
         // Ignore
       }
 
-      // If user clicked without dragging, trigger onClick
-      if (!hasMovedRef.current && onClick) {
+      if (hasMovedRef.current) {
+        // Commit final coordinates to persistent storage once drag finishes!
+        onUpdatePlacement({
+          ...basePlacement,
+          x: lastCoords.x,
+          y: lastCoords.y,
+        }, true)
+      } else if (onClick) {
         onClick()
       }
     }
@@ -139,19 +151,26 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
     e.stopPropagation()
     const startClientY = e.clientY
     const startScale = placement.scale
+    const basePlacement = { ...placement }
+    let lastScale = placement.scale
 
     const onMove = (moveEvt: PointerEvent) => {
       const deltaY = (startClientY - moveEvt.clientY) * (corner.includes('n') ? 0.01 : -0.01)
       const newScale = Math.min(1.8, Math.max(0.55, Number((startScale + deltaY).toFixed(2))))
+      lastScale = newScale
       onUpdatePlacement({
-        ...placement,
+        ...basePlacement,
         scale: newScale,
-      })
+      }, false)
     }
 
     const onUp = () => {
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
+      onUpdatePlacement({
+        ...basePlacement,
+        scale: lastScale,
+      }, true)
     }
 
     window.addEventListener('pointermove', onMove)
@@ -162,7 +181,7 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
   const handleScaleDelta = (delta: number, e: React.MouseEvent) => {
     e.stopPropagation()
     const newScale = Math.min(1.8, Math.max(0.55, Number((placement.scale + delta).toFixed(2))))
-    onUpdatePlacement({ ...placement, scale: newScale })
+    onUpdatePlacement({ ...placement, scale: newScale }, true)
   }
 
   const handleRotateDelta = (delta: number, e: React.MouseEvent) => {
@@ -170,7 +189,7 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
     let newRotation = placement.rotation + delta
     if (newRotation > 180) newRotation -= 360
     if (newRotation < -180) newRotation += 360
-    onUpdatePlacement({ ...placement, rotation: newRotation })
+    onUpdatePlacement({ ...placement, rotation: newRotation }, true)
   }
 
   return (
@@ -187,7 +206,7 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
       }}
       className={`group select-none ${
         isEditable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer hover:scale-[1.02]'
-      } transition-all ${isDragging ? 'opacity-90 scale-105' : ''}`}
+      } ${isDragging ? 'opacity-90 scale-105' : 'transition-all duration-150'}`}
     >
       {/* Visual Magnet Body */}
       <div className="relative flex flex-col items-center">

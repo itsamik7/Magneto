@@ -2,6 +2,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import type { DestinationWithMagnet } from '../types/destination'
 import { DESTINATIONS_CATALOG } from '../data/destinationsCatalog'
 import { tripService } from './tripService'
+import { areSlugsEquivalent } from './fridgeService'
 
 export interface FridgeMagnetItem {
   id: string
@@ -216,8 +217,21 @@ export const userMagnetService = {
   async getUserFridgeMagnets(userId: string): Promise<FridgeMagnetItem[]> {
     const items: FridgeMagnetItem[] = []
 
-    // 1. Try Supabase user_magnets table
-    if (isSupabaseConfigured) {
+    // 1. Check local storage first (authoritative user state in session)
+    try {
+      const raw = safeStorage.getItem(`magneto_fridge_${userId}`)
+      if (raw !== null) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          items.push(...parsed)
+        }
+      }
+    } catch {
+      // Ignore
+    }
+
+    // 2. If storage is empty, fallback to Supabase user_magnets table
+    if (items.length === 0 && isSupabaseConfigured) {
       try {
         const { data, error } = await supabase
           .from('user_magnets')
@@ -263,24 +277,12 @@ export const userMagnetService = {
               trip_id: row.trip_id,
             })
           }
+          if (items.length > 0) {
+            safeStorage.setItem(`magneto_fridge_${userId}`, JSON.stringify(items))
+          }
         }
       } catch (err) {
         console.warn('Failed to query user_magnets from Supabase, checking local storage:', err)
-      }
-    }
-
-    // 2. Fallback to storage
-    if (items.length === 0) {
-      try {
-        const raw = safeStorage.getItem(`magneto_fridge_${userId}`)
-        if (raw !== null) {
-          const parsed = JSON.parse(raw)
-          if (Array.isArray(parsed)) {
-            items.push(...parsed)
-          }
-        }
-      } catch {
-        // Ignore
       }
     }
 
@@ -291,7 +293,7 @@ export const userMagnetService = {
         const matchedTrip = userTrips.find(
           (t) =>
             (item.trip_id && t.id === item.trip_id) ||
-            t.magnet_key.toLowerCase() === item.destination_slug.toLowerCase() ||
+            areSlugsEquivalent(t.magnet_key, item.destination_slug) ||
             t.destination_name.toLowerCase().includes(item.destination_slug.toLowerCase()) ||
             item.destination_name.toLowerCase().includes(t.destination_name.toLowerCase())
         )
@@ -303,8 +305,13 @@ export const userMagnetService = {
           item.progress_percentage = matchedTrip.progress_percentage
           item.unlock_state = matchedTrip.unlock_state
         } else {
-          item.unlock_state = 'dreaming'
-          item.progress_percentage = 0
+          // Preserve existing state if already set
+          if (!item.unlock_state) {
+            item.unlock_state = 'dreaming'
+          }
+          if (item.progress_percentage === undefined) {
+            item.progress_percentage = 0
+          }
         }
       })
     } catch {
@@ -449,13 +456,13 @@ export const userMagnetService = {
   /**
    * Save the complete list of fridge magnets for a user.
    */
-  async saveUserFridgeMagnets(userId: string, magnets: FridgeMagnetItem[]): Promise<void> {
+  async saveUserFridgeMagnets(userId: string, magnets: FridgeMagnetItem[], source?: string): Promise<void> {
     try {
       safeStorage.setItem(`magneto_fridge_${userId}`, JSON.stringify(magnets))
       const collectedSlugs = magnets.map((m) => m.destination_slug)
       safeStorage.setItem(`magneto_collected_${userId}`, JSON.stringify(collectedSlugs))
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('magneto_sync', { detail: { userId } }))
+        window.dispatchEvent(new CustomEvent('magneto_sync', { detail: { userId, source } }))
       }
     } catch {
       // Ignore
@@ -465,15 +472,14 @@ export const userMagnetService = {
   /**
    * Remove a magnet from the fridge. Supports destination slug or canonical ID.
    */
-  async removeMagnetFromFridge(userId: string, identifier: string): Promise<boolean> {
+  async removeMagnetFromFridge(userId: string, identifier: string, source?: string): Promise<boolean> {
     try {
       const existing = await userMagnetService.getUserFridgeMagnets(userId)
-      const cleanSlug = identifier.toLowerCase().replace(/^magnet-/, '')
       const filtered = existing.filter(
         (m) =>
           m.id !== identifier &&
-          m.destination_slug.toLowerCase() !== identifier.toLowerCase() &&
-          m.destination_slug.toLowerCase() !== cleanSlug
+          !areSlugsEquivalent(m.destination_slug, identifier) &&
+          !areSlugsEquivalent(m.id, identifier)
       )
       safeStorage.setItem(`magneto_fridge_${userId}`, JSON.stringify(filtered))
 
@@ -481,10 +487,11 @@ export const userMagnetService = {
       safeStorage.setItem(`magneto_collected_${userId}`, JSON.stringify(collectedSlugs))
 
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('magneto_sync', { detail: { userId } }))
+        window.dispatchEvent(new CustomEvent('magneto_sync', { detail: { userId, source } }))
       }
 
       if (isSupabaseConfigured) {
+        const cleanSlug = identifier.toLowerCase().replace(/^magnet-/, '')
         const { data: dRow } = await supabase
           .from('destinations')
           .select('id')
