@@ -9,24 +9,24 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "id": "lg-kitchen-studio-double",
     "name": "LG Studio Double-Door Stainless",
     "brand": "LG",
-    "style": "Double-door",
+    "style": "Side-by-side",
     "finish": "Brushed Platinum Stainless Steel",
     "colorHex": "#94A3B8",
     "countryCategory": "Indian",
     "imageUrl": "/fridges/lg-double-door-isolated.png",
-    "aspectRatio": 0.48,
+    "aspectRatio": 0.58,
     "magneticRegion": {
-      "top": 0.04,
+      "top": 0.05,
       "left": 0.08,
-      "width": 0.88,
-      "height": 0.92
+      "width": 0.84,
+      "height": 0.9
     },
-    "description": "Photorealistic brushed platinum stainless steel double-door refrigerator with sleek vertical handles.",
+    "description": "Photorealistic brushed platinum stainless steel side-by-side refrigerator with sleek vertical handles and in-door ice & water dispenser.",
     "features": [
       "Photorealistic Appliance",
-      "Isolated Double-Door Model",
-      "Double Door Split",
-      "Cylindrical Chrome Handles"
+      "In-Door Water Dispenser",
+      "Vertical Chrome Handles",
+      "Dual-Door Magnetic Surface"
     ],
     "isCustom": false
   },
@@ -34,19 +34,19 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "id": "samsung-bespoke-double",
     "name": "Samsung Bespoke Dual-Tone",
     "brand": "Samsung",
-    "style": "Double-door",
+    "style": "Side-by-side",
     "finish": "Bespoke Clean Navy & Pure White Glass",
     "colorHex": "#1E293B",
     "countryCategory": "Indian",
-    "imageUrl": "/fridges/samsung-bespoke-double.svg",
-    "aspectRatio": 0.58,
+    "imageUrl": "/fridges/samsung-bespoke-double.png",
+    "aspectRatio": 0.57,
     "magneticRegion": {
-      "top": 0.08,
+      "top": 0.05,
       "left": 0.08,
-      "width": 0.8,
-      "height": 0.84
+      "width": 0.84,
+      "height": 0.9
     },
-    "description": "Customizable luxury double-door refrigerator with sleek dual-tone glass panels and digital inverter technology.",
+    "description": "Customizable luxury side-by-side refrigerator with sleek navy blue & pure white glass panels and digital inverter technology.",
     "features": [
       "Bespoke Color Glass",
       "Twin Cooling Plus",
@@ -63,13 +63,13 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "finish": "Brushed Platinum Silver Stainless Steel",
     "colorHex": "#94A3B8",
     "countryCategory": "Indian",
-    "imageUrl": "/fridges/lg-instaview-stainless.svg",
-    "aspectRatio": 0.58,
+    "imageUrl": "/fridges/lg-instaview-stainless.png",
+    "aspectRatio": 0.55,
     "magneticRegion": {
-      "top": 0.08,
+      "top": 0.06,
       "left": 0.08,
-      "width": 0.78,
-      "height": 0.84
+      "width": 0.84,
+      "height": 0.88
     },
     "description": "Iconic cylindrical chrome bar handle with brushed stainless steel finish and LinearCooling smart inverter.",
     "features": [
@@ -88,13 +88,13 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "finish": "Titanium Steel Onyx",
     "colorHex": "#475569",
     "countryCategory": "Indian",
-    "imageUrl": "/fridges/whirlpool-intellifresh-pro.svg",
-    "aspectRatio": 0.58,
+    "imageUrl": "/fridges/whirlpool-intellifresh-pro.png",
+    "aspectRatio": 0.5,
     "magneticRegion": {
-      "top": 0.08,
-      "left": 0.08,
+      "top": 0.06,
+      "left": 0.1,
       "width": 0.82,
-      "height": 0.84
+      "height": 0.88
     },
     "description": "Advanced 3D airflow with Zeolite technology and recessed pocket handles in sleek dark steel.",
     "features": [
@@ -113,13 +113,13 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "finish": "Vibrant Ruby Red High-Gloss Enamel",
     "colorHex": "#BE123C",
     "countryCategory": "Indian",
-    "imageUrl": "/fridges/godrej-edge-retro-ruby.svg",
-    "aspectRatio": 0.56,
+    "imageUrl": "/fridges/godrej-edge-retro-ruby.png",
+    "aspectRatio": 0.53,
     "magneticRegion": {
-      "top": 0.08,
-      "left": 0.08,
+      "top": 0.06,
+      "left": 0.1,
       "width": 0.8,
-      "height": 0.84
+      "height": 0.88
     },
     "description": "Curved single-door vintage classic with chrome teardrop latch and deep ruby enamel luster.",
     "features": [
@@ -138,13 +138,13 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "finish": "Brushed Inox Steel",
     "colorHex": "#64748B",
     "countryCategory": "Indian",
-    "imageUrl": "/fridges/haier-bottom-mounted.svg",
-    "aspectRatio": 0.58,
+    "imageUrl": "/fridges/haier-bottom-mounted.png",
+    "aspectRatio": 0.46,
     "magneticRegion": {
-      "top": 0.08,
+      "top": 0.06,
       "left": 0.08,
-      "width": 0.82,
-      "height": 0.84
+      "width": 0.84,
+      "height": 0.88
     },
     "description": "Ergonomic bottom freezer refrigerator that reduces bending by 90% with spacious upper refrigerator surface.",
     "features": [
@@ -163,15 +163,15 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "finish": "Charcoal Black Brushed Steel",
     "colorHex": "#1E293B",
     "countryCategory": "Indian",
-    "imageUrl": "/fridges/voltas-beko-prosmart.svg",
-    "aspectRatio": 0.64,
+    "imageUrl": "/fridges/voltas-beko-prosmart.png",
+    "aspectRatio": 0.52,
     "magneticRegion": {
-      "top": 0.08,
-      "left": 0.06,
-      "width": 0.88,
-      "height": 0.84
+      "top": 0.06,
+      "left": 0.08,
+      "width": 0.84,
+      "height": 0.88
     },
-    "description": "Grand multi-door French door layout with dual upper magnetic doors and NeoFrost dual cooling.",
+    "description": "Charcoal black 4-door French-door refrigerator with ProSmart inverter and digital touch panel.",
     "features": [
       "ProSmart Inverter",
       "Active Fresh Blue Light",
@@ -188,13 +188,13 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "finish": "Anti-Fingerprint Brushed Stainless Steel",
     "colorHex": "#94A3B8",
     "countryCategory": "Indian",
-    "imageUrl": "/fridges/bosch-series-6.svg",
-    "aspectRatio": 0.58,
+    "imageUrl": "/fridges/bosch-series-6.png",
+    "aspectRatio": 0.47,
     "magneticRegion": {
-      "top": 0.08,
+      "top": 0.06,
       "left": 0.08,
-      "width": 0.82,
-      "height": 0.84
+      "width": 0.84,
+      "height": 0.88
     },
     "description": "German engineered VitaFresh plus double-door refrigerator with seamless stainless steel doors and vertical edge bar.",
     "features": [
@@ -213,17 +213,17 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "finish": "Sparkling Diamond Black Glass",
     "colorHex": "#0F172A",
     "countryCategory": "Indian",
-    "imageUrl": "/fridges/panasonic-prime-fresh.svg",
-    "aspectRatio": 0.58,
+    "imageUrl": "/fridges/panasonic-prime-fresh.png",
+    "aspectRatio": 0.49,
     "magneticRegion": {
-      "top": 0.08,
+      "top": 0.06,
       "left": 0.08,
-      "width": 0.82,
-      "height": 0.84
+      "width": 0.84,
+      "height": 0.88
     },
     "description": "Premium black reflective glass finish with Econavi smart sensors and soft-freezing technology.",
     "features": [
-      "Prime Fresh -3\u00b0C",
+      "Prime Fresh -3°C",
       "Econavi Sensors",
       "Ag Clean Antibacterial",
       "Full Flat Glass"
@@ -388,10 +388,10 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "finish": "CleanSteel Satin Brushed",
     "colorHex": "#64748B",
     "countryCategory": "International",
-    "imageUrl": "/fridges/miele-mastercool-stainless.svg",
-    "aspectRatio": 0.56,
+    "imageUrl": "/fridges/miele-mastercool-stainless.png",
+    "aspectRatio": 0.43,
     "magneticRegion": {
-      "top": 0.06,
+      "top": 0.05,
       "left": 0.08,
       "width": 0.84,
       "height": 0.88
@@ -413,13 +413,13 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "finish": "Contemporary Matte Black Glass",
     "colorHex": "#1E293B",
     "countryCategory": "International",
-    "imageUrl": "/fridges/fisher-paykel-activesmart.svg",
-    "aspectRatio": 0.64,
+    "imageUrl": "/fridges/fisher-paykel-activesmart.png",
+    "aspectRatio": 0.52,
     "magneticRegion": {
-      "top": 0.08,
-      "left": 0.06,
-      "width": 0.88,
-      "height": 0.84
+      "top": 0.06,
+      "left": 0.08,
+      "width": 0.84,
+      "height": 0.88
     },
     "description": "New Zealand minimalist black glass French door with flush recessed handles and ActiveSmart intelligence.",
     "features": [
@@ -438,13 +438,13 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "finish": "Arctic Silver Brushed Stainless",
     "colorHex": "#94A3B8",
     "countryCategory": "International",
-    "imageUrl": "/fridges/electrolux-tastelock-double.svg",
-    "aspectRatio": 0.58,
+    "imageUrl": "/fridges/electrolux-tastelock-double.png",
+    "aspectRatio": 0.51,
     "magneticRegion": {
-      "top": 0.08,
+      "top": 0.06,
       "left": 0.08,
-      "width": 0.82,
-      "height": 0.84
+      "width": 0.84,
+      "height": 0.88
     },
     "description": "Scandinavian clean design with EvenTemp 360 cooling and TasteLock auto-humidity crispers.",
     "features": [
@@ -463,13 +463,13 @@ export const FRIDGE_MODELS: FridgeModel[] = [
     "finish": "Dark Titanium Metal",
     "colorHex": "#334155",
     "countryCategory": "International",
-    "imageUrl": "/fridges/hisense-pureflat-titanium.svg",
-    "aspectRatio": 0.64,
+    "imageUrl": "/fridges/hisense-pureflat-titanium.png",
+    "aspectRatio": 0.57,
     "magneticRegion": {
-      "top": 0.08,
-      "left": 0.06,
-      "width": 0.88,
-      "height": 0.84
+      "top": 0.06,
+      "left": 0.08,
+      "width": 0.84,
+      "height": 0.88
     },
     "description": "Ultra-modern PureFlat seamless door with recessed vertical handles and Triple Zone cooling.",
     "features": [
@@ -483,45 +483,45 @@ export const FRIDGE_MODELS: FridgeModel[] = [
   {
     "id": "studio-compact-matte-black",
     "name": "Urban Studio Compact Mini",
-    "brand": "Modern Studio",
+    "brand": "Urban Studio",
     "style": "Compact",
-    "finish": "Matte Velvet Black with Chrome Handle",
-    "colorHex": "#0F172A",
+    "finish": "Warm Vintage Cream Beige Enamel",
+    "colorHex": "#E2D4B7",
     "countryCategory": "International",
-    "imageUrl": "/fridges/studio-compact-matte-black.svg",
-    "aspectRatio": 0.66,
+    "imageUrl": "/fridges/studio-compact-matte-black.png",
+    "aspectRatio": 0.77,
     "magneticRegion": {
-      "top": 0.1,
-      "left": 0.1,
-      "width": 0.8,
-      "height": 0.8
+      "top": 0.08,
+      "left": 0.12,
+      "width": 0.76,
+      "height": 0.82
     },
-    "description": "Sleek compact bar refrigerator ideal for studio apartments, dorms, or cozy kitchen nooks.",
+    "description": "Retro compact mini refrigerator in warm cream enamel with vintage chrome latch handle.",
     "features": [
-      "Compact Footprint",
-      "Quiet 38dB Operation",
-      "Chiller Compartment",
-      "Reversible Door"
+      "Compact Form Factor",
+      "Retro Chrome Latch Handle",
+      "Vintage Cream Finish",
+      "Ideal for Bedroom / Studio"
     ],
     "isCustom": false
   },
   {
     "id": "classic-white-enamel-top",
     "name": "Heritage Clean White Enamel",
-    "brand": "Heritage Home",
+    "brand": "Heritage",
     "style": "Top-freezer",
     "finish": "Crisp White High-Gloss Enamel",
     "colorHex": "#F8FAFC",
     "countryCategory": "International",
-    "imageUrl": "/fridges/classic-white-enamel-top.svg",
-    "aspectRatio": 0.58,
+    "imageUrl": "/fridges/classic-white-enamel-top.png",
+    "aspectRatio": 0.51,
     "magneticRegion": {
-      "top": 0.08,
-      "left": 0.08,
-      "width": 0.82,
-      "height": 0.84
+      "top": 0.06,
+      "left": 0.12,
+      "width": 0.8,
+      "height": 0.88
     },
-    "description": "Timeless domestic classic featuring pure white gloss enamel doors and brushed chrome handles.",
+    "description": "Classic 1950s inspired double-door refrigerator in high-gloss white enamel with retro chrome handles.",
     "features": [
       "Clean White Finish",
       "SpillSafe Glass Shelves",
