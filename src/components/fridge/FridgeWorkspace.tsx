@@ -426,7 +426,9 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
         Allows smooth magnification of the fridge so magnets can be viewed in large detail!
       */}
       <div
-        className={`relative w-full flex flex-col items-center justify-center overflow-hidden rounded-3xl p-1 sm:p-2 ${
+        className={`relative w-full flex flex-col items-center justify-center ${
+          zoomLevel > 1.0 ? 'overflow-hidden' : 'overflow-visible'
+        } rounded-3xl p-2 sm:p-4 ${
           zoomLevel > 1.0 ? (isPanning ? 'cursor-grabbing' : 'cursor-grab') : ''
         }`}
         onMouseDown={handlePanMouseDown}
@@ -449,7 +451,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
             transformOrigin: 'center center',
             transition: isPanning ? 'none' : 'transform 200ms cubic-bezier(0.2, 0.9, 0.3, 1)',
           }}
-          className="relative w-full max-w-[360px]"
+          className="relative w-full max-w-[360px] overflow-visible"
         >
           {/* Check whether active model is the Universal 3D Studio model or another catalog model */}
           {activeModel.id === 'universal-steel-studio' ? (

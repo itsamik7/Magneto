@@ -64,11 +64,11 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
   }
 
   return (
-    <div className="w-full flex flex-col items-center select-none">
+    <div className="w-full flex flex-col items-center select-none overflow-visible">
       {/* 
         ========================================================================
         THE REFRIGERATOR 3D APPLIANCE STAGE
-        Completely isolated, photorealistic appliance with zero outer padding or capsules.
+        Isolated appliance with overflow-visible to guarantee the swinging door is never clipped.
         ========================================================================
       */}
       <div
@@ -79,12 +79,14 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
           maxHeight: '780px',
           perspective: '1400px',
           transformStyle: 'preserve-3d',
+          overflow: 'visible',
         }}
-        className="relative mx-auto"
+        className="relative mx-auto overflow-visible"
       >
         {/* 
           3D Turntable Wrapper
-          Orbits smoothly around the Y-axis as controlled by the slider below
+          Orbits smoothly around the Y-axis as controlled by the slider below.
+          Shifts slightly right when the door opens to ensure the swinging door remains centered and uncropped.
         */}
         <div
           style={{
@@ -92,26 +94,45 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
             height: '100%',
             position: 'relative',
             transformStyle: 'preserve-3d',
-            transform: `rotateY(${yaw}deg)`,
-            transition: 'transform 200ms cubic-bezier(0.2, 0.9, 0.3, 1)',
+            transform: `translateX(${isEffectiveOpen ? 30 : 0}px) rotateY(${yaw}deg)`,
+            transition: 'transform 500ms cubic-bezier(0.2, 0.9, 0.3, 1)',
+            overflow: 'visible',
           }}
         >
-          {/* 3D Left Cabinet Side Panel (revealed when rotating to the right) */}
+          {/* 3D Left Cabinet Side Panel (revealed when rotating to the right or opening door) */}
           <div
             style={{
               position: 'absolute',
               top: 0,
               bottom: 0,
               left: 0,
-              width: '70px',
+              width: '65px',
               transformOrigin: 'left center',
               transform: 'rotateY(-90deg)',
               backfaceVisibility: 'hidden',
               zIndex: 5,
             }}
-            className="rounded-l-lg border-l-2 border-slate-500 bg-gradient-to-r from-slate-700 via-slate-600 to-slate-500 shadow-2xl overflow-hidden pointer-events-none"
+            className="rounded-l-sm border-l border-slate-600 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 shadow-2xl overflow-hidden pointer-events-none"
           >
-            <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/30 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/40 pointer-events-none" />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.05)_50%,transparent_100%)] pointer-events-none" />
+          </div>
+
+          {/* Top Heavy-Duty Chrome/Steel Hinge Bracket */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '-5px',
+              left: '-2px',
+              width: '34px',
+              height: '11px',
+              transform: 'translateZ(10px)',
+              zIndex: 40,
+            }}
+            className="rounded-xs bg-gradient-to-r from-slate-700 via-slate-400 to-slate-700 border border-slate-400/80 shadow-md flex items-center justify-between px-1 pointer-events-none"
+          >
+            <div className="w-1.5 h-1.5 rounded-full bg-slate-900 shadow-inner" />
+            <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
           </div>
 
           {/* 3D Right Cabinet Side Panel (revealed when rotating to the left) */}
@@ -121,15 +142,15 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
               top: 0,
               bottom: 0,
               right: 0,
-              width: '70px',
+              width: '65px',
               transformOrigin: 'right center',
               transform: 'rotateY(90deg)',
               backfaceVisibility: 'hidden',
               zIndex: 5,
             }}
-            className="rounded-r-lg border-r-2 border-slate-700 bg-gradient-to-l from-slate-800 via-slate-700 to-slate-600 shadow-2xl overflow-hidden pointer-events-none"
+            className="rounded-r-sm border-r border-slate-700 bg-gradient-to-l from-slate-900 via-slate-800 to-slate-700 shadow-2xl overflow-hidden pointer-events-none"
           >
-            <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/35 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/45 pointer-events-none" />
           </div>
 
           {/* 3D Top Cabinet Roof */}
@@ -139,54 +160,47 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
               top: 0,
               left: 0,
               right: 0,
-              height: '70px',
+              height: '65px',
               transformOrigin: 'center top',
               transform: 'rotateX(90deg)',
               backfaceVisibility: 'hidden',
               zIndex: 5,
             }}
-            className="rounded-t-lg border-t-2 border-slate-500 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 shadow-inner overflow-hidden pointer-events-none"
+            className="rounded-t-sm border-t border-slate-600 bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 shadow-inner overflow-hidden pointer-events-none"
           />
 
           {/* 
             ========================================================================
             1. REFRIGERATOR INTERIOR CAVITY
-            Revealed inside the cabinet when the door swings open
+            Pure doorless symmetrical interior cavity photograph with tempered glass shelves,
+            chilled beverages, bottom citrus crisper drawer, and 5000K daylight LED.
             ========================================================================
           */}
           <div
             style={{
               position: 'absolute',
               inset: 0,
-              transform: 'translateZ(-10px)',
+              transform: 'translateZ(-6px)',
             }}
-            className="rounded-xl shadow-2xl overflow-hidden bg-slate-900 border border-slate-400"
+            className="rounded-lg shadow-2xl overflow-hidden bg-slate-900 border border-slate-500"
           >
-            {/* Photorealistic Interior Cavity Image */}
+            {/* Photorealistic Pure Cavity Image (No secondary doors!) */}
             <img
               src="/fridges/realistic-fridge-interior.png"
-              alt="Illuminated Refrigerator Interior"
-              className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none rounded-xl"
+              alt="Illuminated Refrigerator Interior Cavity"
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none rounded-lg"
             />
 
-            {/* 
-              5000K DAYLIGHT LED INTERIOR LIGHTING
-              Turns ON when door opens, illuminates shelves and food items,
-              and turns OFF smoothly when door closes
-            */}
+            {/* 5000K Daylight LED Interior Lighting Engine */}
             <div
               className={`absolute inset-0 pointer-events-none transition-opacity duration-500 ease-in-out ${
                 isEffectiveOpen ? 'opacity-100' : 'opacity-0'
               }`}
             >
-              {/* Daylight Spotlight Beam */}
-              <div className="absolute top-0 inset-x-4 h-32 bg-gradient-to-b from-white/80 via-sky-100/25 to-transparent blur-xs pointer-events-none" />
-              
-              {/* Glass Shelf Specular Highlights */}
+              <div className="absolute top-0 inset-x-4 h-28 bg-gradient-to-b from-white/80 via-sky-100/20 to-transparent blur-xs pointer-events-none" />
               <div className="absolute top-[28%] inset-x-2 h-6 bg-gradient-to-b from-white/35 to-transparent pointer-events-none" />
               <div className="absolute top-[48%] inset-x-2 h-6 bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
-              
-              {/* Status Badge */}
+
               <div className="absolute top-3 left-3 px-2 py-0.5 rounded-md bg-slate-900/80 backdrop-blur-xs text-white border border-white/20 text-[8px] font-heading font-bold flex items-center gap-1 shadow-md">
                 <Lightbulb className="w-2.5 h-2.5 text-amber-300 fill-amber-300" />
                 <span>5000K LED ACTIVE</span>
@@ -206,7 +220,7 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
               position: 'absolute',
               inset: 0,
               transformOrigin: 'left center',
-              transform: isEffectiveOpen ? 'rotateY(-85deg)' : 'rotateY(0deg)',
+              transform: isEffectiveOpen ? 'rotateY(-78deg)' : 'rotateY(0deg)',
               transition: 'transform 600ms cubic-bezier(0.25, 1, 0.4, 1)',
               transformStyle: 'preserve-3d',
               zIndex: 30,
@@ -224,7 +238,7 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                 transform: 'translateZ(8px)',
                 backfaceVisibility: 'hidden',
               }}
-              className="rounded-xl shadow-2xl overflow-hidden bg-slate-200 border border-slate-400 cursor-pointer"
+              className="rounded-lg shadow-2xl overflow-hidden bg-slate-200 border border-slate-400 cursor-pointer"
               onClick={handleToggle}
               title={isEffectiveOpen ? 'Click door to close' : 'Click door to open'}
             >
@@ -232,11 +246,11 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
               <img
                 src="/fridges/premium-steel-door-closed.png"
                 alt="Stainless Steel Refrigerator Door"
-                className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none rounded-xl"
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none rounded-lg"
               />
 
               {/* Ambient Specular Highlight Sheen */}
-              <div className="absolute inset-0 pointer-events-none rounded-xl bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-1/4 transform -skew-x-12" />
+              <div className="absolute inset-0 pointer-events-none rounded-lg bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-1/4 transform -skew-x-12" />
 
               {/* 
                 UNIFIED USABLE MAGNETIC SURFACE
@@ -262,7 +276,7 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                 className={`relative select-none ${
                   isEffectiveOpen ? 'pointer-events-none' : 'cursor-default'
                 } z-20 ${
-                  isDragOver ? 'ring-4 ring-blue-500/50 bg-blue-500/10 rounded-xl' : ''
+                  isDragOver ? 'ring-4 ring-blue-500/50 bg-blue-500/10 rounded-lg' : ''
                 }`}
               >
                 {children}
@@ -300,19 +314,19 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                 transform: 'rotateY(180deg) translateZ(8px)',
                 backfaceVisibility: 'hidden',
               }}
-              className="rounded-xl shadow-2xl overflow-hidden bg-white border border-slate-300 flex flex-col cursor-pointer"
+              className="rounded-lg shadow-2xl overflow-hidden bg-white border border-slate-300 flex flex-col cursor-pointer"
               onClick={handleToggle}
               title="Click anywhere to close refrigerator door"
             >
-              {/* Photorealistic Door-Side Storage Image */}
+              {/* Photorealistic Door-Side Storage Image (Cropped strictly to door face!) */}
               <img
                 src="/fridges/realistic-door-storage.png"
                 alt="Refrigerator Door-Side Storage Bins"
-                className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none rounded-xl"
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none rounded-lg"
               />
 
               {/* Acrylic Gloss Reflection */}
-              <div className="absolute inset-0 pointer-events-none rounded-xl bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-1/4 transform -skew-x-12" />
+              <div className="absolute inset-0 pointer-events-none rounded-lg bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-1/4 transform -skew-x-12" />
 
               {/* Door Storage Header Badge & Close Affordance */}
               <div className="relative z-10 m-2.5 px-3 py-1 bg-slate-900/80 backdrop-blur-md rounded-lg text-white flex items-center justify-between border border-white/20 shadow-md">
@@ -335,7 +349,7 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
       {/* 
         ========================================================================
         3D ROTATION SLIDER & CONTROLS DIRECTLY BELOW THE FRIDGE
-        Requested by user: Smooth horizontal slider to rotate and inspect the fridge
+        Smooth horizontal slider to rotate and inspect the fridge from any angle
         ========================================================================
       */}
       <div className="w-full max-w-[360px] mt-4 px-4 py-3 bg-white/95 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col gap-2.5">
