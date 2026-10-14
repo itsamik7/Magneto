@@ -217,6 +217,7 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
   return (
     <div
       ref={magnetRef}
+      data-magnet="true"
       onPointerDown={handlePointerDown}
       style={{
         position: 'absolute',

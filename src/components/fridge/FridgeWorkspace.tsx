@@ -15,12 +15,7 @@ import {
   ZoomIn,
   ZoomOut,
   RotateCcw,
-  RotateCw,
-  Rotate3d,
-  DoorOpen,
-  DoorClosed,
   Move,
-  Eye,
 } from 'lucide-react'
 
 export interface FridgeWorkspaceProps {
@@ -68,20 +63,13 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
     setActiveModel(currentModel)
   }, [currentModel])
 
-  // 3D Turntable / Rotation Angle (-45° to +45°) to inspect fridge exterior & illuminated interior
+  // 3D Turntable / Rotation Angle to inspect fridge exterior & illuminated interior
   const [fridgeYaw, setFridgeYaw] = useState<number>(0)
-
-  const handleRotateFridgeLeft = () => setFridgeYaw((prev) => Math.max(-45, prev - 15))
-  const handleRotateFridgeRight = () => setFridgeYaw((prev) => Math.min(45, prev + 15))
-  const handleCycleFridgeRotation = () => {
-    setFridgeYaw((prev) => {
-      if (prev === 0) return -25 // Left 3/4 View: Best for seeing open door & illuminated interior
-      if (prev === -25) return -40 // Deep inside cavity view
-      if (prev === -40) return 25 // Right 3/4 View
-      return 0 // Front view
-    })
-  }
-  const handleResetFridgeRotation = () => setFridgeYaw(0)
+  const catalogDragRef = useRef<{ startX: number; startYaw: number; isDown: boolean }>({
+    startX: 0,
+    startYaw: 0,
+    isDown: false,
+  })
 
   // Zoom & Pan Engine for inspecting magnets in large view
   const [zoomLevel, setZoomLevel] = useState<number>(1.0)
@@ -364,88 +352,6 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
               <ChevronRight className="w-3 h-3 text-slate-400" />
             </button>
           )}
-
-          {/* Open / Close Doors Button (Universal Studio 3D) or Switch to 3D Button */}
-          {activeModel.id === 'universal-steel-studio' ? (
-            <button
-              onClick={handleToggleAllDoors}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl shadow-xs border font-heading font-bold text-[11px] transition-all hover:scale-105 active:scale-95 cursor-pointer ${
-                isMainDoorOpen || isFreezerDoorOpen
-                  ? 'bg-amber-50 border-amber-300 text-amber-800'
-                  : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'
-              }`}
-              title="Open refrigerator door to explore illuminated travel interior"
-            >
-              {isMainDoorOpen || isFreezerDoorOpen ? (
-                <>
-                  <DoorClosed className="w-3.5 h-3.5 text-amber-700" />
-                  <span>Close Door</span>
-                </>
-              ) : (
-                <>
-                  <DoorOpen className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Open Door</span>
-                </>
-              )}
-            </button>
-          ) : (
-            <button
-              onClick={() => {
-                const universalModel = fridgeService.getFridgeModelById('universal-steel-studio', userId)
-                setActiveModel(universalModel)
-                if (onChangeFridgeModel) onChangeFridgeModel(universalModel)
-                fridgeService.setActiveFridgeId(userId, 'universal-steel-studio')
-              }}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 text-blue-700 border border-blue-200 rounded-xl shadow-xs font-heading font-bold text-[11px] transition-all hover:scale-105 active:scale-95 cursor-pointer"
-              title="Switch to Universal 3D Brushed Steel Refrigerator with openable doors"
-            >
-              <Sparkles className="w-3 h-3 text-blue-600" />
-              <span>3D Openable Fridge</span>
-            </button>
-          )}
-
-          {/* 3D Turntable / Rotation Controls Pill */}
-          <div className="flex items-center gap-1 bg-white p-1 rounded-2xl border border-slate-200 shadow-xs">
-            <button
-              onClick={handleRotateFridgeLeft}
-              disabled={fridgeYaw <= -45}
-              className="p-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-35 transition-colors cursor-pointer"
-              title="Rotate Fridge Left (-15°)"
-              aria-label="Rotate left"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-            </button>
-
-            <button
-              onClick={handleCycleFridgeRotation}
-              className="px-2 py-0.5 rounded-md font-heading font-bold text-[10px] text-slate-700 hover:bg-slate-100 transition-colors flex items-center gap-1 cursor-pointer"
-              title="Cycle 3D Angle: Front (0°), Left Inside View (-25°), Deep Inside View (-40°), Right View (+25°)"
-            >
-              <Rotate3d className="w-3.5 h-3.5 text-blue-600" />
-              <span>{fridgeYaw === 0 ? '3D View' : `${fridgeYaw > 0 ? '+' : ''}${fridgeYaw}°`}</span>
-            </button>
-
-            <button
-              onClick={handleRotateFridgeRight}
-              disabled={fridgeYaw >= 45}
-              className="p-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-35 transition-colors cursor-pointer"
-              title="Rotate Fridge Right (+15°)"
-              aria-label="Rotate right"
-            >
-              <RotateCw className="w-3.5 h-3.5" />
-            </button>
-
-            {fridgeYaw !== 0 && (
-              <button
-                onClick={handleResetFridgeRotation}
-                className="px-1.5 py-0.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors border-l border-slate-200 text-[10px] font-bold cursor-pointer"
-                title="Reset 3D Angle to Front (0°)"
-                aria-label="Reset angle"
-              >
-                Reset
-              </button>
-            )}
-          </div>
         </div>
 
         {/* Zoom & Viewport Controls Pill */}
@@ -546,7 +452,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
             transformOrigin: 'center center',
             transition: isPanning ? 'none' : 'transform 200ms cubic-bezier(0.2, 0.9, 0.3, 1)',
           }}
-          className="relative w-full max-w-[380px]"
+          className="relative w-full max-w-[430px]"
         >
           {/* Check whether active model is the Universal 3D Studio model or another catalog model */}
           {activeModel.id === 'universal-steel-studio' ? (
@@ -567,6 +473,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
               onSurfaceClick={handleSurfaceClick}
               isEditable={!readOnly}
               yaw={fridgeYaw}
+              onYawChange={setFridgeYaw}
             >
               {/* Empty Fridge Invitation State */}
               {magnets.length === 0 && (
@@ -625,16 +532,38 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
           ) : (
             /* Selected Catalog or Custom Uploaded Fridge Model with 3D Turntable Rotation */
             <div
-              className="relative mx-auto select-none"
+              className="relative mx-auto select-none cursor-grab active:cursor-grabbing"
               style={{
                 width: '100%',
-                maxWidth: '380px',
+                maxWidth: '430px',
                 aspectRatio: `${activeModel.aspectRatio}`,
-                maxHeight: '760px',
+                maxHeight: '820px',
                 perspective: '1400px',
                 transformStyle: 'preserve-3d',
                 transform: `rotateY(${fridgeYaw}deg)`,
-                transition: 'transform 300ms cubic-bezier(0.25, 1, 0.4, 1)',
+                transition: catalogDragRef.current.isDown ? 'none' : 'transform 300ms cubic-bezier(0.25, 1, 0.4, 1)',
+              }}
+              onPointerDown={(e) => {
+                const target = e.target as HTMLElement
+                if (target.closest('button') || target.closest('[data-magnet="true"]')) return
+                catalogDragRef.current = {
+                  startX: e.clientX,
+                  startYaw: fridgeYaw,
+                  isDown: true,
+                }
+              }}
+              onPointerMove={(e) => {
+                if (!catalogDragRef.current.isDown) return
+                const deltaX = e.clientX - catalogDragRef.current.startX
+                if (Math.abs(deltaX) > 3) {
+                  setFridgeYaw(Math.max(-60, Math.min(60, catalogDragRef.current.startYaw + deltaX * 0.35)))
+                }
+              }}
+              onPointerUp={() => {
+                catalogDragRef.current.isDown = false
+              }}
+              onPointerCancel={() => {
+                catalogDragRef.current.isDown = false
               }}
             >
               {/* 3D Side Depth Panels for authentic appliance perspective */}
