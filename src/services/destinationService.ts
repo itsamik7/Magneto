@@ -5,6 +5,23 @@ import type {
 } from '../types/destination'
 import { DESTINATIONS_CATALOG } from '../data/destinationsCatalog'
 
+const DESTINATION_SLUG_ALIASES: Record<string, string> = {
+  taipei: 'hoi-an',
+  'luang-prabang': 'sigiriya',
+  florence: 'bavaria',
+  'gold-coast': 'tahiti',
+  edinburgh: 'norwegian-fjords',
+  'great-wall': 'kuala-lumpur',
+  'mexico-city': 'cartagena',
+  havana: 'costa-rica',
+  meghalaya: 'delhi',
+  ooty: 'mumbai',
+  'rann-of-kutch': 'jaisalmer',
+  mysore: 'konark',
+  pondicherry: 'madurai',
+  'kerala-backwaters': 'kerala',
+}
+
 export const destinationService = {
   /**
    * Fetch destinations with optional filters, search, and collected state.
@@ -210,7 +227,9 @@ export const destinationService = {
    */
   async getDestinationBySlug(slug: string, userId?: string): Promise<DestinationWithMagnet | null> {
     const all = await destinationService.getDestinations({}, userId)
-    return all.find((d) => d.slug === slug) || null
+    const normalized = slug.toLowerCase()
+    const targetSlug = DESTINATION_SLUG_ALIASES[normalized] || normalized
+    return all.find((d) => d.slug === targetSlug || d.slug === normalized) || null
   },
 
   /**
