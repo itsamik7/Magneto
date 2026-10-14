@@ -83,6 +83,22 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
         }}
         className="relative mx-auto overflow-visible"
       >
+        {/* Ground Contact Shadow under the 3D Appliance */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '-16px',
+            left: '-10%',
+            right: '-10%',
+            height: '32px',
+            background: 'radial-gradient(ellipse at center, rgba(15, 23, 42, 0.28) 0%, rgba(15, 23, 42, 0.1) 45%, transparent 70%)',
+            pointerEvents: 'none',
+            zIndex: 1,
+            transform: `translateX(${isEffectiveOpen ? 15 : 0}px)`,
+            transition: 'transform 500ms cubic-bezier(0.2, 0.9, 0.3, 1)',
+          }}
+        />
+
         {/* 
           3D Turntable Wrapper
           Orbits smoothly around the Y-axis as controlled by the slider below.
@@ -99,23 +115,25 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
             overflow: 'visible',
           }}
         >
-          {/* 3D Left Cabinet Side Panel (revealed when rotating to the right or opening door) */}
+          {/* 3D Left Cabinet Side Panel (folds into -Z depth behind the front face) */}
           <div
             style={{
               position: 'absolute',
               top: 0,
               bottom: 0,
-              left: 0,
+              left: '-65px',
               width: '65px',
-              transformOrigin: 'left center',
+              transformOrigin: 'right center',
               transform: 'rotateY(-90deg)',
               backfaceVisibility: 'hidden',
               zIndex: 5,
             }}
-            className="rounded-l-sm border-l border-slate-600 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 shadow-2xl overflow-hidden pointer-events-none"
+            className="border-r border-slate-300/80 bg-gradient-to-r from-slate-400 via-slate-300 to-slate-200 shadow-xl overflow-hidden pointer-events-none"
           >
-            <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/40 pointer-events-none" />
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.05)_50%,transparent_100%)] pointer-events-none" />
+            {/* Subtle brushed metal grain & ambient depth shading receding away from front face */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/25 via-black/10 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/15 via-transparent to-black/20 pointer-events-none" />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.08)_50%,transparent_100%)] pointer-events-none" />
           </div>
 
           {/* Top Heavy-Duty Chrome/Steel Hinge Bracket */}
@@ -129,45 +147,49 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
               transform: 'translateZ(10px)',
               zIndex: 40,
             }}
-            className="rounded-xs bg-gradient-to-r from-slate-700 via-slate-400 to-slate-700 border border-slate-400/80 shadow-md flex items-center justify-between px-1 pointer-events-none"
+            className="rounded-xs bg-gradient-to-r from-slate-400 via-slate-200 to-slate-400 border border-slate-300 shadow-xs flex items-center justify-between px-1 pointer-events-none"
           >
-            <div className="w-1.5 h-1.5 rounded-full bg-slate-900 shadow-inner" />
-            <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+            <div className="w-1.5 h-1.5 rounded-full bg-slate-600 shadow-inner" />
+            <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
           </div>
 
-          {/* 3D Right Cabinet Side Panel (revealed when rotating to the left) */}
+          {/* 3D Right Cabinet Side Panel (folds into -Z depth behind the front face) */}
           <div
             style={{
               position: 'absolute',
               top: 0,
               bottom: 0,
-              right: 0,
+              left: '100%',
               width: '65px',
-              transformOrigin: 'right center',
+              transformOrigin: 'left center',
               transform: 'rotateY(90deg)',
               backfaceVisibility: 'hidden',
               zIndex: 5,
             }}
-            className="rounded-r-sm border-r border-slate-700 bg-gradient-to-l from-slate-900 via-slate-800 to-slate-700 shadow-2xl overflow-hidden pointer-events-none"
+            className="border-l border-slate-300/80 bg-gradient-to-l from-slate-400 via-slate-300 to-slate-200 shadow-xl overflow-hidden pointer-events-none"
           >
-            <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/45 pointer-events-none" />
+            {/* Subtle brushed metal grain & ambient depth shading receding away from front face */}
+            <div className="absolute inset-0 bg-gradient-to-l from-black/25 via-black/10 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/15 via-transparent to-black/20 pointer-events-none" />
           </div>
 
-          {/* 3D Top Cabinet Roof */}
+          {/* 3D Top Cabinet Roof (folds into -Z depth behind the front top edge) */}
           <div
             style={{
               position: 'absolute',
-              top: 0,
+              top: '-65px',
               left: 0,
               right: 0,
               height: '65px',
-              transformOrigin: 'center top',
+              transformOrigin: 'center bottom',
               transform: 'rotateX(90deg)',
               backfaceVisibility: 'hidden',
               zIndex: 5,
             }}
-            className="rounded-t-sm border-t border-slate-600 bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 shadow-inner overflow-hidden pointer-events-none"
-          />
+            className="border-b border-slate-300/80 bg-gradient-to-t from-slate-200 via-slate-300 to-slate-400 shadow-inner overflow-hidden pointer-events-none"
+          >
+            <div className="absolute inset-0 bg-gradient-to-t from-transparent via-black/5 to-black/20 pointer-events-none" />
+          </div>
 
           {/* 
             ========================================================================
@@ -289,16 +311,16 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                 position: 'absolute',
                 top: 0,
                 bottom: 0,
-                right: 0,
-                width: '18px',
-                transformOrigin: 'right center',
+                right: '-8px',
+                width: '16px',
+                transformOrigin: 'center center',
                 transform: 'rotateY(90deg)',
                 backfaceVisibility: 'hidden',
               }}
-              className="rounded-r-xs bg-gradient-to-l from-slate-700 via-slate-600 to-slate-800 border-l border-slate-500 shadow-md pointer-events-none flex flex-col justify-center items-center"
+              className="bg-gradient-to-r from-slate-300 via-slate-200 to-slate-400 border-l border-slate-300/80 shadow-xs pointer-events-none flex flex-col justify-center items-center"
             >
-              {/* Magnetic Rubber Gasket Edge */}
-              <div className="w-1.5 h-[98%] rounded-full bg-slate-900 shadow-inner" />
+              {/* Magnetic Gasket Seam */}
+              <div className="w-1 h-[98%] rounded-full bg-slate-400/60 shadow-inner" />
             </div>
 
             {/* 
