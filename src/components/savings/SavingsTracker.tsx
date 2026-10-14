@@ -80,8 +80,8 @@ export const SavingsTracker: React.FC<SavingsTrackerProps> = ({
       <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-3">
         <div className="flex justify-between items-center text-xs">
           <span className="font-heading font-bold text-slate-700">Savings Progress</span>
-          <span className="font-heading font-black text-base text-teal-700">
-            {trip.progress_percentage}%
+          <span className="font-heading font-black text-sm text-teal-700">
+            {formatINR(trip.total_saved_minor)} / {formatINR(trip.target_budget_minor)}
           </span>
         </div>
         <div className="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/80">

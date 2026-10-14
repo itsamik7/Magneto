@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import type { MagnetUnlockState } from '../../types/trip'
-import { Sparkles, CheckCircle2, Compass, Moon } from 'lucide-react'
+import { Sparkles, Compass, Moon } from 'lucide-react'
 
 interface MagnetGraphicProps {
   magnetKey?: string
@@ -100,10 +100,6 @@ export const MagnetGraphic: React.FC<MagnetGraphicProps> = ({
               <Sparkles className="w-2.5 h-2.5 text-slate-950 fill-slate-950" />
               READY!
             </div>
-            <div className="absolute -bottom-2 inset-x-2 bg-emerald-600 text-white text-[9px] font-bold py-0.5 rounded-full shadow text-center flex items-center justify-center gap-1 border border-white">
-              <CheckCircle2 className="w-2.5 h-2.5" />
-              100%
-            </div>
           </div>
         )
 
@@ -113,9 +109,6 @@ export const MagnetGraphic: React.FC<MagnetGraphicProps> = ({
             <div className="absolute -top-2.5 -right-2 bg-emerald-600 text-white font-heading text-[9px] font-bold px-2 py-0.5 rounded-full shadow-md flex items-center gap-1 border-2 border-white">
               <Compass className="w-2.5 h-2.5" />
               SAVING
-            </div>
-            <div className="absolute -bottom-2 inset-x-3 bg-slate-900/90 backdrop-blur-sm text-white text-[9px] font-bold py-0.5 rounded-full shadow text-center border border-white/60">
-              {Math.round(progressPercentage)}%
             </div>
           </div>
         )

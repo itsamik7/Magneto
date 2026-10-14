@@ -863,9 +863,8 @@ export const PlanTripPage: React.FC = () => {
 
               <div>
                 <span className="text-[10px] text-slate-500 font-semibold block">Total Estimated Cost</span>
-                <div className="flex items-center justify-between font-heading font-black text-lg text-slate-900 leading-tight">
+                <div className="font-heading font-black text-lg text-slate-900 leading-tight">
                   <span>₹ {totalEstimatedCost.toLocaleString('en-IN')}</span>
-                  <span className="text-xs text-blue-600">{percentSaved}%</span>
                 </div>
               </div>
 
@@ -989,7 +988,7 @@ export const PlanTripPage: React.FC = () => {
                 ₹ {savedAmount.toLocaleString('en-IN')}
               </h3>
               <p className="text-xs text-blue-100 mt-1">
-                Target: ₹ {totalEstimatedCost.toLocaleString('en-IN')} • {percentSaved}% completed
+                Target: ₹ {totalEstimatedCost.toLocaleString('en-IN')}
               </p>
             </div>
 

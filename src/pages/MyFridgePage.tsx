@@ -465,7 +465,6 @@ export const MyFridgePage: React.FC = () => {
             <span className="text-slate-900">
               ₹ {savedAmount.toLocaleString('en-IN')} of ₹ {targetBudget.toLocaleString('en-IN')}
             </span>
-            <span className="text-blue-600 font-bold">{progressPercent}%</span>
           </div>
           <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden shadow-inner border border-slate-200/60">
             <div
