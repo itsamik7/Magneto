@@ -19,6 +19,7 @@ export interface UniversalSteelFridgeProps {
   onSurfaceClick?: (e: React.MouseEvent) => void
   aspectRatio?: number
   isEditable?: boolean
+  yaw?: number
 }
 
 export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
@@ -38,6 +39,7 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
   onSurfaceClick,
   aspectRatio = 0.56,
   isEditable = true,
+  yaw = 0,
 }) => {
   const isEffectiveOpen =
     isDoorOpen !== undefined
@@ -69,8 +71,62 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
         aspectRatio: `${aspectRatio}`,
         maxHeight: '760px',
         perspective: '1400px',
+        transformStyle: 'preserve-3d',
+        transform: `rotateY(${yaw}deg)`,
+        transition: 'transform 300ms cubic-bezier(0.25, 1, 0.4, 1)',
       }}
     >
+      {/* 3D Left Cabinet Side Panel (revealed when rotating to the right) */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: 0,
+          width: '75px',
+          transformOrigin: 'left center',
+          transform: 'rotateY(-90deg)',
+          backfaceVisibility: 'hidden',
+          zIndex: 5,
+        }}
+        className="rounded-l-2xl border-l-2 border-slate-300 bg-gradient-to-r from-slate-500 via-slate-400 to-slate-500 shadow-2xl overflow-hidden pointer-events-none"
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-white/15 via-transparent to-black/25 pointer-events-none" />
+      </div>
+
+      {/* 3D Right Cabinet Side Panel (revealed when rotating to the left) */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          right: 0,
+          width: '75px',
+          transformOrigin: 'right center',
+          transform: 'rotateY(90deg)',
+          backfaceVisibility: 'hidden',
+          zIndex: 5,
+        }}
+        className="rounded-r-2xl border-r-2 border-slate-600 bg-gradient-to-l from-slate-800 via-slate-700 to-slate-600 shadow-2xl overflow-hidden pointer-events-none"
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/35 pointer-events-none" />
+      </div>
+
+      {/* 3D Top Cabinet Roof */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '75px',
+          transformOrigin: 'center top',
+          transform: 'rotateX(90deg)',
+          backfaceVisibility: 'hidden',
+          zIndex: 5,
+        }}
+        className="rounded-t-2xl border-t-2 border-slate-400 bg-gradient-to-b from-slate-500 via-slate-600 to-slate-700 shadow-inner overflow-hidden pointer-events-none"
+      />
       {/* 
         ========================================================================
         1. APPLIANCE CHASSIS & ILLUMINATED INTERIOR CAVITY
