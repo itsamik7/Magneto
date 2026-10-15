@@ -56,6 +56,11 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
       isAnimatingRef.current = false
     }, 600)
 
+    const willBeOpen = !isEffectiveOpen
+    if (onYawChange) {
+      onYawChange(willBeOpen ? -45 : 0)
+    }
+
     if (onToggleDoor) {
       onToggleDoor()
     } else if (onToggleMainDoor) {
@@ -95,7 +100,7 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
             pointerEvents: 'none',
             zIndex: 1,
             transform: `translateX(${isEffectiveOpen ? 15 : 0}px)`,
-            transition: 'transform 500ms cubic-bezier(0.2, 0.9, 0.3, 1)',
+            transition: 'transform 600ms cubic-bezier(0.25, 1, 0.4, 1)',
           }}
         />
 
@@ -111,7 +116,7 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
             position: 'relative',
             transformStyle: 'preserve-3d',
             transform: `translateX(${isEffectiveOpen ? 30 : 0}px) rotateY(${yaw}deg)`,
-            transition: 'transform 500ms cubic-bezier(0.2, 0.9, 0.3, 1)',
+            transition: 'transform 600ms cubic-bezier(0.25, 1, 0.4, 1)',
             overflow: 'visible',
           }}
         >
@@ -204,7 +209,11 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
               inset: 0,
               transform: 'translateZ(-6px)',
             }}
-            className="rounded-lg shadow-2xl overflow-hidden bg-slate-900 border border-slate-500"
+            className={`rounded-lg shadow-2xl overflow-hidden bg-slate-900 border border-slate-500 ${
+              isEffectiveOpen ? 'cursor-pointer' : ''
+            }`}
+            onClick={isEffectiveOpen ? handleToggle : undefined}
+            title={isEffectiveOpen ? 'Click to close refrigerator door' : undefined}
           >
             {/* Photorealistic Pure Cavity Image (No secondary doors!) */}
             <img

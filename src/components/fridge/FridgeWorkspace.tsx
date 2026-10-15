@@ -231,15 +231,31 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
     }
   }, [panOffset, isPanning])
 
-  const handleToggleMainDoor = () => setIsMainDoorOpen((prev) => !prev)
-  const handleToggleFreezerDoor = () => setIsFreezerDoorOpen((prev) => !prev)
+  const handleToggleMainDoor = () => {
+    setIsMainDoorOpen((prev) => {
+      const next = !prev
+      setFridgeYaw(next ? -45 : 0)
+      return next
+    })
+  }
+
+  const handleToggleFreezerDoor = () => {
+    setIsFreezerDoorOpen((prev) => {
+      const next = !prev
+      setFridgeYaw(next ? -45 : 0)
+      return next
+    })
+  }
+
   const handleToggleAllDoors = () => {
     if (isMainDoorOpen || isFreezerDoorOpen) {
       setIsMainDoorOpen(false)
       setIsFreezerDoorOpen(false)
+      setFridgeYaw(0)
     } else {
       setIsMainDoorOpen(true)
       setIsFreezerDoorOpen(true)
+      setFridgeYaw(-45)
     }
   }
 
