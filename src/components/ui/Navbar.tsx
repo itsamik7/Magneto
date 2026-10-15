@@ -41,7 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
         </div>
       )}
 
-      <div className="max-w-[1700px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      <div className="max-w-[1720px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4 relative">
         {/* Brand Logo with Horseshoe Magnet Icon & Tagline */}
         <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-2.5 group flex-shrink-0">
           <div className="w-9 h-9 rounded-xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-center p-1 group-hover:scale-105 transition-transform">
@@ -70,7 +70,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
         </Link>
 
         {/* Center Desktop Navigation: My Fridge & Plan a Trip Pills */}
-        <nav className="hidden lg:flex items-center gap-1.5 bg-slate-100/80 p-1 rounded-2xl border border-slate-200/80">
+        <nav className="hidden lg:flex items-center gap-1.5 bg-slate-100/80 p-1 rounded-2xl border border-slate-200/80 lg:absolute lg:left-1/2 lg:-translate-x-1/2">
           <Link
             to="/dashboard"
             className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${

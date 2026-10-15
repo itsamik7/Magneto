@@ -545,13 +545,19 @@ export const MyFridgePage: React.FC = () => {
   }
 
   return (
-    <div className="w-full flex flex-col xl:flex-row items-start justify-center gap-4 lg:gap-6 pb-2 sm:pb-4 animate-in fade-in duration-200">
+    <div className="w-full grid grid-cols-1 xl:grid-cols-[1fr_auto_1fr] items-start gap-4 lg:gap-6 pb-2 sm:pb-4 animate-in fade-in duration-200">
       
       {/* 
-        LEFT & CENTER STAGE:
-        Free-Flow Photorealistic Refrigerator Stage (No border box, unclipped zoom)
+        LEFT COLUMN (BALANCING SPACER):
+        Matches right inspector width on desktop so the Refrigerator stays centered at 50% screen width
       */}
-      <div className="flex-1 w-full flex items-center justify-center relative min-h-0 sm:min-h-[520px] p-0 overflow-visible bg-transparent">
+      <div className="hidden xl:block w-full max-w-[400px] pointer-events-none" aria-hidden="true" />
+
+      {/* 
+        CENTER STAGE:
+        Free-Flow Photorealistic Refrigerator Stage (Horizontally centered at 50% screen width)
+      */}
+      <div className="w-full flex items-center justify-center relative min-h-0 sm:min-h-[520px] p-0 overflow-visible bg-transparent">
         {/* Center: The Photorealistic Refrigerator */}
         <div className="relative z-10 w-full flex flex-col items-center overflow-visible">
           <FridgeWorkspace
@@ -567,14 +573,13 @@ export const MyFridgePage: React.FC = () => {
             readOnly={true}
           />
         </div>
-
       </div>
 
       {/* 
         RIGHT COLUMN:
         Trip & Destination Inspector Panel Matching media_1791901625472_ea35fd75.jpg
       */}
-      <div className="w-full xl:w-[400px] bg-white rounded-3xl p-4 sm:p-5 shadow-xl border border-slate-200/90 flex flex-col gap-3.5 flex-shrink-0">
+      <div className="w-full max-w-[400px] justify-self-center xl:justify-self-end bg-white rounded-3xl p-4 sm:p-5 shadow-xl border border-slate-200/90 flex flex-col gap-3.5 flex-shrink-0">
         
         {/* Destination Hero Banner */}
         <div className="relative w-full h-36 sm:h-40 rounded-2xl overflow-hidden shadow-md group">
