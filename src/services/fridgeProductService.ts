@@ -16,9 +16,12 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     imageUrl: '/assets/products/milk-carton.png',
     description: 'Organic whole milk, pasteurized & fortified with Vitamin D',
     shelf: 'middle_shelf',
-    positionX: 22,
+    positionX: 25,
     displayScale: 1.05,
-    quantity: '1 Litre',
+    quantity: '3 Cartons',
+    itemCount: 3,
+    arrangement: 'row',
+    spacing: 22,
     isActive: true,
     isArchived: false,
     displayOrder: 1,
@@ -30,9 +33,12 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     imageUrl: '/assets/products/egg-carton.png',
     description: 'Pasture-raised grade A large brown eggs',
     shelf: 'top_shelf',
-    positionX: 26,
+    positionX: 28,
     displayScale: 0.95,
     quantity: 'Pack of 6',
+    itemCount: 1,
+    arrangement: 'single',
+    spacing: 18,
     isActive: true,
     isArchived: false,
     displayOrder: 2,
@@ -44,9 +50,12 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     imageUrl: '/assets/products/water-bottle.png',
     description: 'Naturally effervescent spring water with mineral electrolytes',
     shelf: 'middle_shelf',
-    positionX: 75,
+    positionX: 74,
     displayScale: 1.0,
     quantity: '2 Bottles',
+    itemCount: 2,
+    arrangement: 'row',
+    spacing: 22,
     isActive: true,
     isArchived: false,
     displayOrder: 3,
@@ -61,6 +70,9 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     positionX: 28,
     displayScale: 1.0,
     quantity: '1 Carafe',
+    itemCount: 1,
+    arrangement: 'single',
+    spacing: 18,
     isActive: true,
     isArchived: false,
     displayOrder: 4,
@@ -72,9 +84,12 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     imageUrl: '/assets/products/yogurt-jar.png',
     description: 'Strained whole milk plain Greek yogurt with probiotics',
     shelf: 'top_shelf',
-    positionX: 70,
+    positionX: 72,
     displayScale: 0.9,
-    quantity: '500g Jar',
+    quantity: '2 Jars',
+    itemCount: 2,
+    arrangement: 'row',
+    spacing: 20,
     isActive: true,
     isArchived: false,
     displayOrder: 5,
@@ -89,6 +104,9 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     positionX: 25,
     displayScale: 0.9,
     quantity: '250g Jar',
+    itemCount: 1,
+    arrangement: 'single',
+    spacing: 18,
     isActive: true,
     isArchived: false,
     displayOrder: 6,
@@ -103,6 +121,9 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     positionX: 75,
     displayScale: 0.85,
     quantity: '340g Jar',
+    itemCount: 1,
+    arrangement: 'single',
+    spacing: 18,
     isActive: true,
     isArchived: false,
     displayOrder: 7,
@@ -114,9 +135,12 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     imageUrl: '/assets/products/citrus-basket.png',
     description: 'Juicy organic lemons, sweet clementines and Valencia oranges',
     shelf: 'crisper_drawer',
-    positionX: 30,
+    positionX: 32,
     displayScale: 1.1,
-    quantity: '1.2 kg',
+    quantity: '1 Basket',
+    itemCount: 1,
+    arrangement: 'single',
+    spacing: 18,
     isActive: true,
     isArchived: false,
     displayOrder: 8,
@@ -131,6 +155,9 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     positionX: 72,
     displayScale: 1.05,
     quantity: '1 Head',
+    itemCount: 1,
+    arrangement: 'single',
+    spacing: 18,
     isActive: true,
     isArchived: false,
     displayOrder: 9,
@@ -144,7 +171,10 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     shelf: 'bottom_shelf',
     positionX: 72,
     displayScale: 1.0,
-    quantity: '1 Container',
+    quantity: '2 Containers (Stacked)',
+    itemCount: 2,
+    arrangement: 'stack',
+    spacing: 16,
     isActive: true,
     isArchived: false,
     displayOrder: 10,
@@ -158,7 +188,10 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     shelf: 'freezer',
     positionX: 50,
     displayScale: 1.0,
-    quantity: '1 Pint',
+    quantity: '2 Pints',
+    itemCount: 2,
+    arrangement: 'row',
+    spacing: 22,
     isActive: true,
     isArchived: false,
     displayOrder: 11,
@@ -173,6 +206,9 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     positionX: 50,
     displayScale: 1.15,
     quantity: '750 ml',
+    itemCount: 1,
+    arrangement: 'single',
+    spacing: 18,
     isActive: true,
     isArchived: false,
     displayOrder: 12,
@@ -244,16 +280,43 @@ interface DbFridgeProduct {
 }
 
 function mapRowToProduct(row: DbFridgeProduct): FridgeProduct {
+  let itemCount: number = 1
+  let arrangement: StackingArrangement = 'single'
+  let spacing: number = 18
+  let cleanDescription = row.description ?? undefined
+
+  if (row.description && row.description.includes('__META__:')) {
+    try {
+      const parts = row.description.split('__META__:')
+      cleanDescription = parts[0].trim() || undefined
+      const meta = JSON.parse(parts[1])
+      if (meta.itemCount !== undefined) itemCount = Math.max(1, Math.min(12, Number(meta.itemCount)))
+      if (meta.arrangement) arrangement = meta.arrangement
+      if (meta.spacing !== undefined) spacing = Math.max(10, Math.min(45, Number(meta.spacing)))
+    } catch (e) {
+      console.warn('[FridgeProductService] Error parsing arrangement metadata:', e)
+    }
+  } else if (row.quantity) {
+    const match = row.quantity.match(/^(\d+)\s*(units?|bottles?|cartons?|cans?|jars?|pints?|containers?|items?|pack)/i)
+    if (match) {
+      itemCount = Math.min(12, Math.max(1, parseInt(match[1], 10)))
+      if (itemCount > 1) arrangement = 'row'
+    }
+  }
+
   return {
     id: row.id,
     name: row.name,
     category: row.category as ProductCategory,
     imageUrl: row.image_url,
-    description: row.description ?? undefined,
+    description: cleanDescription,
     shelf: row.shelf as FridgeShelf,
     positionX: Number(row.position_x),
     displayScale: Number(row.display_scale),
     quantity: row.quantity ?? undefined,
+    itemCount,
+    arrangement,
+    spacing,
     isActive: Boolean(row.is_active),
     isArchived: Boolean(row.is_archived),
     displayOrder: row.display_order ?? 0,
@@ -264,6 +327,7 @@ function mapRowToProduct(row: DbFridgeProduct): FridgeProduct {
 }
 
 import type { Database } from '../types/database'
+import type { StackingArrangement } from '../types/fridgeProduct'
 
 type DbFridgeProductInsert = Database['public']['Tables']['fridge_products']['Insert']
 type DbFridgeProductUpdate = Database['public']['Tables']['fridge_products']['Update']
@@ -273,7 +337,27 @@ function mapProductToRow(product: Partial<FridgeProduct>): DbFridgeProductUpdate
   if (product.name !== undefined) row.name = product.name
   if (product.category !== undefined) row.category = product.category
   if (product.imageUrl !== undefined) row.image_url = product.imageUrl
-  if (product.description !== undefined) row.description = product.description
+
+  // Attach metadata cleanly into description column for Supabase persistence
+  let descToSave = product.description ?? ''
+  const hasMeta =
+    (product.itemCount !== undefined && product.itemCount > 1) ||
+    (product.arrangement !== undefined && product.arrangement !== 'single') ||
+    product.spacing !== undefined
+
+  if (hasMeta) {
+    const metaJson = JSON.stringify({
+      itemCount: product.itemCount ?? 1,
+      arrangement: product.arrangement ?? 'single',
+      spacing: product.spacing ?? 18,
+    })
+    descToSave = `${descToSave ? descToSave + ' ' : ''}__META__:${metaJson}`
+  }
+
+  if (product.description !== undefined || hasMeta) {
+    row.description = descToSave.trim() || null
+  }
+
   if (product.shelf !== undefined) row.shelf = product.shelf
   if (product.positionX !== undefined) row.position_x = product.positionX
   if (product.displayScale !== undefined) row.display_scale = product.displayScale

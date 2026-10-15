@@ -107,6 +107,66 @@ export const PRODUCT_CATEGORIES: ProductCategory[] = [
   'Snacks',
 ]
 
+export type StackingArrangement = 'single' | 'row' | 'depth' | 'grid' | 'stack'
+
+export interface CompartmentCapacity {
+  shelf: FridgeShelf
+  maxUnits: number
+  recommendedArrangements: StackingArrangement[]
+  description: string
+}
+
+export const COMPARTMENT_CAPACITIES: Record<FridgeShelf, CompartmentCapacity> = {
+  freezer: {
+    shelf: 'freezer',
+    maxUnits: 4,
+    recommendedArrangements: ['single', 'row', 'stack'],
+    description: 'Sub-zero insulated freezer for frozen treats, gelato pints, and ice tray.',
+  },
+  top_shelf: {
+    shelf: 'top_shelf',
+    maxUnits: 6,
+    recommendedArrangements: ['single', 'row', 'depth', 'grid'],
+    description: 'Upper tempered glass shelf for egg cartons, dairy jars, and delicacies.',
+  },
+  middle_shelf: {
+    shelf: 'middle_shelf',
+    maxUnits: 7,
+    recommendedArrangements: ['single', 'row', 'depth'],
+    description: 'High-clearance tempered glass shelf for whole milk cartons, bottles, and carafes.',
+  },
+  bottom_shelf: {
+    shelf: 'bottom_shelf',
+    maxUnits: 6,
+    recommendedArrangements: ['single', 'row', 'grid', 'stack'],
+    description: 'Sturdy lower glass shelf above crisper for meal prep containers and drink rows.',
+  },
+  crisper_drawer: {
+    shelf: 'crisper_drawer',
+    maxUnits: 5,
+    recommendedArrangements: ['single', 'row', 'grid'],
+    description: 'High-humidity sliding transparent acrylic drawer for fresh salad greens and citrus.',
+  },
+  door_bin_top: {
+    shelf: 'door_bin_top',
+    maxUnits: 4,
+    recommendedArrangements: ['single', 'row'],
+    description: 'Top covered acrylic door bin for butter dishes, small cheeses, and spreads.',
+  },
+  door_bin_middle: {
+    shelf: 'door_bin_middle',
+    maxUnits: 5,
+    recommendedArrangements: ['single', 'row'],
+    description: 'Intermediate acrylic door rack for condiment jars, Dijon mustard, and jam.',
+  },
+  door_bin_bottom: {
+    shelf: 'door_bin_bottom',
+    maxUnits: 4,
+    recommendedArrangements: ['single', 'row'],
+    description: 'Deep guardrail door rack for champagne bottles, chilled beverages, and gallons.',
+  },
+}
+
 export interface FridgeProduct {
   id: string
   name: string
@@ -117,6 +177,12 @@ export interface FridgeProduct {
   positionX: number // 0 to 100 percentage horizontally
   displayScale: number // 0.4 to 2.5 (default 1.0)
   quantity?: string
+  /** Number of physical units stacked or arranged on the shelf (1 to 12) */
+  itemCount?: number
+  /** Stacking and spatial arrangement mode */
+  arrangement?: StackingArrangement
+  /** Spacing in pixels between duplicate units (10 to 45px) */
+  spacing?: number
   isActive: boolean
   isArchived: boolean
   displayOrder: number
@@ -132,6 +198,9 @@ export interface ApprovedAsset {
   path: string
   suggestedShelf: FridgeShelf
   defaultQuantity: string
+  defaultItemCount?: number
+  defaultArrangement?: StackingArrangement
+  defaultSpacing?: number
 }
 
 export const APPROVED_ASSETS: ApprovedAsset[] = [
@@ -141,7 +210,10 @@ export const APPROVED_ASSETS: ApprovedAsset[] = [
     category: 'Dairy',
     path: '/assets/products/milk-carton.png',
     suggestedShelf: 'middle_shelf',
-    defaultQuantity: '1 Litre',
+    defaultQuantity: '3 Cartons',
+    defaultItemCount: 3,
+    defaultArrangement: 'row',
+    defaultSpacing: 22,
   },
   {
     id: 'asset-egg-carton',
@@ -150,6 +222,9 @@ export const APPROVED_ASSETS: ApprovedAsset[] = [
     path: '/assets/products/egg-carton.png',
     suggestedShelf: 'top_shelf',
     defaultQuantity: 'Pack of 6',
+    defaultItemCount: 1,
+    defaultArrangement: 'single',
+    defaultSpacing: 18,
   },
   {
     id: 'asset-water-bottle',
@@ -158,6 +233,9 @@ export const APPROVED_ASSETS: ApprovedAsset[] = [
     path: '/assets/products/water-bottle.png',
     suggestedShelf: 'middle_shelf',
     defaultQuantity: '2 Bottles',
+    defaultItemCount: 2,
+    defaultArrangement: 'row',
+    defaultSpacing: 22,
   },
   {
     id: 'asset-orange-juice',
@@ -166,6 +244,9 @@ export const APPROVED_ASSETS: ApprovedAsset[] = [
     path: '/assets/products/orange-juice.png',
     suggestedShelf: 'bottom_shelf',
     defaultQuantity: '1 Carafe',
+    defaultItemCount: 1,
+    defaultArrangement: 'single',
+    defaultSpacing: 18,
   },
   {
     id: 'asset-yogurt-jar',
@@ -173,7 +254,10 @@ export const APPROVED_ASSETS: ApprovedAsset[] = [
     category: 'Dairy',
     path: '/assets/products/yogurt-jar.png',
     suggestedShelf: 'top_shelf',
-    defaultQuantity: '500g Jar',
+    defaultQuantity: '2 Jars',
+    defaultItemCount: 2,
+    defaultArrangement: 'row',
+    defaultSpacing: 20,
   },
   {
     id: 'asset-condiment-jar',
@@ -182,6 +266,9 @@ export const APPROVED_ASSETS: ApprovedAsset[] = [
     path: '/assets/products/condiment-jar.png',
     suggestedShelf: 'door_bin_middle',
     defaultQuantity: '250g Jar',
+    defaultItemCount: 1,
+    defaultArrangement: 'single',
+    defaultSpacing: 18,
   },
   {
     id: 'asset-jam-jar',
@@ -190,6 +277,9 @@ export const APPROVED_ASSETS: ApprovedAsset[] = [
     path: '/assets/products/jam-jar.png',
     suggestedShelf: 'door_bin_middle',
     defaultQuantity: '340g Jar',
+    defaultItemCount: 1,
+    defaultArrangement: 'single',
+    defaultSpacing: 18,
   },
   {
     id: 'asset-citrus-basket',
@@ -197,7 +287,10 @@ export const APPROVED_ASSETS: ApprovedAsset[] = [
     category: 'Fruits & Vegetables',
     path: '/assets/products/citrus-basket.png',
     suggestedShelf: 'crisper_drawer',
-    defaultQuantity: '1.2 kg',
+    defaultQuantity: '1 Basket',
+    defaultItemCount: 1,
+    defaultArrangement: 'single',
+    defaultSpacing: 18,
   },
   {
     id: 'asset-green-lettuce',
@@ -206,6 +299,9 @@ export const APPROVED_ASSETS: ApprovedAsset[] = [
     path: '/assets/products/green-lettuce.png',
     suggestedShelf: 'crisper_drawer',
     defaultQuantity: '1 Head',
+    defaultItemCount: 1,
+    defaultArrangement: 'single',
+    defaultSpacing: 18,
   },
   {
     id: 'asset-meal-container',
@@ -213,7 +309,10 @@ export const APPROVED_ASSETS: ApprovedAsset[] = [
     category: 'Prepared Meals',
     path: '/assets/products/meal-container.png',
     suggestedShelf: 'bottom_shelf',
-    defaultQuantity: '1 Container',
+    defaultQuantity: '2 Containers (Stacked)',
+    defaultItemCount: 2,
+    defaultArrangement: 'stack',
+    defaultSpacing: 16,
   },
   {
     id: 'asset-ice-cream',
@@ -221,7 +320,10 @@ export const APPROVED_ASSETS: ApprovedAsset[] = [
     category: 'Freezer',
     path: '/assets/products/ice-cream.png',
     suggestedShelf: 'freezer',
-    defaultQuantity: '1 Pint',
+    defaultQuantity: '2 Pints',
+    defaultItemCount: 2,
+    defaultArrangement: 'row',
+    defaultSpacing: 22,
   },
   {
     id: 'asset-champagne-bottle',
@@ -230,5 +332,8 @@ export const APPROVED_ASSETS: ApprovedAsset[] = [
     path: '/assets/products/champagne-bottle.png',
     suggestedShelf: 'door_bin_bottom',
     defaultQuantity: '750 ml',
+    defaultItemCount: 1,
+    defaultArrangement: 'single',
+    defaultSpacing: 18,
   },
 ]

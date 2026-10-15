@@ -25,11 +25,13 @@ import type {
   FridgeShelf,
   ProductCategory,
   ApprovedAsset,
+  StackingArrangement,
 } from '../types/fridgeProduct'
 import {
   SHELF_DEFINITIONS,
   PRODUCT_CATEGORIES,
   APPROVED_ASSETS,
+  COMPARTMENT_CAPACITIES,
 } from '../types/fridgeProduct'
 import { UniversalSteelFridge } from '../components/fridge/UniversalSteelFridge'
 import {
@@ -67,6 +69,8 @@ import {
   Monitor,
   Eye as ViewIcon,
   CheckCircle,
+  Snowflake,
+  Droplets,
 } from 'lucide-react'
 
 export const AdminPage: React.FC = () => {
@@ -114,6 +118,9 @@ export const AdminPage: React.FC = () => {
   const [formPositionX, setFormPositionX] = useState<number>(50)
   const [formScale, setFormScale] = useState<number>(1.0)
   const [formQuantity, setFormQuantity] = useState('')
+  const [formItemCount, setFormItemCount] = useState<number>(1)
+  const [formArrangement, setFormArrangement] = useState<StackingArrangement>('single')
+  const [formSpacing, setFormSpacing] = useState<number>(18)
   const [formDescription, setFormDescription] = useState('')
   const [formIsActive, setFormIsActive] = useState(true)
   const [formImageUrl, setFormImageUrl] = useState<string>('/assets/products/milk-carton.png')
@@ -123,6 +130,8 @@ export const AdminPage: React.FC = () => {
 
   // Live Fridge Preview controls state
   const [previewDoorOpen, setPreviewDoorOpen] = useState(true)
+  const [previewCrisperOpen, setPreviewCrisperOpen] = useState(false)
+  const [previewFreezerOpen, setPreviewFreezerOpen] = useState(false)
   const [previewYaw, setPreviewYaw] = useState(-25)
   const [mobileTab, setMobileTab] = useState<'editor' | 'preview'>('editor')
 
@@ -175,7 +184,7 @@ export const AdminPage: React.FC = () => {
     }
   }, [isAuthorizedAdmin])
 
-  // 3. Auto-orient the 3D fridge when selecting a Door bin vs Cavity shelf
+  // 3. Auto-orient the 3D fridge and auto-open compartments when selecting a shelf
   useEffect(() => {
     if (isEditorActive) {
       const loc = SHELF_DEFINITIONS[formShelf]?.location
@@ -186,11 +195,17 @@ export const AdminPage: React.FC = () => {
         setPreviewDoorOpen(true)
         setPreviewYaw(-20)
       }
+
+      if (formShelf === 'crisper_drawer') {
+        setPreviewCrisperOpen(true)
+      } else if (formShelf === 'freezer') {
+        setPreviewFreezerOpen(true)
+      }
     }
   }, [formShelf, isEditorActive])
 
   // 4. Real-time dynamic preview products calculation
-  // Reflects slider movements, shelf changes, image asset updates, scale, and visibility immediately!
+  // Reflects slider movements, shelf changes, image asset updates, scale, multi-units, and visibility immediately!
   const previewProducts = useMemo<FridgeProduct[]>(() => {
     if (!isEditorActive) {
       return products
@@ -207,6 +222,9 @@ export const AdminPage: React.FC = () => {
             positionX: formPositionX,
             displayScale: formScale,
             quantity: formQuantity.trim() || undefined,
+            itemCount: formItemCount,
+            arrangement: formArrangement,
+            spacing: formSpacing,
             description: formDescription.trim() || undefined,
             imageUrl: formImageUrl,
             isActive: formIsActive,
@@ -225,6 +243,9 @@ export const AdminPage: React.FC = () => {
       positionX: formPositionX,
       displayScale: formScale,
       quantity: formQuantity.trim() || undefined,
+      itemCount: formItemCount,
+      arrangement: formArrangement,
+      spacing: formSpacing,
       description: formDescription.trim() || undefined,
       imageUrl: formImageUrl,
       isActive: formIsActive,
@@ -243,6 +264,9 @@ export const AdminPage: React.FC = () => {
     formPositionX,
     formScale,
     formQuantity,
+    formItemCount,
+    formArrangement,
+    formSpacing,
     formDescription,
     formImageUrl,
     formIsActive,
@@ -338,6 +362,9 @@ export const AdminPage: React.FC = () => {
     setFormPositionX(50)
     setFormScale(1.0)
     setFormQuantity('1 Litre')
+    setFormItemCount(1)
+    setFormArrangement('single')
+    setFormSpacing(18)
     setFormDescription('')
     setFormIsActive(true)
     setFormImageUrl('/assets/products/milk-carton.png')
@@ -358,6 +385,9 @@ export const AdminPage: React.FC = () => {
     setFormPositionX(prod.positionX)
     setFormScale(prod.displayScale)
     setFormQuantity(prod.quantity || '')
+    setFormItemCount(prod.itemCount || 1)
+    setFormArrangement(prod.arrangement || 'single')
+    setFormSpacing(prod.spacing || 18)
     setFormDescription(prod.description || '')
     setFormIsActive(prod.isActive)
     setFormImageUrl(prod.imageUrl)
@@ -414,6 +444,9 @@ export const AdminPage: React.FC = () => {
           positionX: formPositionX,
           displayScale: formScale,
           quantity: formQuantity.trim() || undefined,
+          itemCount: formItemCount,
+          arrangement: formArrangement,
+          spacing: formSpacing,
           description: formDescription.trim() || undefined,
           isActive: formIsActive,
           imageUrl: formImageUrl,
@@ -431,6 +464,9 @@ export const AdminPage: React.FC = () => {
           positionX: formPositionX,
           displayScale: formScale,
           quantity: formQuantity.trim() || undefined,
+          itemCount: formItemCount,
+          arrangement: formArrangement,
+          spacing: formSpacing,
           description: formDescription.trim() || undefined,
           isActive: formIsActive,
           isArchived: false,
@@ -1085,6 +1121,216 @@ export const AdminPage: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Compartment Capacity Gauge & Warning */}
+                {(() => {
+                  const shelfCap = COMPARTMENT_CAPACITIES[formShelf]
+                  const shelfUnitsExcludingCurrent = products
+                    .filter(
+                      (p) =>
+                        p.shelf === formShelf &&
+                        p.isActive &&
+                        !p.isArchived &&
+                        p.id !== editingProduct?.id
+                    )
+                    .reduce((sum, p) => sum + (p.itemCount || 1), 0)
+                  const totalProjectedShelfUnits = shelfUnitsExcludingCurrent + formItemCount
+                  const isOverCapacity = totalProjectedShelfUnits > shelfCap.maxUnits
+                  const capacityPercent = Math.min(
+                    100,
+                    Math.round((totalProjectedShelfUnits / shelfCap.maxUnits) * 100)
+                  )
+
+                  return (
+                    <div className="p-3.5 bg-slate-50/90 rounded-2xl border border-slate-200 space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-bold text-slate-700 flex items-center gap-1.5">
+                          <Layers className="w-3.5 h-3.5 text-blue-600" />
+                          <span>Compartment Capacity ({shelfCap.description})</span>
+                        </span>
+                        <span
+                          className={`font-mono text-[11px] font-black px-2 py-0.5 rounded-md ${
+                            isOverCapacity
+                              ? 'bg-rose-100 text-rose-700 border border-rose-200'
+                              : capacityPercent >= 75
+                              ? 'bg-amber-100 text-amber-700 border border-amber-200'
+                              : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                          }`}
+                        >
+                          {totalProjectedShelfUnits} / {shelfCap.maxUnits} units ({capacityPercent}%)
+                        </span>
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-300 ${
+                            isOverCapacity
+                              ? 'bg-rose-500'
+                              : capacityPercent >= 75
+                              ? 'bg-amber-500'
+                              : 'bg-emerald-500'
+                          }`}
+                          style={{ width: `${capacityPercent}%` }}
+                        />
+                      </div>
+
+                      {isOverCapacity && (
+                        <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-[11px] flex items-start gap-2">
+                          <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <span className="font-bold">Capacity Alert: </span>
+                            This compartment comfortably accommodates <strong>{shelfCap.maxUnits} units</strong>. With this product, total load is <strong>{totalProjectedShelfUnits} units</strong>. Items may crowd or overlap.
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })()}
+
+                {/* Stacking & Multi-Unit Arrangement Engine */}
+                <div className="p-4 bg-gradient-to-br from-blue-50/60 to-indigo-50/40 rounded-2xl border border-blue-200/80 space-y-3.5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                        <Layers className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Product Stacking & Multi-Units</span>
+                      </h4>
+                      <p className="text-[10px] text-slate-500">
+                        Add duplicate physical units and configure spatial arrangement
+                      </p>
+                    </div>
+                    <span className="font-mono text-xs font-black text-blue-700 bg-white px-2.5 py-0.5 rounded-lg border border-blue-200 shadow-2xs">
+                      {formItemCount} {formItemCount === 1 ? 'Unit' : 'Units'}
+                    </span>
+                  </div>
+
+                  {/* Quantity Unit Count */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[10px] font-bold text-slate-600">
+                        Physical Unit Count:
+                      </span>
+                      <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 6].map((num) => (
+                          <button
+                            key={num}
+                            type="button"
+                            onClick={() => setFormItemCount(num)}
+                            className={`px-2 py-0.5 text-[10px] font-mono font-bold rounded-md transition-all cursor-pointer ${
+                              formItemCount === num
+                                ? 'bg-blue-600 text-white shadow-2xs'
+                                : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                            }`}
+                          >
+                            {num}x
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <input
+                      type="range"
+                      min="1"
+                      max="12"
+                      value={formItemCount}
+                      onChange={(e) => setFormItemCount(Number(e.target.value))}
+                      className="w-full accent-blue-600 cursor-pointer h-2 bg-slate-200 rounded-lg"
+                    />
+                  </div>
+
+                  {/* Arrangement Style Selector */}
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-600 mb-1.5">
+                      Arrangement Style:
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                      {[
+                        {
+                          id: 'single' as StackingArrangement,
+                          label: 'Single Unit',
+                          desc: '1 standalone item',
+                        },
+                        {
+                          id: 'row' as StackingArrangement,
+                          label: 'Horizontal Row',
+                          desc: 'Side-by-side lineup',
+                        },
+                        {
+                          id: 'depth' as StackingArrangement,
+                          label: 'Staggered Depth',
+                          desc: 'Front & back rows',
+                        },
+                        {
+                          id: 'grid' as StackingArrangement,
+                          label: '2D Grid Matrix',
+                          desc: 'Compact block',
+                        },
+                        {
+                          id: 'stack' as StackingArrangement,
+                          label: 'Vertical Stack',
+                          desc: 'Stacked on top',
+                        },
+                      ].map((style) => {
+                        const isSelected = formArrangement === style.id
+                        const isRecommended = COMPARTMENT_CAPACITIES[formShelf]?.recommendedArrangements.includes(style.id)
+
+                        return (
+                          <button
+                            key={style.id}
+                            type="button"
+                            onClick={() => setFormArrangement(style.id)}
+                            className={`p-2 rounded-xl text-left border transition-all cursor-pointer ${
+                              isSelected
+                                ? 'bg-white border-blue-500 ring-2 ring-blue-500/30 shadow-xs'
+                                : 'bg-white/70 border-slate-200/80 hover:bg-white hover:border-slate-300'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-extrabold text-slate-800">
+                                {style.label}
+                              </span>
+                              {isRecommended && (
+                                <span className="text-[7px] font-bold text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200">
+                                  Ideal
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[9px] text-slate-500 block mt-0.5">
+                              {style.desc}
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Spacing Slider (active when multi-unit) */}
+                  {formItemCount > 1 && formArrangement !== 'single' && (
+                    <div className="pt-2 border-t border-blue-200/60">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] font-bold text-slate-700">
+                          Unit Spacing Gap:
+                        </span>
+                        <span className="font-mono text-[10px] font-black text-blue-700 bg-white px-2 py-0.5 rounded border border-blue-200">
+                          {formSpacing}px
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min="10"
+                        max="45"
+                        value={formSpacing}
+                        onChange={(e) => setFormSpacing(Number(e.target.value))}
+                        className="w-full accent-blue-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg"
+                      />
+                      <div className="flex justify-between text-[9px] text-slate-400 font-bold mt-0.5 px-0.5">
+                        <span>Tight (10px)</span>
+                        <span>Standard (18px)</span>
+                        <span>Spaced (45px)</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Description (Optional) */}
                 <div>
                   <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
@@ -1141,6 +1387,9 @@ export const AdminPage: React.FC = () => {
                               if (!formQuantity) setFormQuantity(asset.defaultQuantity)
                               setFormShelf(asset.suggestedShelf)
                               setFormCategory(asset.category)
+                              if (asset.defaultItemCount) setFormItemCount(asset.defaultItemCount)
+                              if (asset.defaultArrangement) setFormArrangement(asset.defaultArrangement)
+                              if (asset.defaultSpacing) setFormSpacing(asset.defaultSpacing)
                             }}
                             className={`p-2 rounded-xl border text-center transition-all flex flex-col items-center gap-1 cursor-pointer bg-white ${
                               isSelected
@@ -1264,6 +1513,89 @@ export const AdminPage: React.FC = () => {
               )}
             </div>
 
+            {/* Compartment Capacity Navigation Bar */}
+            <div className="space-y-2 pb-2 border-b border-slate-100">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Compartment Capacity Overview</span>
+                </span>
+                <span className="text-[10px] text-slate-400">
+                  Click a compartment to filter inventory
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-thin">
+                <button
+                  type="button"
+                  onClick={() => setSelectedShelfFilter('all')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                    selectedShelfFilter === 'all'
+                      ? 'bg-slate-900 text-white shadow-xs'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  All Compartments ({products.filter((p) => p.isActive && !p.isArchived).length})
+                </button>
+
+                {(
+                  [
+                    'freezer',
+                    'top_shelf',
+                    'middle_shelf',
+                    'bottom_shelf',
+                    'crisper_drawer',
+                    'door_bin_top',
+                    'door_bin_middle',
+                    'door_bin_bottom',
+                  ] as FridgeShelf[]
+                ).map((shelfKey) => {
+                  const shelfDef = SHELF_DEFINITIONS[shelfKey]
+                  const shelfCap = COMPARTMENT_CAPACITIES[shelfKey]
+                  const activeShelfProds = products.filter(
+                    (p) => p.shelf === shelfKey && p.isActive && !p.isArchived
+                  )
+                  const totalUnits = activeShelfProds.reduce(
+                    (sum, p) => sum + (p.itemCount || 1),
+                    0
+                  )
+                  const isSelected = selectedShelfFilter === shelfKey
+                  const isOver = totalUnits > shelfCap.maxUnits
+
+                  return (
+                    <button
+                      key={shelfKey}
+                      type="button"
+                      onClick={() => setSelectedShelfFilter(shelfKey)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer border ${
+                        isSelected
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                          : isOver
+                          ? 'bg-rose-50 text-rose-800 border-rose-300 hover:bg-rose-100'
+                          : totalUnits >= shelfCap.maxUnits * 0.75
+                          ? 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100'
+                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      <span>{shelfDef.label}</span>
+                      <span
+                        className={`font-mono text-[10px] px-1.5 py-0.2 rounded-md ${
+                          isSelected
+                            ? 'bg-blue-700 text-white'
+                            : isOver
+                            ? 'bg-rose-200 text-rose-900 font-black'
+                            : 'bg-slate-200/80 text-slate-700'
+                        }`}
+                      >
+                        {totalUnits}/{shelfCap.maxUnits}
+                      </span>
+                      {isOver && <span title="Exceeds Recommended Capacity">⚠️</span>}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
             {/* Controls Bar: Search & Filter Tabs */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
               {/* Search Input */}
@@ -1378,6 +1710,7 @@ export const AdminPage: React.FC = () => {
                       <th className="py-2.5 px-3">Product</th>
                       <th className="py-2.5 px-3">Category</th>
                       <th className="py-2.5 px-3">Shelf Compartment</th>
+                      <th className="py-2.5 px-3 text-center">Units / Layout</th>
                       <th className="py-2.5 px-3 text-center">Pos X</th>
                       <th className="py-2.5 px-3 text-center">Scale</th>
                       <th className="py-2.5 px-3 text-center">Visibility</th>
@@ -1434,6 +1767,17 @@ export const AdminPage: React.FC = () => {
                               }`}
                             >
                               <span>{shelfDef?.label || prod.shelf}</span>
+                            </span>
+                          </td>
+
+                          {/* Units / Layout */}
+                          <td className="py-3 px-3 text-center">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                              <Layers className="w-2.5 h-2.5 text-blue-600" />
+                              <span>{prod.itemCount || 1}x</span>
+                              <span className="text-slate-500 font-medium capitalize">
+                                ({prod.arrangement || 'single'})
+                              </span>
                             </span>
                           </td>
 
@@ -1618,6 +1962,37 @@ export const AdminPage: React.FC = () => {
               </button>
             </div>
 
+            {/* Compartment Inspection Toggles */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPreviewCrisperOpen(!previewCrisperOpen)}
+                className={`flex-1 py-1.5 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer border ${
+                  previewCrisperOpen
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs'
+                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                }`}
+                title="Slide Crisper Drawer In/Out"
+              >
+                <Droplets className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Crisper: {previewCrisperOpen ? 'Extended ▲' : 'Closed ▼'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPreviewFreezerOpen(!previewFreezerOpen)}
+                className={`flex-1 py-1.5 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer border ${
+                  previewFreezerOpen
+                    ? 'bg-cyan-50 text-cyan-800 border-cyan-300 shadow-2xs'
+                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                }`}
+                title="Open/Close Sub-Zero Freezer"
+              >
+                <Snowflake className="w-3.5 h-3.5 text-cyan-600" />
+                <span>Freezer: {previewFreezerOpen ? 'Open ▲' : 'Closed ▼'}</span>
+              </button>
+            </div>
+
             {/* Orbit Yaw Angle Slider */}
             <div className="flex items-center gap-3 px-1">
               <Compass className="w-3.5 h-3.5 text-slate-400" />
@@ -1654,7 +2029,7 @@ export const AdminPage: React.FC = () => {
                   </span>
                 </div>
                 <span className="font-mono text-[11px] font-black text-blue-700">
-                  X: {formPositionX}% • {formScale}x
+                  X: {formPositionX}% • {formItemCount}x {formArrangement}
                 </span>
               </div>
             )}
@@ -1663,6 +2038,10 @@ export const AdminPage: React.FC = () => {
             <div className="pt-2 flex justify-center overflow-visible select-none min-h-[440px]">
               <UniversalSteelFridge
                 isDoorOpen={previewDoorOpen}
+                isCrisperOpen={previewCrisperOpen}
+                onToggleCrisper={() => setPreviewCrisperOpen((v) => !v)}
+                isFreezerOpen={previewFreezerOpen}
+                onToggleFreezer={() => setPreviewFreezerOpen((v) => !v)}
                 yaw={previewYaw}
                 magneticRegion={{ top: 0.1, left: 0.1, width: 0.8, height: 0.8 }}
                 surfaceRef={{ current: null }}
