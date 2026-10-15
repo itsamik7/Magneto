@@ -21,6 +21,8 @@ import {
   SlidersHorizontal,
   Plus,
   Sparkles,
+  X,
+  Compass,
 } from 'lucide-react'
 
 interface DestinationDetail {
@@ -532,6 +534,9 @@ export const MyFridgePage: React.FC = () => {
     setPlacements(refreshedPlacements)
   }
 
+  // Inspector panel open/close toggle state
+  const [isInspectorOpen, setIsInspectorOpen] = useState(true)
+
   // When a magnet on the fridge is clicked, select it in the inspector
   const handleSelectPlacement = (placementId: string | null) => {
     setSelectedPlacementId(placementId)
@@ -541,23 +546,19 @@ export const MyFridgePage: React.FC = () => {
     if (matchedPlacement) {
       const slug = matchedPlacement.magnetSlug.toLowerCase()
       setSelectedSlug(slug)
+      setIsInspectorOpen(true)
     }
   }
 
   return (
-    <div className="w-full grid grid-cols-1 xl:grid-cols-[1fr_auto_1fr] items-start gap-4 lg:gap-6 pb-2 sm:pb-4 animate-in fade-in duration-200">
+    <div className="relative w-full max-w-[1720px] mx-auto flex flex-col xl:flex-row items-center xl:items-start justify-center gap-6 pb-2 sm:pb-4 animate-in fade-in duration-200">
       
       {/* 
-        LEFT COLUMN (BALANCING SPACER):
-        Matches right inspector width on desktop so the Refrigerator stays centered at 50% screen width
+        CENTER HERO REFRIGERATOR STAGE:
+        Positioned at the exact horizontal center (50% midpoint) of the viewport,
+        aligned directly under the center [ My Fridge | Plan a Trip ] navbar pill.
       */}
-      <div className="hidden xl:block w-full max-w-[400px] pointer-events-none" aria-hidden="true" />
-
-      {/* 
-        CENTER STAGE:
-        Free-Flow Photorealistic Refrigerator Stage (Horizontally centered at 50% screen width)
-      */}
-      <div className="w-full flex items-center justify-center relative min-h-0 sm:min-h-[520px] p-0 overflow-visible bg-transparent">
+      <div className="w-full flex items-center justify-center relative min-h-0 sm:min-h-[580px] p-0 overflow-visible bg-transparent">
         {/* Center: The Photorealistic Refrigerator */}
         <div className="relative z-10 w-full flex flex-col items-center overflow-visible">
           <FridgeWorkspace
@@ -575,35 +576,59 @@ export const MyFridgePage: React.FC = () => {
         </div>
       </div>
 
+      {/* Floating Re-Open Pill on Desktop when Inspector is Closed */}
+      {!isInspectorOpen && (
+        <button
+          onClick={() => setIsInspectorOpen(true)}
+          className="fixed xl:absolute right-4 top-20 xl:top-2 z-30 inline-flex items-center gap-2 px-3.5 py-2 bg-white/95 hover:bg-white backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-md text-xs font-heading font-bold text-slate-800 transition-all hover:scale-105 cursor-pointer"
+          title="Open Destination Details"
+        >
+          <Compass className="w-4 h-4 text-blue-600" />
+          <span>Trip Details</span>
+        </button>
+      )}
+
       {/* 
         RIGHT COLUMN:
         Trip & Destination Inspector Panel Matching media_1791901625472_ea35fd75.jpg
+        Positioned as xl:absolute xl:right-0 xl:top-0 so it never offsets the fridge from the 50% screen center.
       */}
-      <div className="w-full max-w-[400px] justify-self-center xl:justify-self-end bg-white rounded-3xl p-4 sm:p-5 shadow-xl border border-slate-200/90 flex flex-col gap-3.5 flex-shrink-0">
-        
-        {/* Destination Hero Banner */}
-        <div className="relative w-full h-36 sm:h-40 rounded-2xl overflow-hidden shadow-md group">
-          <img
-            src={currentDetail.bannerUrl}
-            alt={currentDetail.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent" />
-
-          {/* Top Right Heart Favorite Button */}
-          <button
-            onClick={() => setIsFavorite(!isFavorite)}
-            className="absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white text-slate-700 shadow-md transition-transform hover:scale-110 active:scale-95"
-            title="Favorite Destination"
-          >
-            <Heart
-              className={`w-4 h-4 ${
-                isFavorite ? 'fill-rose-500 text-rose-500' : 'text-slate-600'
-              }`}
+      {isInspectorOpen && (
+        <div className="w-full max-w-[400px] xl:w-[380px] 2xl:w-[400px] xl:absolute xl:right-0 xl:top-0 bg-white rounded-3xl p-4 sm:p-5 shadow-2xl border border-slate-200/90 flex flex-col gap-3.5 flex-shrink-0 z-30 animate-in fade-in slide-in-from-right-4 duration-300">
+          
+          {/* Destination Hero Banner */}
+          <div className="relative w-full h-36 sm:h-40 rounded-2xl overflow-hidden shadow-md group">
+            <img
+              src={currentDetail.bannerUrl}
+              alt={currentDetail.name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
-          </button>
-        </div>
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent" />
+
+            {/* Top Right Action Buttons: Favorite and Close */}
+            <div className="absolute top-3 right-3 flex items-center gap-1.5 z-20">
+              <button
+                onClick={() => setIsFavorite(!isFavorite)}
+                className="p-2 rounded-full bg-white/90 hover:bg-white text-slate-700 shadow-md transition-transform hover:scale-110 active:scale-95 cursor-pointer"
+                title="Favorite Destination"
+              >
+                <Heart
+                  className={`w-4 h-4 ${
+                    isFavorite ? 'fill-rose-500 text-rose-500' : 'text-slate-600'
+                  }`}
+                />
+              </button>
+              <button
+                onClick={() => setIsInspectorOpen(false)}
+                className="p-2 rounded-full bg-white/90 hover:bg-white text-slate-700 hover:text-slate-900 shadow-md transition-transform hover:scale-110 active:scale-95 cursor-pointer"
+                title="Close Trip Details"
+                aria-label="Close inspector panel"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
 
         {/* Destination Name & Description */}
         <div>
@@ -795,6 +820,7 @@ export const MyFridgePage: React.FC = () => {
         </div>
 
       </div>
+      )}
 
       {/* Save Money / Deposit Modal */}
       <SaveMoneyModal

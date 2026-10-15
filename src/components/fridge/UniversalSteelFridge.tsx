@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import type { MagneticRegion } from '../../types/fridge'
-import { Lightbulb, DoorClosed, Rotate3d, Undo2 } from 'lucide-react'
+import { Lightbulb, DoorClosed } from 'lucide-react'
 
 export interface UniversalSteelFridgeProps {
   isDoorOpen?: boolean
@@ -78,10 +78,8 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
       */}
       <div
         style={{
-          width: '100%',
-          maxWidth: 'min(310px, 30vw)',
+          width: 'min(310px, 85vw)',
           aspectRatio: `${aspectRatio}`,
-          maxHeight: 'min(58vh, 560px)',
           perspective: '1400px',
           transformStyle: 'preserve-3d',
           overflow: 'visible',
@@ -291,7 +289,11 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
               <div
                 ref={surfaceRef}
                 onClick={(e) => {
-                  e.stopPropagation()
+                  const target = e.target as HTMLElement
+                  const clickedMagnet = target.closest('[data-magnet="true"], .group.select-none')
+                  if (!clickedMagnet) {
+                    handleToggle()
+                  }
                   if (onSurfaceClick) onSurfaceClick(e)
                 }}
                 onDragOver={onDragOver}
@@ -305,7 +307,7 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                   height: `${magneticRegion.height * 100}%`,
                 }}
                 className={`relative select-none ${
-                  isEffectiveOpen ? 'pointer-events-none' : 'cursor-default'
+                  isEffectiveOpen ? 'pointer-events-none' : 'cursor-pointer'
                 } z-20 ${
                   isDragOver ? 'ring-4 ring-blue-500/50 bg-blue-500/10 rounded-lg' : ''
                 }`}
@@ -377,88 +379,6 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
         </div>
       </div>
 
-      {/* 
-        ========================================================================
-        3D ROTATION SLIDER & CONTROLS DIRECTLY BELOW THE FRIDGE
-        Smooth horizontal slider to rotate and inspect the fridge from any angle
-        ========================================================================
-      */}
-      <div className="w-full max-w-[310px] mt-2.5 px-3 py-2 bg-white/95 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col gap-1.5">
-        <div className="flex items-center justify-between text-xs font-heading font-bold text-slate-800">
-          <div className="flex items-center gap-1.5">
-            <Rotate3d className="w-3.5 h-3.5 text-blue-600" />
-            <span>3D Angle Rotation</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
-              {yaw === 0 ? 'Front (0°)' : `${yaw > 0 ? '+' : ''}${yaw}°`}
-            </span>
-            {yaw !== 0 && (
-              <button
-                onClick={() => onYawChange?.(0)}
-                className="text-[10px] text-slate-500 hover:text-slate-800 flex items-center gap-0.5 font-bold cursor-pointer transition-colors"
-                title="Reset angle to 0° (Front)"
-              >
-                <Undo2 className="w-3 h-3" />
-                <span>Reset</span>
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* The Range Slider */}
-        <div className="flex items-center gap-2">
-          <span className="text-[9px] font-medium text-slate-400 shrink-0">-60°</span>
-          <input
-            type="range"
-            min="-60"
-            max="60"
-            step="1"
-            value={yaw}
-            onChange={(e) => onYawChange?.(Number(e.target.value))}
-            className="flex-1 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-hidden"
-            title="Slide to rotate refrigerator in 3D"
-          />
-          <span className="text-[9px] font-medium text-slate-400 shrink-0">+60°</span>
-        </div>
-
-        {/* Quick Angle Presets */}
-        <div className="grid grid-cols-3 gap-1 pt-1 border-t border-slate-100 text-[9px] sm:text-[10px]">
-          <button
-            onClick={() => onYawChange?.(-45)}
-            className={`py-0.5 sm:py-1 px-1 rounded-md text-center font-heading font-bold transition-all cursor-pointer ${
-              yaw === -45
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/80'
-            }`}
-            title="Rotate to view door-side storage and inside cabinet"
-          >
-            Door (-45°)
-          </button>
-          <button
-            onClick={() => onYawChange?.(0)}
-            className={`py-0.5 sm:py-1 px-1 rounded-md text-center font-heading font-bold transition-all cursor-pointer ${
-              yaw === 0
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/80'
-            }`}
-            title="Front straight-on view"
-          >
-            Front (0°)
-          </button>
-          <button
-            onClick={() => onYawChange?.(45)}
-            className={`py-0.5 sm:py-1 px-1 rounded-md text-center font-heading font-bold transition-all cursor-pointer ${
-              yaw === 45
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/80'
-            }`}
-            title="Rotate to view right interior depth"
-          >
-            Right (+45°)
-          </button>
-        </div>
-      </div>
     </div>
   )
 }

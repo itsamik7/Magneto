@@ -13,8 +13,6 @@ import {
   ChevronRight,
   RotateCcw,
   Move,
-  Rotate3d,
-  Undo2,
 } from 'lucide-react'
 
 export interface FridgeWorkspaceProps {
@@ -772,80 +770,8 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
                 </div>
               </div>
             </div>
-
-              {/* 3D Rotation Slider for Catalog Models */}
-              <div className="w-full max-w-[310px] mt-2.5 px-3 py-2 bg-white/95 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col gap-1.5">
-                <div className="flex items-center justify-between text-xs font-heading font-bold text-slate-800">
-                  <div className="flex items-center gap-1.5">
-                    <Rotate3d className="w-3.5 h-3.5 text-blue-600" />
-                    <span>3D Angle Rotation</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
-                      {fridgeYaw === 0 ? 'Front (0°)' : `${fridgeYaw > 0 ? '+' : ''}${fridgeYaw}°`}
-                    </span>
-                    {fridgeYaw !== 0 && (
-                      <button
-                        onClick={() => setFridgeYaw(0)}
-                        className="text-[10px] text-slate-500 hover:text-slate-800 flex items-center gap-0.5 font-bold cursor-pointer transition-colors"
-                        title="Reset angle to 0°"
-                      >
-                        <Undo2 className="w-3 h-3" />
-                        <span>Reset</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-[9px] font-medium text-slate-400 shrink-0">-60°</span>
-                  <input
-                    type="range"
-                    min="-60"
-                    max="60"
-                    step="1"
-                    value={fridgeYaw}
-                    onChange={(e) => setFridgeYaw(Number(e.target.value))}
-                    className="flex-1 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-hidden"
-                  />
-                  <span className="text-[9px] font-medium text-slate-400 shrink-0">+60°</span>
-                </div>
-
-                <div className="grid grid-cols-3 gap-1 pt-1 border-t border-slate-100 text-[9px] sm:text-[10px]">
-                  <button
-                    onClick={() => setFridgeYaw(-30)}
-                    className={`py-0.5 sm:py-1 px-1 rounded-md text-center font-heading font-bold transition-all cursor-pointer ${
-                      fridgeYaw === -30
-                        ? 'bg-blue-600 text-white shadow-xs'
-                        : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/80'
-                    }`}
-                  >
-                    Left (-30°)
-                  </button>
-                  <button
-                    onClick={() => setFridgeYaw(0)}
-                    className={`py-0.5 sm:py-1 px-1 rounded-md text-center font-heading font-bold transition-all cursor-pointer ${
-                      fridgeYaw === 0
-                        ? 'bg-blue-600 text-white shadow-xs'
-                        : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/80'
-                    }`}
-                  >
-                    Front (0°)
-                  </button>
-                  <button
-                    onClick={() => setFridgeYaw(30)}
-                    className={`py-0.5 sm:py-1 px-1 rounded-md text-center font-heading font-bold transition-all cursor-pointer ${
-                      fridgeYaw === 30
-                        ? 'bg-blue-600 text-white shadow-xs'
-                        : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/80'
-                    }`}
-                  >
-                    Right (+30°)
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          </div>
+        )}
 
           {/* Selected Magnet Status Toast Overlay (Bottom Edge - Edit Mode Only) */}
           {!readOnly && selectedPlacement && (
