@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 130" width="100%" height="100%">
+  <defs>
+    <linearGradient id="iceCreamLid" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#475569"/>
+      <stop offset="50%" stop-color="#64748B"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+    <linearGradient id="tubBody" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="40%" stop-color="#1E293B"/>
+      <stop offset="70%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <filter id="tubShadow" x="-15%" y="-10%" width="130%" height="125%">
+      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#tubShadow)">
+    <!-- Freezer Frost Glow -->
+    <ellipse cx="55" cy="18" rx="42" ry="12" fill="#E0F2FE" opacity="0.6"/>
+
+    <!-- Ice Cream Pint Overlapping Lid Rim -->
+    <ellipse cx="55" cy="22" rx="38" ry="10" fill="url(#iceCreamLid)" stroke="#1E293B" stroke-width="1.2"/>
+    <ellipse cx="55" cy="20" rx="36" ry="8" fill="#94A3B8" opacity="0.3"/>
+
+    <!-- Tapered Tub Body -->
+    <path d="M19,23 L27,106 C28,112 38,116 55,116 C72,116 82,112 83,106 L91,23 Z" fill="url(#tubBody)" stroke="#0F172A" stroke-width="1.2"/>
+
+    <!-- Gold Foil Geometric Accent Ring -->
+    <path d="M21,38 Q55,46 89,38" stroke="#F59E0B" stroke-width="2" fill="none"/>
+    <path d="M23,43 Q55,51 87,43" stroke="#FBBF24" stroke-width="0.8" fill="none"/>
+
+    <!-- Salted Caramel Drizzle Motif / Gelato Scoop Graphic -->
+    <circle cx="55" cy="68" r="16" fill="#FDE68A" stroke="#D97706" stroke-width="1"/>
+    <!-- Caramel Swirl -->
+    <path d="M43,66 Q55,78 67,65 Q58,60 55,68" stroke="#B45309" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <circle cx="48" cy="62" r="1" fill="#FFFFFF"/>
+    <circle cx="62" cy="72" r="1" fill="#FFFFFF"/>
+
+    <!-- Typography -->
+    <text x="55" y="93" font-family="system-ui, -apple-system, sans-serif" font-size="6.5" font-weight="900" fill="#FBBF24" text-anchor="middle" letter-spacing="1">GELATO</text>
+    <text x="55" y="100" font-family="system-ui, -apple-system, sans-serif" font-size="4" font-weight="700" fill="#E2E8F0" text-anchor="middle">SALTED CARAMEL</text>
+    <text x="55" y="107" font-family="system-ui, -apple-system, sans-serif" font-size="3" font-weight="600" fill="#94A3B8" text-anchor="middle">1 PINT (473ml)</text>
+
+    <!-- Frost Crystals detail -->
+    <text x="32" y="32" font-size="8" fill="#E0F2FE" opacity="0.8">❄</text>
+    <text x="76" y="34" font-size="7" fill="#E0F2FE" opacity="0.8">❄</text>
+  </g>
+</svg>

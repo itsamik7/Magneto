@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 100" width="100%" height="100%">
+  <defs>
+    <linearGradient id="basketGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#D97706"/>
+      <stop offset="100%" stop-color="#92400E"/>
+    </linearGradient>
+    <linearGradient id="orangeGrad" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#FDBA74"/>
+      <stop offset="40%" stop-color="#FB923C"/>
+      <stop offset="100%" stop-color="#EA580C"/>
+    </linearGradient>
+    <linearGradient id="lemonGrad" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#FEF08A"/>
+      <stop offset="40%" stop-color="#FACC15"/>
+      <stop offset="100%" stop-color="#CA8A04"/>
+    </linearGradient>
+    <linearGradient id="limeGrad" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#86EFAC"/>
+      <stop offset="40%" stop-color="#22C55E"/>
+      <stop offset="100%" stop-color="#15803D"/>
+    </linearGradient>
+    <filter id="basketShadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#basketShadow)">
+    <!-- Oranges and Lemons mound -->
+    <!-- Left Orange -->
+    <circle cx="36" cy="46" r="18" fill="url(#orangeGrad)" stroke="#C2410C" stroke-width="0.8"/>
+    <!-- Center Lemon -->
+    <ellipse cx="68" cy="38" rx="20" ry="17" fill="url(#lemonGrad)" stroke="#A16207" stroke-width="0.8" transform="rotate(-15 68 38)"/>
+    <!-- Top Clementine -->
+    <circle cx="52" cy="26" r="14" fill="url(#orangeGrad)" stroke="#C2410C" stroke-width="0.8"/>
+    <!-- Right Orange -->
+    <circle cx="100" cy="46" r="18" fill="url(#orangeGrad)" stroke="#C2410C" stroke-width="0.8"/>
+    <!-- Lime in front -->
+    <circle cx="82" cy="48" r="15" fill="url(#limeGrad)" stroke="#166534" stroke-width="0.8"/>
+
+    <!-- Green Leaves -->
+    <path d="M52,18 C46,12 40,14 42,20 C46,24 50,22 52,18 Z" fill="#15803D"/>
+    <path d="M68,22 C74,16 80,18 78,24 C74,28 70,26 68,22 Z" fill="#15803D"/>
+
+    <!-- Woven Wire / Wood Slatted Basket -->
+    <path d="M12,48 L22,86 C24,90 28,92 34,92 L106,92 C112,92 116,90 118,86 L128,48 Z" fill="url(#basketGrad)" stroke="#78350F" stroke-width="1.5"/>
+
+    <!-- Slats / Mesh Weave lines -->
+    <line x1="28" y1="48" x2="36" y2="92" stroke="#B45309" stroke-width="2"/>
+    <line x1="48" y1="48" x2="52" y2="92" stroke="#B45309" stroke-width="2"/>
+    <line x1="70" y1="48" x2="70" y2="92" stroke="#B45309" stroke-width="2"/>
+    <line x1="92" y1="48" x2="88" y2="92" stroke="#B45309" stroke-width="2"/>
+    <line x1="112" y1="48" x2="104" y2="92" stroke="#B45309" stroke-width="2"/>
+    <path d="M16,68 Q70,72 124,68" stroke="#FDE68A" stroke-width="1.5" fill="none" opacity="0.6"/>
+
+    <!-- Basket Top Rim -->
+    <ellipse cx="70" cy="48" rx="58" ry="6" fill="#F59E0B" stroke="#92400E" stroke-width="1.5"/>
+  </g>
+</svg>

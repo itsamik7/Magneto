@@ -442,12 +442,106 @@ export interface Database {
           }
         ]
       }
+      user_roles: {
+        Row: {
+          id: string
+          user_id: string
+          role: 'admin' | 'super_admin'
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          role: 'admin' | 'super_admin'
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          role?: 'admin' | 'super_admin'
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'user_roles_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          }
+        ]
+      }
+      fridge_products: {
+        Row: {
+          id: string
+          name: string
+          category: string
+          image_url: string
+          description: string | null
+          shelf: string
+          position_x: number
+          display_scale: number
+          quantity: string | null
+          is_active: boolean
+          is_archived: boolean
+          display_order: number
+          created_at: string
+          updated_at: string
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          category: string
+          image_url: string
+          description?: string | null
+          shelf?: string
+          position_x?: number
+          display_scale?: number
+          quantity?: string | null
+          is_active?: boolean
+          is_archived?: boolean
+          display_order?: number
+          created_at?: string
+          updated_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          category?: string
+          image_url?: string
+          description?: string | null
+          shelf?: string
+          position_x?: number
+          display_scale?: number
+          quantity?: string | null
+          is_active?: boolean
+          is_archived?: boolean
+          display_order?: number
+          created_at?: string
+          updated_at?: string
+          created_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'fridge_products_created_by_fkey'
+            columns: ['created_by']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

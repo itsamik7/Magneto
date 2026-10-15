@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%">
+  <defs>
+    <linearGradient id="leafDark" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#15803D"/>
+      <stop offset="100%" stop-color="#166534"/>
+    </linearGradient>
+    <linearGradient id="leafMid" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4ADE80"/>
+      <stop offset="60%" stop-color="#22C55E"/>
+      <stop offset="100%" stop-color="#16A34A"/>
+    </linearGradient>
+    <linearGradient id="leafLight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#BBF7D0"/>
+      <stop offset="50%" stop-color="#86EFAC"/>
+      <stop offset="100%" stop-color="#4ADE80"/>
+    </linearGradient>
+    <filter id="lettuceShadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#lettuceShadow)">
+    <!-- Back Outer Ruffled Leaves -->
+    <path d="M22,65 C12,45 20,25 38,28 C50,15 70,15 82,28 C100,25 108,45 98,65 C108,85 88,102 60,102 C32,102 12,85 22,65 Z" fill="url(#leafDark)"/>
+
+    <!-- Middle Layer of Leaves with scalloped ridges -->
+    <path d="M28,60 C20,44 32,32 46,36 C55,24 65,24 74,36 C88,32 100,44 92,60 C98,75 82,90 60,90 C38,90 22,75 28,60 Z" fill="url(#leafMid)"/>
+
+    <!-- Leaf Vein Highlights -->
+    <path d="M60,90 Q60,50 60,30" stroke="#BBF7D0" stroke-width="2" fill="none" opacity="0.6"/>
+    <path d="M60,65 Q45,50 35,45" stroke="#BBF7D0" stroke-width="1.5" fill="none" opacity="0.5"/>
+    <path d="M60,65 Q75,50 85,45" stroke="#BBF7D0" stroke-width="1.5" fill="none" opacity="0.5"/>
+    <path d="M60,78 Q48,70 38,70" stroke="#BBF7D0" stroke-width="1.5" fill="none" opacity="0.5"/>
+    <path d="M60,78 Q72,70 82,70" stroke="#BBF7D0" stroke-width="1.5" fill="none" opacity="0.5"/>
+
+    <!-- Inner Tender Heart Leaves -->
+    <path d="M40,65 C36,52 45,45 54,48 C60,40 66,40 70,48 C78,45 84,52 80,65 C82,75 72,82 60,82 C48,82 38,75 40,65 Z" fill="url(#leafLight)"/>
+
+    <!-- Root Stalk band (hydroponic white mesh pot base) -->
+    <path d="M48,92 L50,106 C50,108 54,110 60,110 C66,110 70,108 70,106 L72,92 Z" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+    <!-- Freshness Water Dew Drops -->
+    <ellipse cx="44" cy="54" rx="2.5" ry="3.5" fill="#FFFFFF" opacity="0.8"/>
+    <ellipse cx="76" cy="62" rx="2" ry="3" fill="#FFFFFF" opacity="0.8"/>
+  </g>
+</svg>

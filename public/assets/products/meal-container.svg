@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 100" width="100%" height="100%">
+  <defs>
+    <linearGradient id="lidSeal" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284C7"/>
+      <stop offset="50%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#0369A1"/>
+    </linearGradient>
+    <linearGradient id="glassMeal" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#E2E8F0" stop-opacity="0.8"/>
+      <stop offset="30%" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="70%" stop-color="#F1F5F9" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#CBD5E1" stop-opacity="0.9"/>
+    </linearGradient>
+    <filter id="boxShadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#boxShadow)">
+    <!-- Airtight Blue Gasket Clip Lid -->
+    <rect x="18" y="24" width="104" height="12" rx="4" fill="url(#lidSeal)" stroke="#0369A1" stroke-width="1.2"/>
+    <!-- Lid Snap Latches (Left & Right) -->
+    <rect x="12" y="27" width="8" height="6" rx="2" fill="#0284C7" stroke="#0369A1" stroke-width="1"/>
+    <rect x="120" y="27" width="8" height="6" rx="2" fill="#0284C7" stroke="#0369A1" stroke-width="1"/>
+    <!-- Center Steam Vent Valve -->
+    <circle cx="70" cy="30" r="3" fill="#38BDF8" stroke="#0284C7" stroke-width="1"/>
+
+    <!-- Clear Borosilicate Glass Body -->
+    <rect x="22" y="34" width="96" height="52" rx="6" fill="url(#glassMeal)" stroke="#94A3B8" stroke-width="1.2"/>
+
+    <!-- Food Layers Visible Inside Glass -->
+    <!-- Quinoa / Rice Base -->
+    <path d="M24,70 L24,80 C24,84 28,85 32,85 L108,85 C112,85 116,84 116,80 L116,70 Z" fill="#FDE68A"/>
+    <!-- Grains texture -->
+    <circle cx="34" cy="76" r="1.5" fill="#D97706" opacity="0.6"/>
+    <circle cx="48" cy="78" r="1.5" fill="#D97706" opacity="0.6"/>
+    <circle cx="62" cy="75" r="1.5" fill="#D97706" opacity="0.6"/>
+    <circle cx="78" cy="77" r="1.5" fill="#D97706" opacity="0.6"/>
+    <circle cx="94" cy="76" r="1.5" fill="#D97706" opacity="0.6"/>
+    <circle cx="106" cy="78" r="1.5" fill="#D97706" opacity="0.6"/>
+
+    <!-- Grilled Protein / Chicken with grill marks (Left) -->
+    <rect x="28" y="48" width="40" height="20" rx="4" fill="#FDBA74" stroke="#EA580C" stroke-width="0.8"/>
+    <line x1="34" y1="50" x2="38" y2="66" stroke="#9A3412" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="44" y1="50" x2="48" y2="66" stroke="#9A3412" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="54" y1="50" x2="58" y2="66" stroke="#9A3412" stroke-width="1.5" stroke-linecap="round"/>
+
+    <!-- Roasted Asparagus / Veggies (Right) -->
+    <rect x="74" y="52" width="38" height="6" rx="2" fill="#22C55E" stroke="#15803D" stroke-width="0.8"/>
+    <rect x="72" y="60" width="40" height="6" rx="2" fill="#16A34A" stroke="#15803D" stroke-width="0.8"/>
+    <!-- Cherry Tomato halves -->
+    <circle cx="80" cy="48" r="4" fill="#EF4444" stroke="#B91C1C" stroke-width="0.8"/>
+    <circle cx="102" cy="48" r="4" fill="#EF4444" stroke="#B91C1C" stroke-width="0.8"/>
+
+    <!-- Glass Surface Specular Reflection Sheen -->
+    <path d="M26,38 L114,38" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+    <path d="M26,44 L26,80" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+  </g>
+</svg>

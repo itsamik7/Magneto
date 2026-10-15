@@ -1,6 +1,12 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import type { MagneticRegion } from '../../types/fridge'
-import { Lightbulb, DoorClosed } from 'lucide-react'
+import type { FridgeProduct } from '../../types/fridgeProduct'
+import { SHELF_DEFINITIONS } from '../../types/fridgeProduct'
+import {
+  getPublicActiveProducts,
+  FRIDGE_PRODUCTS_UPDATED_EVENT,
+} from '../../services/fridgeProductService'
+import { Lightbulb, DoorClosed, Package } from 'lucide-react'
 
 export interface UniversalSteelFridgeProps {
   isDoorOpen?: boolean
@@ -21,6 +27,8 @@ export interface UniversalSteelFridgeProps {
   isEditable?: boolean
   yaw?: number
   onYawChange?: (newYaw: number) => void
+  /** Optional custom or override list of interior products */
+  products?: FridgeProduct[]
 }
 
 export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
@@ -40,7 +48,48 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
   aspectRatio = 0.47,
   yaw = 0,
   onYawChange,
+  products: propProducts,
 }) => {
+  const [internalProducts, setInternalProducts] = useState<FridgeProduct[]>([])
+
+  useEffect(() => {
+    let isMounted = true
+    getPublicActiveProducts().then((loaded) => {
+      if (isMounted) setInternalProducts(loaded)
+    })
+
+    const handleUpdate = () => {
+      getPublicActiveProducts().then((loaded) => {
+        if (isMounted) setInternalProducts(loaded)
+      })
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener(FRIDGE_PRODUCTS_UPDATED_EVENT, handleUpdate)
+      window.addEventListener('storage', handleUpdate)
+    }
+
+    return () => {
+      isMounted = false
+      if (typeof window !== 'undefined') {
+        window.removeEventListener(FRIDGE_PRODUCTS_UPDATED_EVENT, handleUpdate)
+        window.removeEventListener('storage', handleUpdate)
+      }
+    }
+  }, [])
+
+  // Use explicitly passed products (e.g. from Admin preview) or internal live products
+  const activeProducts = (propProducts ?? internalProducts).filter(
+    (p) => p.isActive && !p.isArchived
+  )
+
+  const cavityProducts = activeProducts.filter(
+    (p) => SHELF_DEFINITIONS[p.shelf]?.location === 'cavity'
+  )
+  const doorProducts = activeProducts.filter(
+    (p) => SHELF_DEFINITIONS[p.shelf]?.location === 'door'
+  )
+
   const isEffectiveOpen =
     isDoorOpen !== undefined
       ? isDoorOpen
@@ -235,6 +284,59 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                 <span>5000K LED ACTIVE</span>
               </div>
             </div>
+
+            {/* Dynamic Admin-Managed Products in Cavity Shelves */}
+            <div
+              className={`absolute inset-0 pointer-events-none transition-opacity duration-500 ${
+                isEffectiveOpen ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              {cavityProducts.map((product) => {
+                const shelfDef = SHELF_DEFINITIONS[product.shelf] || SHELF_DEFINITIONS.middle_shelf
+                const leftPos = Math.max(12, Math.min(88, product.positionX))
+                const topPos = shelfDef.verticalCenterPercent
+                const scale = Math.max(0.4, Math.min(2.0, product.displayScale || 1.0))
+
+                return (
+                  <div
+                    key={product.id}
+                    style={{
+                      position: 'absolute',
+                      top: `${topPos}%`,
+                      left: `${leftPos}%`,
+                      transform: `translate(-50%, -50%) scale(${scale})`,
+                      zIndex: 20,
+                    }}
+                    className="group/product pointer-events-auto transition-transform duration-200 hover:scale-110 select-none cursor-pointer"
+                    title={`${product.name} (${product.category}${product.quantity ? ` • ${product.quantity}` : ''})`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                    }}
+                  >
+                    {/* Shadow under product on physical shelf */}
+                    <div className="absolute -bottom-2 inset-x-1 h-3 rounded-full bg-black/40 blur-xs -z-10" />
+
+                    {/* Product Graphic */}
+                    <img
+                      src={product.imageUrl}
+                      alt={product.name}
+                      className="w-11 h-14 object-contain select-none filter drop-shadow-md"
+                      draggable={false}
+                    />
+
+                    {/* Rich Hover Tooltip */}
+                    <div className="absolute left-1/2 -top-8 -translate-x-1/2 px-2 py-0.5 rounded-md bg-slate-900/95 backdrop-blur-md text-white text-[9px] font-medium whitespace-nowrap opacity-0 group-hover/product:opacity-100 transition-opacity duration-150 pointer-events-none border border-white/20 shadow-xl z-50 flex items-center gap-1">
+                      <span className="font-bold">{product.name}</span>
+                      {product.quantity && (
+                        <span className="text-amber-300 font-semibold text-[8px]">
+                          [{product.quantity}]
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </div>
 
           {/* 
@@ -406,6 +508,55 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                   <DoorClosed className="w-2.5 h-2.5 text-slate-300" />
                   <span>Click to Close</span>
                 </div>
+              </div>
+
+              {/* Dynamic Admin-Managed Products in Door Bins */}
+              <div className="absolute inset-0 pointer-events-none z-10">
+                {doorProducts.map((product) => {
+                  const shelfDef = SHELF_DEFINITIONS[product.shelf] || SHELF_DEFINITIONS.door_bin_middle
+                  const leftPos = Math.max(15, Math.min(85, product.positionX))
+                  const topPos = shelfDef.verticalCenterPercent
+                  const scale = Math.max(0.4, Math.min(2.0, product.displayScale || 1.0))
+
+                  return (
+                    <div
+                      key={product.id}
+                      style={{
+                        position: 'absolute',
+                        top: `${topPos}%`,
+                        left: `${leftPos}%`,
+                        transform: `translate(-50%, -50%) scale(${scale})`,
+                        zIndex: 20,
+                      }}
+                      className="group/doorprod pointer-events-auto transition-transform duration-200 hover:scale-110 select-none cursor-pointer"
+                      title={`${product.name} (${product.category}${product.quantity ? ` • ${product.quantity}` : ''})`}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                      }}
+                    >
+                      {/* Shadow behind bottle in door bin */}
+                      <div className="absolute -bottom-1.5 inset-x-1 h-2 rounded-full bg-black/30 blur-xs -z-10" />
+
+                      {/* Product Graphic */}
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="w-10 h-14 object-contain select-none filter drop-shadow-md"
+                        draggable={false}
+                      />
+
+                      {/* Hover Tooltip */}
+                      <div className="absolute left-1/2 -top-8 -translate-x-1/2 px-2 py-0.5 rounded-md bg-slate-900/95 backdrop-blur-md text-white text-[9px] font-medium whitespace-nowrap opacity-0 group-hover/doorprod:opacity-100 transition-opacity duration-150 pointer-events-none border border-white/20 shadow-xl z-50 flex items-center gap-1">
+                        <span className="font-bold">{product.name}</span>
+                        {product.quantity && (
+                          <span className="text-sky-300 font-semibold text-[8px]">
+                            [{product.quantity}]
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             </div>
 

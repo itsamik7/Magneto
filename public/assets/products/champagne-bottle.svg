@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 170" width="100%" height="100%">
+  <defs>
+    <linearGradient id="champagneGlass" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#064E3B"/>
+      <stop offset="35%" stop-color="#047857"/>
+      <stop offset="70%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#022C22"/>
+    </linearGradient>
+    <linearGradient id="goldFoil" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#B45309"/>
+      <stop offset="30%" stop-color="#FBBF24"/>
+      <stop offset="60%" stop-color="#FDE68A"/>
+      <stop offset="100%" stop-color="#92400E"/>
+    </linearGradient>
+    <filter id="champagneShadow" x="-15%" y="-10%" width="130%" height="125%">
+      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#champagneShadow)">
+    <!-- Cork & Gold Wire Muselet / Foil Neck Wrap -->
+    <path d="M41,6 L49,6 L50,14 L40,14 Z" fill="#D97706"/>
+    <!-- Gold Foil Cape -->
+    <path d="M40,14 L50,14 L52,48 C52,56 46,62 45,62 C44,62 38,56 38,48 L40,14 Z" fill="url(#goldFoil)" stroke="#78350F" stroke-width="0.8"/>
+    <!-- Red Vintage Collar Seal -->
+    <rect x="38" y="32" width="14" height="6" rx="1" fill="#DC2626"/>
+    <text x="45" y="36.5" font-family="system-ui, -apple-system, sans-serif" font-size="3" font-weight="900" fill="#FFFFFF" text-anchor="middle">RESERVE</text>
+
+    <!-- Deep Green Champagne Bottle Body -->
+    <path d="M42,48 C42,66 22,78 22,102 L22,154 C22,160 28,162 45,162 C62,162 68,160 68,154 L68,102 C68,78 48,66 48,48 Z" fill="url(#champagneGlass)" stroke="#064E3B" stroke-width="1.2"/>
+
+    <!-- Glass Specular Highlight Curve -->
+    <path d="M28,96 L28,152" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+
+    <!-- Elegant Gold Rim Champagne Label -->
+    <rect x="25" y="98" width="40" height="38" rx="2" fill="#FFFBEB" stroke="#B45309" stroke-width="1"/>
+    <rect x="27" y="100" width="36" height="34" rx="1" fill="none" stroke="#D97706" stroke-width="0.6"/>
+
+    <text x="45" y="108" font-family="serif, Times New Roman" font-size="4" font-style="italic" fill="#78350F" text-anchor="middle">Cuvée Prestige</text>
+    <text x="45" y="117" font-family="system-ui, -apple-system, sans-serif" font-size="6.5" font-weight="900" fill="#1C1917" text-anchor="middle" letter-spacing="1">BRUT</text>
+    <text x="45" y="123" font-family="system-ui, -apple-system, sans-serif" font-size="3.5" font-weight="700" fill="#92400E" text-anchor="middle">CHAMPAGNE</text>
+    <text x="45" y="131" font-family="system-ui, -apple-system, sans-serif" font-size="3" font-weight="600" fill="#78350F" text-anchor="middle">750 ML • 12% VOL</text>
+  </g>
+</svg>

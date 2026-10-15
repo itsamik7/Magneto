@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 130" width="100%" height="100%">
+  <defs>
+    <linearGradient id="mustardLid" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1E293B"/>
+      <stop offset="50%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="mustardSauce" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#CA8A04"/>
+      <stop offset="40%" stop-color="#EAB308"/>
+      <stop offset="70%" stop-color="#FACC15"/>
+      <stop offset="100%" stop-color="#A16207"/>
+    </linearGradient>
+    <filter id="jarShadow" x="-15%" y="-10%" width="130%" height="125%">
+      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#jarShadow)">
+    <!-- Black Metal Lid -->
+    <rect x="34" y="16" width="32" height="12" rx="2" fill="url(#mustardLid)" stroke="#0F172A" stroke-width="1"/>
+    <!-- Lid knurled ribbing -->
+    <line x1="38" y1="18" x2="38" y2="26" stroke="#475569" stroke-width="0.8"/>
+    <line x1="44" y1="18" x2="44" y2="26" stroke="#475569" stroke-width="0.8"/>
+    <line x1="50" y1="18" x2="50" y2="26" stroke="#475569" stroke-width="0.8"/>
+    <line x1="56" y1="18" x2="56" y2="26" stroke="#475569" stroke-width="0.8"/>
+    <line x1="62" y1="18" x2="62" y2="26" stroke="#475569" stroke-width="0.8"/>
+
+    <!-- Glass Jar with Mustard -->
+    <rect x="25" y="28" width="50" height="88" rx="8" fill="url(#mustardSauce)" stroke="#854D0E" stroke-width="1.2"/>
+
+    <!-- Glass gloss reflection -->
+    <path d="M30,34 L30,108" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+
+    <!-- French Dijon Label -->
+    <rect x="28" y="48" width="44" height="48" rx="4" fill="#FEF3C7" stroke="#CA8A04" stroke-width="1"/>
+    <!-- Decorative border -->
+    <rect x="30" y="50" width="40" height="44" rx="2" fill="none" stroke="#B45309" stroke-width="0.6" stroke-dasharray="2 1"/>
+
+    <!-- French crest / fleur-de-lis -->
+    <path d="M50,53 C50,56 48,58 48,60 H52 C52,58 50,56 50,53 Z" fill="#92400E"/>
+    <text x="50" y="68" font-family="system-ui, -apple-system, sans-serif" font-size="7" font-weight="900" fill="#78350F" text-anchor="middle" letter-spacing="0.5">DIJON</text>
+    <text x="50" y="75" font-family="system-ui, -apple-system, sans-serif" font-size="4.5" font-weight="700" fill="#92400E" text-anchor="middle">MUSTARD</text>
+    <text x="50" y="82" font-family="system-ui, -apple-system, sans-serif" font-size="3.5" font-weight="600" fill="#B45309" text-anchor="middle">AU VIN BLANC</text>
+    <text x="50" y="91" font-family="system-ui, -apple-system, sans-serif" font-size="3" font-weight="700" fill="#78350F" text-anchor="middle">250g NET</text>
+  </g>
+</svg>

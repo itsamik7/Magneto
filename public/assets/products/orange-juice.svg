@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 160" width="100%" height="100%">
+  <defs>
+    <linearGradient id="ojLiquid" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#EA580C"/>
+      <stop offset="40%" stop-color="#F97316"/>
+      <stop offset="80%" stop-color="#FB923C"/>
+      <stop offset="100%" stop-color="#C2410C"/>
+    </linearGradient>
+    <linearGradient id="glassCarafe" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.6"/>
+      <stop offset="25%" stop-color="#FFFFFF" stop-opacity="0.2"/>
+      <stop offset="85%" stop-color="#FFFFFF" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.5"/>
+    </linearGradient>
+    <filter id="ojShadow" x="-15%" y="-10%" width="130%" height="125%">
+      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#ojShadow)">
+    <!-- Wooden / White Stopper Cap -->
+    <path d="M48,16 L62,16 L65,26 L45,26 Z" fill="#D97706" stroke="#B45309" stroke-width="1"/>
+
+    <!-- Glass Carafe Shape -->
+    <path d="M46,26 L44,48 C44,58 30,72 30,95 L30,138 C30,146 38,150 55,150 C72,150 80,146 80,138 L80,95 C80,72 66,58 66,48 L64,26 Z" fill="url(#ojLiquid)" stroke="#9A3412" stroke-width="1.2"/>
+
+    <!-- Glass Highlight Overlay -->
+    <path d="M46,26 L44,48 C44,58 30,72 30,95 L30,138 C30,146 38,150 55,150 C72,150 80,146 80,138 L80,95 C80,72 66,58 66,48 L64,26 Z" fill="url(#glassCarafe)"/>
+
+    <!-- Shiny gloss reflection curve -->
+    <path d="M36,90 L36,136" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+
+    <!-- Fresh Orange Illustration on Carafe -->
+    <circle cx="55" cy="100" r="14" fill="#F97316" stroke="#C2410C" stroke-width="1"/>
+    <!-- Orange Slice Spokes -->
+    <circle cx="55" cy="100" r="11" fill="#FFEDD5"/>
+    <circle cx="55" cy="100" r="9" fill="#FB923C"/>
+    <line x1="55" y1="91" x2="55" y2="109" stroke="#FFEDD5" stroke-width="1"/>
+    <line x1="46" y1="100" x2="64" y2="100" stroke="#FFEDD5" stroke-width="1"/>
+    <!-- Leaf -->
+    <path d="M55,86 C62,82 66,78 68,80 C68,84 62,88 55,86 Z" fill="#16A34A"/>
+
+    <text x="55" y="124" font-family="system-ui, -apple-system, sans-serif" font-size="6" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="0.5">100% PURE</text>
+    <text x="55" y="131" font-family="system-ui, -apple-system, sans-serif" font-size="4.5" font-weight="700" fill="#FEF08A" text-anchor="middle">ORANGE JUICE</text>
+  </g>
+</svg>

@@ -12,6 +12,7 @@ import { SignupPage } from './pages/SignupPage'
 import { MyFridgePage } from './pages/MyFridgePage'
 import { PlanTripPage } from './pages/PlanTripPage'
 import { TripDetailPage } from './pages/TripDetailPage'
+import { AdminPage } from './pages/AdminPage'
 
 export default function App() {
   const [isSetupModalOpen, setIsSetupModalOpen] = useState(false)
@@ -30,6 +31,9 @@ export default function App() {
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
+
+              {/* Dedicated Unlisted Admin Route */}
+              <Route path="/admin" element={<AdminPage />} />
 
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
