@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { fridgeService, areSlugsEquivalent } from '../services/fridgeService'
+import { fridgeService, areSlugsEquivalent, DEFAULT_FRIDGE_ID } from '../services/fridgeService'
 import { userMagnetService, type FridgeMagnetItem, DEFAULT_FEATURED_MAGNETS } from '../services/userMagnetService'
 import { SOUVENIR_MAGNETS_CATALOG, type SouvenirMagnetData } from '../data/photorealisticMagnets'
 import type { FridgeModel, MagnetPlacement } from '../types/fridge'
@@ -32,7 +32,6 @@ import {
   Trash2,
   ChevronRight,
 } from 'lucide-react'
-import { FridgeModelModal } from '../components/fridge/FridgeModelModal'
 import { budgetService, type BudgetItem } from '../services/budgetService'
 
 const FILTER_PILLS = ['All', 'Countries', 'Cities', 'Nature', 'Monuments']
@@ -58,19 +57,16 @@ export const PlanTripPage: React.FC = () => {
   const [activeCategoryTile, setActiveCategoryTile] = useState('All')
   const [favorites, setFavorites] = useState<Set<string>>(new Set(['santorini', 'paris', 'goa-beach']))
 
-  // User Fridge Model & Magnets
+  // User Fridge Model & Magnets (Universal Studio Stainless 3D)
   const [activeModel, setActiveModel] = useState<FridgeModel>(() => {
-    const id = fridgeService.getActiveFridgeId(user?.id || 'guest')
-    return fridgeService.getFridgeModelById(id, user?.id)
+    return fridgeService.getFridgeModelById(DEFAULT_FRIDGE_ID, user?.id)
   })
-  const [isModelModalOpen, setIsModelModalOpen] = useState(false)
   const [userMagnets, setUserMagnets] = useState<FridgeMagnetItem[]>(() => {
     return userMagnetService.getUserFridgeMagnetsSync(user?.id || 'guest')
   })
   const [placements, setPlacements] = useState<MagnetPlacement[]>(() => {
     const uid = user?.id || 'guest'
-    const id = fridgeService.getActiveFridgeId(uid)
-    return fridgeService.getFridgePlacements(uid, id)
+    return fridgeService.getFridgePlacements(uid, DEFAULT_FRIDGE_ID)
   })
   const [selectedPlacementId, setSelectedPlacementId] = useState<string | null>('magnet-santorini')
 
@@ -177,9 +173,8 @@ export const PlanTripPage: React.FC = () => {
         list = await userMagnetService.getUserFridgeMagnets(uid)
         setUserMagnets(list)
       }
-      const activeId = fridgeService.getActiveFridgeId(uid)
-      setActiveModel(fridgeService.getFridgeModelById(activeId, user?.id))
-      const loadedPlacements = fridgeService.getFridgePlacements(uid, activeId, list)
+      setActiveModel(fridgeService.getFridgeModelById(DEFAULT_FRIDGE_ID, user?.id))
+      const loadedPlacements = fridgeService.getFridgePlacements(uid, DEFAULT_FRIDGE_ID, list)
       setPlacements(loadedPlacements)
     }
     load()
@@ -188,11 +183,10 @@ export const PlanTripPage: React.FC = () => {
       const detail = (e as CustomEvent)?.detail
       if (detail?.source === 'PlanTripPage') return
 
-      const activeId = fridgeService.getActiveFridgeId(uid)
-      setActiveModel(fridgeService.getFridgeModelById(activeId, user?.id))
+      setActiveModel(fridgeService.getFridgeModelById(DEFAULT_FRIDGE_ID, user?.id))
       const syncMagnets = userMagnetService.getUserFridgeMagnetsSync(uid)
       setUserMagnets(syncMagnets)
-      const syncPlacements = fridgeService.getFridgePlacements(uid, activeId, syncMagnets)
+      const syncPlacements = fridgeService.getFridgePlacements(uid, DEFAULT_FRIDGE_ID, syncMagnets)
       setPlacements(syncPlacements)
     }
 
@@ -503,20 +497,6 @@ export const PlanTripPage: React.FC = () => {
   }
 
   // Switch Refrigerator Model
-  const handleSelectFridgeModel = (newModel: FridgeModel) => {
-    setActiveModel(newModel)
-    const uid = user?.id || 'guest'
-    fridgeService.setActiveFridgeId(uid, newModel.id)
-
-    // Adapt existing magnet positions so magnets remain inside the new fridge's bounds
-    const adapted = fridgeService.adaptPlacementsToModel(placements, newModel)
-    setPlacements(adapted)
-    fridgeService.saveFridgePlacements(uid, newModel.id, adapted, 'PlanTripPage')
-    setIsModelModalOpen(false)
-
-    setSaveSuccessMessage(`Switched to ${newModel.name}`)
-    setTimeout(() => setSaveSuccessMessage(null), 2500)
-  }
 
   // Handle Save Fridge Action
   const handleSaveFridge = async () => {
@@ -806,22 +786,6 @@ export const PlanTripPage: React.FC = () => {
         mobileActiveView === 'fridge' ? 'flex' : 'hidden xl:flex'
       }`}>
         
-        {/* Top Controls Bar: Fridge Selection, Auto Arrange, and Edit Mode Pill */}
-        <div className="w-full flex items-center justify-between mb-2 z-20 px-1 gap-2 flex-wrap">
-          {/* Fridge Model Switcher Button */}
-          <button
-            onClick={() => setIsModelModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-800 rounded-xl shadow-xs border border-slate-200 font-medium transition-all hover:border-slate-300 active:scale-95 text-xs"
-            title="Switch refrigerator model"
-          >
-            <SlidersHorizontal className="w-3.5 h-3.5 text-blue-600" />
-            <span className="font-heading font-bold text-xs truncate max-w-[130px] sm:max-w-[180px]">
-              {activeModel.name}
-            </span>
-            <ChevronRight className="w-3 h-3 text-slate-400" />
-          </button>
-        </div>
-
         {/* Center Fridge Workspace with Draggable Magnets */}
         <div className="relative z-10 w-full flex flex-col items-center">
           <FridgeWorkspace
@@ -834,7 +798,6 @@ export const PlanTripPage: React.FC = () => {
             onSelectMagnetItem={(magnet) => {
               setSelectedDestinationSlug(magnet.destination_slug)
             }}
-            onChangeFridgeModel={handleSelectFridgeModel}
             onRemoveMagnet={handleDeleteMagnet}
             onPlacementsChange={(next) => {
               setPlacements(next)
@@ -1363,15 +1326,6 @@ export const PlanTripPage: React.FC = () => {
         totalSavedMinor={savedAmount * 100}
         daysRemaining={daysLeft}
         onSaveAmount={handleSaveMoneySuccess}
-      />
-
-      {/* Refrigerator Model Selection Modal */}
-      <FridgeModelModal
-        isOpen={isModelModalOpen}
-        onClose={() => setIsModelModalOpen(false)}
-        currentModelId={activeModel.id}
-        userId={user?.id || 'guest'}
-        onSelectModel={handleSelectFridgeModel}
       />
 
     </div>

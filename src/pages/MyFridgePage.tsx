@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { fridgeService, areSlugsEquivalent } from '../services/fridgeService'
+import { fridgeService, areSlugsEquivalent, DEFAULT_FRIDGE_ID } from '../services/fridgeService'
 import { userMagnetService, type FridgeMagnetItem, DEFAULT_FEATURED_MAGNETS } from '../services/userMagnetService'
 import type { FridgeModel, MagnetPlacement } from '../types/fridge'
 import { FridgeWorkspace } from '../components/fridge/FridgeWorkspace'
@@ -389,10 +389,9 @@ export const MyFridgePage: React.FC = () => {
     }
   })
 
-  // Active Fridge Model
+  // Active Fridge Model (Universal Studio Stainless 3D)
   const [activeModel, setActiveModel] = useState<FridgeModel>(() => {
-    const id = fridgeService.getActiveFridgeId(user?.id || 'guest')
-    return fridgeService.getFridgeModelById(id, user?.id)
+    return fridgeService.getFridgeModelById(DEFAULT_FRIDGE_ID, user?.id)
   })
 
   // Placements on canvas
@@ -413,9 +412,8 @@ export const MyFridgePage: React.FC = () => {
         list = await userMagnetService.getUserFridgeMagnets(uid)
         setUserMagnets(list)
       }
-      const activeId = fridgeService.getActiveFridgeId(uid)
-      setActiveModel(fridgeService.getFridgeModelById(activeId, user?.id))
-      const loadedPlacements = fridgeService.getFridgePlacements(uid, activeId, list)
+      setActiveModel(fridgeService.getFridgeModelById(DEFAULT_FRIDGE_ID, user?.id))
+      const loadedPlacements = fridgeService.getFridgePlacements(uid, DEFAULT_FRIDGE_ID, list)
       setPlacements(loadedPlacements)
     }
     load()
@@ -424,11 +422,10 @@ export const MyFridgePage: React.FC = () => {
       const detail = (e as CustomEvent)?.detail
       if (detail?.source === 'MyFridgePage') return
 
-      const activeId = fridgeService.getActiveFridgeId(uid)
-      setActiveModel(fridgeService.getFridgeModelById(activeId, user?.id))
+      setActiveModel(fridgeService.getFridgeModelById(DEFAULT_FRIDGE_ID, user?.id))
       const syncMagnets = userMagnetService.getUserFridgeMagnetsSync(uid)
       setUserMagnets(syncMagnets)
-      const syncPlacements = fridgeService.getFridgePlacements(uid, activeId, syncMagnets)
+      const syncPlacements = fridgeService.getFridgePlacements(uid, DEFAULT_FRIDGE_ID, syncMagnets)
       setPlacements(syncPlacements)
     }
 
@@ -610,7 +607,6 @@ export const MyFridgePage: React.FC = () => {
             placements={placements}
             selectedPlacementId={selectedPlacementId}
             onSelectPlacementId={handleSelectPlacement}
-            onChangeFridgeModel={setActiveModel}
             onPlacementsChange={setPlacements}
             showControls={false}
             readOnly={true}

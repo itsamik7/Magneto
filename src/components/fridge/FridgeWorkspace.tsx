@@ -3,14 +3,11 @@ import type { FridgeModel, MagnetPlacement } from '../../types/fridge'
 import type { FridgeMagnetItem } from '../../services/userMagnetService'
 import { fridgeService } from '../../services/fridgeService'
 import { DraggableMagnet } from './DraggableMagnet'
-import { FridgeModelModal } from './FridgeModelModal'
 import { UniversalSteelFridge } from './UniversalSteelFridge'
 import {
   Sparkles,
   Plus,
   Compass,
-  SlidersHorizontal,
-  ChevronRight,
   RotateCcw,
   Move,
 } from 'lucide-react'
@@ -50,7 +47,6 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
 }) => {
   const surfaceRef = useRef<HTMLDivElement>(null)
   const [isDragOver, setIsDragOver] = useState(false)
-  const [isModelModalOpen, setIsModelModalOpen] = useState(false)
   const [internalSelectedId, setInternalSelectedId] = useState<string | null>(null)
   const [placements, setPlacements] = useState<MagnetPlacement[]>(() => {
     return controlledPlacements && controlledPlacements.length > 0
@@ -448,36 +444,16 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
   return (
     <div className="w-full flex flex-col items-center select-none">
       
-      {/* Top Floating Utility Controls Bar: Model & Actions (Only rendered when showControls is true) */}
-      {showControls && (
-        <div className="w-full max-w-2xl mb-1.5 flex items-center justify-between gap-2 px-1 text-xs flex-wrap">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {/* Active Model Indicator & Switcher */}
-            <button
-              onClick={() => setIsModelModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-800 rounded-xl shadow-xs border border-slate-200 font-medium transition-all hover:border-slate-300 cursor-pointer"
-              title="Choose a different refrigerator model from catalogue"
-            >
-              <SlidersHorizontal className="w-3.5 h-3.5 text-blue-600" />
-              <span className="font-heading font-bold text-[11px] truncate max-w-[120px] sm:max-w-[170px]">
-                {activeModel.name}
-              </span>
-              <ChevronRight className="w-3 h-3 text-slate-400" />
-            </button>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            {/* Add Magnet Button */}
-            {onAddDestination && (
-              <button
-                onClick={onAddDestination}
-                className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl shadow-xs font-heading font-bold text-[11px] transition-all hover:scale-105 active:scale-95"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add Magnet</span>
-              </button>
-            )}
-          </div>
+      {/* Top Floating Utility Controls Bar: Actions (Only rendered when showControls and onAddDestination) */}
+      {showControls && onAddDestination && (
+        <div className="w-full max-w-2xl mb-1.5 flex items-center justify-end gap-2 px-1 text-xs">
+          <button
+            onClick={onAddDestination}
+            className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl shadow-xs font-heading font-bold text-[11px] transition-all hover:scale-105 active:scale-95"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Magnet</span>
+          </button>
         </div>
       )}
 
@@ -795,20 +771,6 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
         </div>
       </div>
 
-      {/* Model Selection Modal */}
-      <FridgeModelModal
-        isOpen={isModelModalOpen}
-        onClose={() => setIsModelModalOpen(false)}
-        currentModelId={activeModel.id}
-        userId={userId}
-        onSelectModel={(model) => {
-          setActiveModel(model)
-          if (onChangeFridgeModel) {
-            onChangeFridgeModel(model)
-          }
-          fridgeService.setActiveFridgeId(userId, model.id)
-        }}
-      />
     </div>
   )
 }

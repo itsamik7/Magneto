@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import type { TripWithStats } from '../../types/trip'
 import type { FridgeMagnetItem } from '../../services/userMagnetService'
 import type { FridgeModel } from '../../types/fridge'
-import { fridgeService } from '../../services/fridgeService'
+import { fridgeService, DEFAULT_FRIDGE_ID } from '../../services/fridgeService'
 import { FridgeWorkspace } from './FridgeWorkspace'
 
 interface VirtualFridgeProps {
@@ -26,16 +26,14 @@ export const VirtualFridge: React.FC<VirtualFridgeProps> = ({
   isLoading = false,
   showControls = true,
 }) => {
-  // Active fridge model
+  // Active fridge model (Universal Studio Stainless 3D)
   const [activeModel, setActiveModel] = useState<FridgeModel>(() => {
-    const modelId = fridgeService.getActiveFridgeId(userId)
-    return fridgeService.getFridgeModelById(modelId, userId)
+    return fridgeService.getFridgeModelById(DEFAULT_FRIDGE_ID, userId)
   })
 
   // Sync if userId changes
   useEffect(() => {
-    const modelId = fridgeService.getActiveFridgeId(userId)
-    setActiveModel(fridgeService.getFridgeModelById(modelId, userId))
+    setActiveModel(fridgeService.getFridgeModelById(DEFAULT_FRIDGE_ID, userId))
   }, [userId])
 
   // Derive display magnets: use magnets array if populated, or fallback to trips
@@ -95,9 +93,6 @@ export const VirtualFridge: React.FC<VirtualFridgeProps> = ({
         }
       }}
       onAddDestination={onAddDestination}
-      onChangeFridgeModel={(newModel) => {
-        setActiveModel(newModel)
-      }}
       showControls={showControls}
     />
   )

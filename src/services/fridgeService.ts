@@ -1,5 +1,6 @@
 import type { FridgeModel, MagnetPlacement, UserFridgeConfiguration } from '../types/fridge'
 import { FRIDGE_MODELS, DEFAULT_FRIDGE_ID } from '../data/fridgeCatalog'
+export { DEFAULT_FRIDGE_ID }
 import type { FridgeMagnetItem } from './userMagnetService'
 
 const memoryStorage = new Map<string, string>()
