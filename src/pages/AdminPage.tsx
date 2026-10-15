@@ -16,7 +16,6 @@ import {
   unarchiveProduct,
   deleteProductPermanent,
   uploadProductImage,
-  resetToDefaultProducts,
   clearAllProducts,
   populateStockTemplates,
   FRIDGE_PRODUCTS_UPDATED_EVENT,
@@ -60,10 +59,18 @@ import {
   Sliders,
   Maximize2,
   DoorOpen,
+  DoorClosed,
+  Compass,
+  ArrowRight,
+  ArrowLeft,
+  Smartphone,
+  Monitor,
+  Eye as ViewIcon,
+  CheckCircle,
 } from 'lucide-react'
 
 export const AdminPage: React.FC = () => {
-  const { user, isConfigured } = useAuth()
+  const { user } = useAuth()
   const navigate = useNavigate()
 
   // Authorization state
@@ -95,11 +102,10 @@ export const AdminPage: React.FC = () => {
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'archived'>('all')
 
-  // Modals state
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  // Modals & Panels state
+  const [isAddMode, setIsAddMode] = useState(false)
   const [editingProduct, setEditingProduct] = useState<FridgeProduct | null>(null)
   const [deleteConfirmProduct, setDeleteConfirmProduct] = useState<FridgeProduct | null>(null)
-  const [isLivePreviewOpen, setIsLivePreviewOpen] = useState(false)
 
   // Form state for Add / Edit
   const [formName, setFormName] = useState('')
@@ -114,6 +120,13 @@ export const AdminPage: React.FC = () => {
   const [formImageTab, setFormImageTab] = useState<'approved' | 'upload'>('approved')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
+
+  // Live Fridge Preview controls state
+  const [previewDoorOpen, setPreviewDoorOpen] = useState(true)
+  const [previewYaw, setPreviewYaw] = useState(-25)
+  const [mobileTab, setMobileTab] = useState<'editor' | 'preview'>('editor')
+
+  const isEditorActive = isAddMode || editingProduct !== null
 
   // 1. Verify Admin Role on Mount / Auth state changes
   useEffect(() => {
@@ -161,6 +174,79 @@ export const AdminPage: React.FC = () => {
       }
     }
   }, [isAuthorizedAdmin])
+
+  // 3. Auto-orient the 3D fridge when selecting a Door bin vs Cavity shelf
+  useEffect(() => {
+    if (isEditorActive) {
+      const loc = SHELF_DEFINITIONS[formShelf]?.location
+      if (loc === 'door') {
+        setPreviewDoorOpen(true)
+        setPreviewYaw(-55)
+      } else {
+        setPreviewDoorOpen(true)
+        setPreviewYaw(-20)
+      }
+    }
+  }, [formShelf, isEditorActive])
+
+  // 4. Real-time dynamic preview products calculation
+  // Reflects slider movements, shelf changes, image asset updates, scale, and visibility immediately!
+  const previewProducts = useMemo<FridgeProduct[]>(() => {
+    if (!isEditorActive) {
+      return products
+    }
+
+    if (editingProduct) {
+      return products.map((p) => {
+        if (p.id === editingProduct.id) {
+          return {
+            ...p,
+            name: formName.trim() || 'Editing Product',
+            category: formCategory,
+            shelf: formShelf,
+            positionX: formPositionX,
+            displayScale: formScale,
+            quantity: formQuantity.trim() || undefined,
+            description: formDescription.trim() || undefined,
+            imageUrl: formImageUrl,
+            isActive: formIsActive,
+          }
+        }
+        return p
+      })
+    }
+
+    // Adding a new product draft
+    const draftNew: FridgeProduct = {
+      id: 'draft-new-product-preview-id',
+      name: formName.trim() || 'New Item Preview',
+      category: formCategory,
+      shelf: formShelf,
+      positionX: formPositionX,
+      displayScale: formScale,
+      quantity: formQuantity.trim() || undefined,
+      description: formDescription.trim() || undefined,
+      imageUrl: formImageUrl,
+      isActive: formIsActive,
+      isArchived: false,
+      displayOrder: products.length + 1,
+    }
+
+    return [...products, draftNew]
+  }, [
+    products,
+    isEditorActive,
+    editingProduct,
+    formName,
+    formCategory,
+    formShelf,
+    formPositionX,
+    formScale,
+    formQuantity,
+    formDescription,
+    formImageUrl,
+    formIsActive,
+  ])
 
   // Handle Admin Login submission
   const handleAdminLogin = async (e: React.FormEvent) => {
@@ -244,26 +330,28 @@ export const AdminPage: React.FC = () => {
     return { total, active, inactive, archived, cavityCount, doorCount }
   }, [products])
 
-  // Open Add Product Modal
-  const openAddModal = () => {
+  // Open Add Product Editor
+  const openAddEditor = () => {
     setFormName('')
     setFormCategory('Dairy')
     setFormShelf('middle_shelf')
     setFormPositionX(50)
     setFormScale(1.0)
-    setFormQuantity('1 Unit')
+    setFormQuantity('1 Litre')
     setFormDescription('')
     setFormIsActive(true)
     setFormImageUrl('/assets/products/milk-carton.png')
     setFormImageTab('approved')
     setFormError(null)
     setEditingProduct(null)
-    setIsAddModalOpen(true)
+    setIsAddMode(true)
+    setMobileTab('editor')
   }
 
-  // Open Edit Product Modal
-  const openEditModal = (prod: FridgeProduct) => {
+  // Open Edit Product Editor
+  const openEditEditor = (prod: FridgeProduct) => {
     setEditingProduct(prod)
+    setIsAddMode(false)
     setFormName(prod.name)
     setFormCategory(prod.category)
     setFormShelf(prod.shelf)
@@ -275,7 +363,14 @@ export const AdminPage: React.FC = () => {
     setFormImageUrl(prod.imageUrl)
     setFormImageTab(prod.imageUrl.startsWith('/assets/products') ? 'approved' : 'upload')
     setFormError(null)
-    setIsAddModalOpen(true)
+    setMobileTab('editor')
+  }
+
+  // Close / Cancel Editor
+  const closeEditor = () => {
+    setIsAddMode(false)
+    setEditingProduct(null)
+    setFormError(null)
   }
 
   // Handle Image Upload
@@ -287,14 +382,14 @@ export const AdminPage: React.FC = () => {
     try {
       const uploadedUrl = await uploadProductImage(file)
       setFormImageUrl(uploadedUrl)
-      setFeedbackMessage({ type: 'info', text: 'Product image successfully processed!' })
+      setFeedbackMessage({ type: 'info', text: 'Product image updated in live preview!' })
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error uploading image'
       setFormError(msg)
     }
   }
 
-  // Submit Add or Edit
+  // Submit Add or Edit (Persists to database)
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault()
     setFormError(null)
@@ -325,7 +420,7 @@ export const AdminPage: React.FC = () => {
         })
         setFeedbackMessage({
           type: 'success',
-          text: `"${formName}" has been updated successfully.`,
+          text: `"${formName}" updated and persisted to database.`,
         })
       } else {
         // Create new
@@ -344,11 +439,11 @@ export const AdminPage: React.FC = () => {
         })
         setFeedbackMessage({
           type: 'success',
-          text: `"${formName}" has been placed into the refrigerator inventory.`,
+          text: `"${formName}" saved to database and placed inside refrigerator.`,
         })
       }
 
-      setIsAddModalOpen(false)
+      closeEditor()
       await loadInventory()
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to save product.'
@@ -358,7 +453,7 @@ export const AdminPage: React.FC = () => {
     }
   }
 
-  // Toggle Visibility directly
+  // Toggle Visibility directly from table
   const handleToggleActive = async (prod: FridgeProduct) => {
     try {
       await toggleProductActive(prod.id, !prod.isActive)
@@ -399,6 +494,9 @@ export const AdminPage: React.FC = () => {
         type: 'success',
         text: `Product "${deleteConfirmProduct.name}" permanently removed.`,
       })
+      if (editingProduct?.id === deleteConfirmProduct.id) {
+        closeEditor()
+      }
       setDeleteConfirmProduct(null)
       await loadInventory()
     } catch (err: unknown) {
@@ -409,12 +507,9 @@ export const AdminPage: React.FC = () => {
 
   // Clear all products to make the fridge 100% empty
   const handleClearAll = async () => {
-    if (
-      window.confirm(
-        'Empty the entire refrigerator? All product overlays will be removed.'
-      )
-    ) {
+    if (window.confirm('Empty the entire refrigerator? All product overlays will be removed.')) {
       await clearAllProducts()
+      if (isEditorActive) closeEditor()
       await loadInventory()
       setFeedbackMessage({
         type: 'info',
@@ -425,16 +520,12 @@ export const AdminPage: React.FC = () => {
 
   // Optional: Load starter templates
   const handleLoadTemplates = async () => {
-    if (
-      window.confirm(
-        'Load the 12 starter grocery templates into inventory?'
-      )
-    ) {
+    if (window.confirm('Load the 12 photorealistic starter grocery templates into inventory?')) {
       await populateStockTemplates()
       await loadInventory()
       setFeedbackMessage({
         type: 'success',
-        text: 'Loaded 12 grocery templates into inventory.',
+        text: 'Loaded 12 photorealistic grocery items into inventory.',
       })
     }
   }
@@ -598,25 +689,26 @@ export const AdminPage: React.FC = () => {
               <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
               <span>Security Precaution</span>
             </p>
-            <p className="mt-1 text-[11px] text-amber-800">
-              Ordinary user accounts cannot access the refrigerator inventory controls.
-              Administrator roles are strictly provisioned through PostgreSQL Row Level Security.
+            <p className="mt-1 text-[11px] text-amber-800 leading-relaxed">
+              To grant this account administrative access, execute the authorization grant in your
+              Supabase SQL Editor as documented in the setup guide.
             </p>
           </div>
 
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <button
-              onClick={handleAdminSignOut}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-heading font-bold text-xs shadow-md transition-transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Sign Out & Switch Account</span>
-            </button>
+          <div className="pt-2 flex items-center justify-center gap-3">
             <button
               onClick={() => setIsSetupGuideOpen(true)}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-heading font-bold text-xs flex items-center gap-1.5 shadow-sm"
             >
-              View Admin Provisioning Guide
+              <HelpCircle className="w-4 h-4 text-blue-400" />
+              <span>View Setup Instructions</span>
+            </button>
+
+            <button
+              onClick={handleAdminSignOut}
+              className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-bold text-xs"
+            >
+              Sign Out
             </button>
           </div>
         </div>
@@ -627,10 +719,10 @@ export const AdminPage: React.FC = () => {
   }
 
   // --------------------------------------------------------------------------
-  // STATE D: Fully Authorized Administrator -> Complete Admin Dashboard
+  // STATE D: Fully Authorized Administrator -> Complete Admin Studio Dashboard
   // --------------------------------------------------------------------------
   return (
-    <div className="space-y-6 pb-16">
+    <div className="space-y-6 pb-20">
       {/* Top Banner / Heading */}
       <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-6 sm:p-8">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -644,33 +736,26 @@ export const AdminPage: React.FC = () => {
               <span className="text-xs font-medium text-slate-600">
                 Logged in as <strong className="text-slate-900">{user?.email || 'admin'}</strong>
               </span>
+              <span className="text-xs text-slate-400">•</span>
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Live Fridge Studio Active</span>
+              </span>
             </div>
 
             <h1 className="font-heading font-black text-2xl sm:text-3xl text-slate-900 tracking-tight">
               Magneto Admin — Refrigerator Inventory
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 max-w-2xl">
-              Manage all groceries, chilled beverages, dairy products, and food containers visible
-              inside the virtual 3D refrigerator cavity and door-side storage bins.
+              Arrange and manage all interior groceries, beverages, and dairy products.
+              Adjust placement, scale, and shelves with <strong>instant real-time 3D feedback</strong> alongside the editor!
             </p>
           </div>
 
           {/* Quick Action Buttons */}
           <div className="flex items-center gap-2.5 flex-wrap">
             <button
-              onClick={() => setIsLivePreviewOpen(!isLivePreviewOpen)}
-              className={`px-4 py-2.5 rounded-xl font-heading font-bold text-xs transition-all flex items-center gap-2 cursor-pointer shadow-xs ${
-                isLivePreviewOpen
-                  ? 'bg-blue-600 text-white shadow-blue-500/20'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-              }`}
-            >
-              <DoorOpen className="w-4 h-4" />
-              <span>{isLivePreviewOpen ? 'Hide Live Fridge' : 'Live Fridge Preview'}</span>
-            </button>
-
-            <button
-              onClick={openAddModal}
+              onClick={openAddEditor}
               className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-heading font-black text-xs shadow-md shadow-emerald-600/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 cursor-pointer"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
@@ -708,7 +793,7 @@ export const AdminPage: React.FC = () => {
             </div>
             <button
               onClick={() => setFeedbackMessage(null)}
-              className="text-slate-400 hover:text-slate-700 p-1 rounded-md"
+              className="text-slate-400 hover:text-slate-700 p-1 rounded-md cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -758,633 +843,855 @@ export const AdminPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Split view if Live Preview is toggled */}
-      <div className={`grid gap-6 ${isLivePreviewOpen ? 'lg:grid-cols-12' : 'grid-cols-1'}`}>
-        {/* Main Products Catalogue Table / Cards */}
-        <div className={`bg-white rounded-3xl border border-slate-200 shadow-sm p-6 ${isLivePreviewOpen ? 'lg:col-span-8' : ''}`}>
-          {/* Controls Bar: Search & Filter Tabs */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
-            {/* Search Input */}
-            <div className="relative flex-1 max-w-md">
-              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search products by name, category, or description..."
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
-              />
-              {searchQuery && (
+      {/* Mobile Responsive Segmented Tab Switcher */}
+      <div className="lg:hidden flex items-center bg-slate-200/80 p-1 rounded-2xl border border-slate-200">
+        <button
+          onClick={() => setMobileTab('editor')}
+          className={`flex-1 py-2 text-xs font-heading font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            mobileTab === 'editor'
+              ? 'bg-white text-slate-900 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Sliders className="w-3.5 h-3.5" />
+          <span>{isEditorActive ? 'Editing Controls' : 'Inventory Table'}</span>
+        </button>
+
+        <button
+          onClick={() => setMobileTab('preview')}
+          className={`flex-1 py-2 text-xs font-heading font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            mobileTab === 'preview'
+              ? 'bg-blue-600 text-white shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <DoorOpen className="w-3.5 h-3.5" />
+          <span>Live 3D Fridge Preview ({metrics.active})</span>
+        </button>
+      </div>
+
+      {/* 
+        ========================================================================
+        DUAL-PANE STUDIO LAYOUT:
+        Left Column: Active Product Editor OR Inventory Management Table
+        Right Column: Real-time Live Fridge Preview Studio (Always Visible on Desktop!)
+        ========================================================================
+      */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Editor & Inventory */}
+        <div
+          className={`lg:col-span-7 xl:col-span-7 space-y-6 ${
+            mobileTab === 'preview' ? 'hidden lg:block' : 'block'
+          }`}
+        >
+          {/* Active Product Editor Panel (When Add or Edit is triggered) */}
+          {isEditorActive ? (
+            <div className="bg-white rounded-3xl border-2 border-blue-500 shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2">
+              {/* Editor Header */}
+              <div className="px-6 py-4 bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400">
+                    <Sliders className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-500/30 border border-blue-400/30 text-blue-200 font-bold">
+                        {editingProduct ? 'EDITING PRODUCT' : 'NEW PRODUCT DRAFT'}
+                      </span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                      <span className="text-[10px] text-emerald-300 font-semibold hidden sm:inline">
+                        Live 3D Sync Active
+                      </span>
+                    </div>
+                    <h3 className="font-heading font-black text-base text-white mt-0.5">
+                      {formName.trim() || (editingProduct ? 'Edit Interior Product' : 'Add New Refrigerator Product')}
+                    </h3>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setMobileTab('preview')}
+                    className="lg:hidden px-2.5 py-1 rounded-lg bg-blue-600 text-white text-[11px] font-bold flex items-center gap-1"
+                  >
+                    <DoorOpen className="w-3.5 h-3.5" />
+                    <span>View in Fridge</span>
+                  </button>
+
+                  <button
+                    onClick={closeEditor}
+                    className="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-white/10 transition-colors cursor-pointer"
+                    title="Cancel and close editor"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Live arrangement banner */}
+              <div className="px-6 py-2.5 bg-blue-50/70 border-b border-blue-100 flex items-center justify-between text-xs text-blue-900">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+                  <span className="text-[11px] font-medium">
+                    Move sliders, swap shelves, or change scale. The refrigerator preview on the right updates <strong>in real time</strong>!
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono font-bold text-blue-700 bg-blue-100/70 px-2 py-0.5 rounded-md hidden sm:inline">
+                  Shelf: {SHELF_DEFINITIONS[formShelf]?.label.split(' ')[0]} • X: {formPositionX}%
+                </span>
+              </div>
+
+              {/* Editor Form */}
+              <form onSubmit={handleSaveProduct} className="p-6 space-y-4">
+                {formError && (
+                  <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2.5">
+                    <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                    <span>{formError}</span>
+                  </div>
+                )}
+
+                {/* Product Name & Category */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                      Product Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formName}
+                      onChange={(e) => setFormName(e.target.value)}
+                      placeholder="e.g. Organic Almond Milk"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                      Category *
+                    </label>
+                    <select
+                      value={formCategory}
+                      onChange={(e) => setFormCategory(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    >
+                      {PRODUCT_CATEGORIES.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Target Shelf & Quantity */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                      Target Shelf Compartment *
+                    </label>
+                    <select
+                      value={formShelf}
+                      onChange={(e) => setFormShelf(e.target.value as FridgeShelf)}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    >
+                      <optgroup label="Cabinet Cavity (Glass Shelves & Crisper)">
+                        <option value="freezer">Top Freezer Compartment (Sub-Zero)</option>
+                        <option value="top_shelf">Upper Fresh Food Shelf (Tempered Glass)</option>
+                        <option value="middle_shelf">Middle Fresh Food Shelf (Tempered Glass)</option>
+                        <option value="bottom_shelf">Lower Fresh Food Shelf (Heavy Items)</option>
+                        <option value="crisper_drawer">Crisper Humidity Drawer (Fruits & Veggies)</option>
+                      </optgroup>
+                      <optgroup label="Door-Side Storage (Acrylic Bins & Racks)">
+                        <option value="door_bin_top">Door Top Dairy Bin (Covered)</option>
+                        <option value="door_bin_middle">Door Middle Condiment Rack (Jars & Sauces)</option>
+                        <option value="door_bin_bottom">Door Bottom Beverage Bin (Tall Bottles)</option>
+                      </optgroup>
+                    </select>
+                    <span className="text-[10px] text-slate-400 mt-1 block">
+                      Location: <strong className="text-slate-700">{SHELF_DEFINITIONS[formShelf]?.location === 'door' ? 'Door Storage Bin' : 'Interior Glass Cavity'}</strong>
+                    </span>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                      Quantity / Display Info
+                    </label>
+                    <input
+                      type="text"
+                      value={formQuantity}
+                      onChange={(e) => setFormQuantity(e.target.value)}
+                      placeholder="e.g. 1 Litre, Pack of 6, 250g Jar"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+                    />
+                    <span className="text-[10px] text-slate-400 mt-1 block">
+                      Displayed on mouse hover tooltip inside the fridge
+                    </span>
+                  </div>
+                </div>
+
+                {/* Real-time Position & Scale Sliders */}
+                <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200 space-y-3.5">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                        <Sliders className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Position on Shelf (Horizontal X)</span>
+                      </span>
+                      <span className="font-mono text-xs font-black text-blue-700 bg-blue-100 px-2.5 py-0.5 rounded-lg border border-blue-200 shadow-2xs">
+                        {formPositionX}%
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="12"
+                      max="88"
+                      value={formPositionX}
+                      onChange={(e) => setFormPositionX(Number(e.target.value))}
+                      className="w-full accent-blue-600 cursor-pointer h-2 bg-slate-200 rounded-lg"
+                    />
+                    <div className="flex justify-between text-[10px] text-slate-400 font-bold mt-1 px-1">
+                      <span>← Left Edge (12%)</span>
+                      <span className="text-slate-500">Center (50%)</span>
+                      <span>Right Edge (88%) →</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-200/70">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                        <Maximize2 className="w-3.5 h-3.5 text-indigo-600" />
+                        <span>Display Scale Multiplier</span>
+                      </span>
+                      <span className="font-mono text-xs font-black text-indigo-700 bg-indigo-100 px-2.5 py-0.5 rounded-lg border border-indigo-200 shadow-2xs">
+                        {formScale}x
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="1.8"
+                      step="0.05"
+                      value={formScale}
+                      onChange={(e) => setFormScale(Number(e.target.value))}
+                      className="w-full accent-indigo-600 cursor-pointer h-2 bg-slate-200 rounded-lg"
+                    />
+                    <div className="flex justify-between text-[10px] text-slate-400 font-bold mt-1 px-1">
+                      <span>Compact (0.5x)</span>
+                      <span className="text-slate-500">Normal (1.0x)</span>
+                      <span>Large (1.8x)</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Description (Optional) */}
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Description (Optional)
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={formDescription}
+                    onChange={(e) => setFormDescription(e.target.value)}
+                    placeholder="Organic notes, farm origin, or pairing details..."
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Product Image Selection */}
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-2">
+                    Product Image Asset *
+                  </label>
+
+                  {/* Tabs: Approved Assets vs Custom Upload */}
+                  <div className="flex rounded-xl bg-slate-100 p-1 mb-3">
+                    <button
+                      type="button"
+                      onClick={() => setFormImageTab('approved')}
+                      className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                        formImageTab === 'approved' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'
+                      }`}
+                    >
+                      Select Photorealistic Studio Asset
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormImageTab('upload')}
+                      className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                        formImageTab === 'upload' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'
+                      }`}
+                    >
+                      Upload Custom Image
+                    </button>
+                  </div>
+
+                  {formImageTab === 'approved' ? (
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 max-h-52 overflow-y-auto p-1.5 border border-slate-200 rounded-2xl bg-slate-50/50">
+                      {APPROVED_ASSETS.map((asset) => {
+                        const isSelected = formImageUrl === asset.path
+                        return (
+                          <button
+                            key={asset.id}
+                            type="button"
+                            onClick={() => {
+                              setFormImageUrl(asset.path)
+                              if (!formName) setFormName(asset.name)
+                              if (!formQuantity) setFormQuantity(asset.defaultQuantity)
+                              setFormShelf(asset.suggestedShelf)
+                              setFormCategory(asset.category)
+                            }}
+                            className={`p-2 rounded-xl border text-center transition-all flex flex-col items-center gap-1 cursor-pointer bg-white ${
+                              isSelected
+                                ? 'border-blue-500 ring-2 ring-blue-500/30 bg-blue-50/50 shadow-xs'
+                                : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                            }`}
+                          >
+                            <img
+                              src={asset.path}
+                              alt={asset.name}
+                              className="w-10 h-10 object-contain drop-shadow-xs"
+                            />
+                            <span className="text-[9px] font-bold text-slate-700 truncate w-full">
+                              {asset.name}
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <div className="border-2 border-dashed border-slate-300 rounded-2xl p-4 text-center space-y-2 hover:border-blue-400 transition-colors">
+                      <UploadCloud className="w-8 h-8 text-slate-400 mx-auto" />
+                      <p className="text-xs font-bold text-slate-700">
+                        Upload image from your computer
+                      </p>
+                      <p className="text-[10px] text-slate-400">
+                        PNG, JPG, WebP, or SVG up to 5MB. Transparent backgrounds look best.
+                      </p>
+                      <label className="inline-block px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-heading font-bold text-xs cursor-pointer shadow-xs">
+                        <span>Browse Files</span>
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                        />
+                      </label>
+
+                      {formImageUrl && (
+                        <div className="pt-2 flex items-center justify-center gap-2">
+                          <span className="text-[10px] text-slate-500">Selected image preview:</span>
+                          <div className="w-10 h-10 rounded-lg border border-slate-200 p-0.5 bg-slate-50">
+                            <img
+                              src={formImageUrl}
+                              alt="Preview"
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Active Visibility Checkbox */}
+                <div className="flex items-center gap-2.5 pt-1">
+                  <input
+                    type="checkbox"
+                    id="formIsActive"
+                    checked={formIsActive}
+                    onChange={(e) => setFormIsActive(e.target.checked)}
+                    className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
+                  />
+                  <label htmlFor="formIsActive" className="text-xs font-bold text-slate-700 cursor-pointer">
+                    Immediately visible in public refrigerator interior
+                  </label>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={closeEditor}
+                    className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 cursor-pointer"
+                  >
+                    Cancel / Discard Draft
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-heading font-black text-xs shadow-md transition-all hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer flex items-center gap-2"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Saving to Database...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-4 h-4" />
+                        <span>{editingProduct ? 'Save Changes' : 'Place in Fridge & Save'}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          ) : null}
+
+          {/* Main Products Catalogue Table */}
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+              <div>
+                <h2 className="font-heading font-black text-lg text-slate-900">
+                  Interior Products Catalogue
+                </h2>
+                <p className="text-xs text-slate-500">
+                  {products.length} products registered • {metrics.active} visible in refrigerator
+                </p>
+              </div>
+
+              {!isEditorActive && (
                 <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  onClick={openAddEditor}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-heading font-bold text-xs shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <Plus className="w-4 h-4" />
+                  <span>Add Product</span>
                 </button>
               )}
             </div>
 
-            {/* Filter Dropdowns */}
-            <div className="flex items-center gap-2 flex-wrap">
-              {/* Shelf Filter */}
-              <select
-                value={selectedShelfFilter}
-                onChange={(e) => setSelectedShelfFilter(e.target.value)}
-                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All Shelves (8 Compartments)</option>
-                <optgroup label="Cabinet Cavity">
-                  <option value="freezer">Top Freezer Compartment</option>
-                  <option value="top_shelf">Upper Fresh Food Shelf</option>
-                  <option value="middle_shelf">Middle Fresh Food Shelf</option>
-                  <option value="bottom_shelf">Lower Fresh Food Shelf</option>
-                  <option value="crisper_drawer">Crisper Humidity Drawer</option>
-                </optgroup>
-                <optgroup label="Door-Side Storage">
-                  <option value="door_bin_top">Door Top Dairy Bin</option>
-                  <option value="door_bin_middle">Door Middle Condiment Bin</option>
-                  <option value="door_bin_bottom">Door Bottom Beverage Bin</option>
-                </optgroup>
-              </select>
-
-              {/* Category Filter */}
-              <select
-                value={selectedCategoryFilter}
-                onChange={(e) => setSelectedCategoryFilter(e.target.value)}
-                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All Categories</option>
-                {PRODUCT_CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-
-              {/* Status Filter */}
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
-                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All Statuses</option>
-                <option value="active">Active (Visible)</option>
-                <option value="inactive">Hidden (Disabled)</option>
-                <option value="archived">Archived</option>
-              </select>
-
-              <button
-                onClick={handleClearAll}
-                className="px-2.5 py-1.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-[11px] font-bold transition-colors flex items-center gap-1 cursor-pointer"
-                title="Empty the entire refrigerator"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Empty Fridge</span>
-              </button>
-
-              <button
-                onClick={handleLoadTemplates}
-                className="px-2.5 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 text-[11px] font-bold transition-colors flex items-center gap-1 cursor-pointer"
-                title="Load 12 starter grocery templates"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                <span>Load Groceries</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Products List Table */}
-          {isLoadingProducts ? (
-            <div className="py-20 text-center">
-              <RefreshCw className="w-8 h-8 text-blue-500 animate-spin mx-auto mb-2" />
-              <p className="text-xs text-slate-500">Loading refrigerator inventory...</p>
-            </div>
-          ) : filteredProducts.length === 0 ? (
-            <div className="py-20 text-center space-y-3">
-              <div className="w-12 h-12 mx-auto rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">
-                <Search className="w-6 h-6" />
+            {/* Controls Bar: Search & Filter Tabs */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+              {/* Search Input */}
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search products by name, category..."
+                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
-              <h3 className="font-heading font-black text-sm text-slate-800">
-                No matching products found
-              </h3>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                Try clearing your search query or shelf filters, or click "Add Product" to create one.
-              </p>
-              <button
-                onClick={() => {
-                  setSearchQuery('')
-                  setSelectedShelfFilter('all')
-                  setSelectedCategoryFilter('all')
-                  setStatusFilter('all')
-                }}
-                className="text-xs text-blue-600 font-bold hover:underline"
-              >
-                Clear All Filters
-              </button>
+
+              {/* Filter Dropdowns */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <select
+                  value={selectedShelfFilter}
+                  onChange={(e) => setSelectedShelfFilter(e.target.value)}
+                  className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">All Shelves</option>
+                  <optgroup label="Cabinet Cavity">
+                    <option value="freezer">Top Freezer</option>
+                    <option value="top_shelf">Upper Shelf</option>
+                    <option value="middle_shelf">Middle Shelf</option>
+                    <option value="bottom_shelf">Lower Shelf</option>
+                    <option value="crisper_drawer">Crisper Drawer</option>
+                  </optgroup>
+                  <optgroup label="Door Storage">
+                    <option value="door_bin_top">Door Top Bin</option>
+                    <option value="door_bin_middle">Door Middle Bin</option>
+                    <option value="door_bin_bottom">Door Bottom Bin</option>
+                  </optgroup>
+                </select>
+
+                <select
+                  value={selectedCategoryFilter}
+                  onChange={(e) => setSelectedCategoryFilter(e.target.value)}
+                  className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">All Categories</option>
+                  {PRODUCT_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
+                  className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="active">Active (Visible)</option>
+                  <option value="inactive">Hidden (Disabled)</option>
+                  <option value="archived">Archived</option>
+                </select>
+
+                <button
+                  onClick={handleClearAll}
+                  className="px-2.5 py-1.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-[11px] font-bold transition-colors flex items-center gap-1 cursor-pointer"
+                  title="Empty the entire refrigerator"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Empty Fridge</span>
+                </button>
+
+                <button
+                  onClick={handleLoadTemplates}
+                  className="px-2.5 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 text-[11px] font-bold transition-colors flex items-center gap-1 cursor-pointer"
+                  title="Load 12 photorealistic starter templates"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  <span className="hidden sm:inline">Load Groceries</span>
+                </button>
+              </div>
             </div>
-          ) : (
-            <div className="overflow-x-auto mt-4">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                    <th className="py-3 px-3">Product</th>
-                    <th className="py-3 px-3">Category</th>
-                    <th className="py-3 px-3">Shelf Placement</th>
-                    <th className="py-3 px-3 text-center">Horizontal X</th>
-                    <th className="py-3 px-3 text-center">Scale</th>
-                    <th className="py-3 px-3 text-center">Status</th>
-                    <th className="py-3 px-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredProducts.map((prod) => {
-                    const shelfDef = SHELF_DEFINITIONS[prod.shelf] || SHELF_DEFINITIONS.middle_shelf
-                    return (
-                      <tr
-                        key={prod.id}
-                        className={`hover:bg-slate-50/80 transition-colors ${
-                          prod.isArchived ? 'opacity-50 bg-slate-50/40' : ''
-                        }`}
-                      >
-                        {/* Image & Name */}
-                        <td className="py-3 px-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 p-1 flex items-center justify-center flex-shrink-0 shadow-xs">
-                              <img
-                                src={prod.imageUrl}
-                                alt={prod.name}
-                                className="w-full h-full object-contain"
-                              />
-                            </div>
-                            <div>
-                              <p className="font-heading font-bold text-slate-900 text-xs">
-                                {prod.name}
-                              </p>
-                              {prod.quantity && (
-                                <p className="text-[10px] font-semibold text-blue-600">
-                                  {prod.quantity}
-                                </p>
-                              )}
-                              {prod.description && (
-                                <p className="text-[10px] text-slate-400 truncate max-w-xs">
-                                  {prod.description}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </td>
 
-                        {/* Category */}
-                        <td className="py-3 px-3">
-                          <span className="inline-block px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-bold text-[10px]">
-                            {prod.category}
-                          </span>
-                        </td>
+            {/* Products List Table */}
+            {isLoadingProducts ? (
+              <div className="py-16 text-center">
+                <RefreshCw className="w-8 h-8 text-blue-500 animate-spin mx-auto mb-2" />
+                <p className="text-xs text-slate-500">Loading refrigerator inventory...</p>
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div className="py-16 text-center space-y-2">
+                <div className="w-12 h-12 mx-auto rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">
+                  <Search className="w-6 h-6" />
+                </div>
+                <h3 className="font-heading font-black text-sm text-slate-800">
+                  No matching products found
+                </h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  The refrigerator is currently empty or matches no filters. Click "Add Product" or "Load Groceries" to add items!
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                      <th className="py-2.5 px-3">Product</th>
+                      <th className="py-2.5 px-3">Category</th>
+                      <th className="py-2.5 px-3">Shelf Compartment</th>
+                      <th className="py-2.5 px-3 text-center">Pos X</th>
+                      <th className="py-2.5 px-3 text-center">Scale</th>
+                      <th className="py-2.5 px-3 text-center">Visibility</th>
+                      <th className="py-2.5 px-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredProducts.map((prod) => {
+                      const shelfDef = SHELF_DEFINITIONS[prod.shelf]
+                      const isCurrentlyEdited = editingProduct?.id === prod.id
 
-                        {/* Shelf Placement */}
-                        <td className="py-3 px-3">
-                          <div className="space-y-0.5">
-                            <div className="flex items-center gap-1.5">
-                              <span
-                                className={`w-2 h-2 rounded-full ${
-                                  shelfDef.location === 'cavity' ? 'bg-blue-500' : 'bg-indigo-500'
-                                }`}
-                              />
-                              <span className="font-bold text-slate-800 text-[11px]">
-                                {shelfDef.label}
-                              </span>
+                      return (
+                        <tr
+                          key={prod.id}
+                          className={`hover:bg-slate-50/80 transition-colors ${
+                            isCurrentlyEdited ? 'bg-blue-50/60 font-semibold' : ''
+                          }`}
+                        >
+                          {/* Image & Name */}
+                          <td className="py-3 px-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 p-1 flex-shrink-0 flex items-center justify-center shadow-2xs">
+                                <img
+                                  src={prod.imageUrl}
+                                  alt={prod.name}
+                                  className="w-full h-full object-contain"
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-bold text-slate-900 truncate">{prod.name}</p>
+                                {prod.quantity && (
+                                  <span className="text-[10px] text-slate-500 font-medium">
+                                    {prod.quantity}
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                            <span className="text-[10px] text-slate-400 font-medium">
-                              Location: {shelfDef.location === 'cavity' ? 'Cabinet Cavity' : 'Door Storage'}
+                          </td>
+
+                          {/* Category */}
+                          <td className="py-3 px-3 text-slate-600 font-medium">
+                            <span className="px-2 py-0.5 rounded-md bg-slate-100 text-[10px] font-semibold text-slate-700">
+                              {prod.category}
                             </span>
-                          </div>
-                        </td>
+                          </td>
 
-                        {/* Horizontal X */}
-                        <td className="py-3 px-3 text-center">
-                          <span className="font-mono text-slate-600 font-bold">
+                          {/* Shelf */}
+                          <td className="py-3 px-3">
+                            <span
+                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                                shelfDef?.location === 'cavity'
+                                  ? 'bg-blue-50 text-blue-800 border border-blue-200'
+                                  : 'bg-indigo-50 text-indigo-800 border border-indigo-200'
+                              }`}
+                            >
+                              <span>{shelfDef?.label || prod.shelf}</span>
+                            </span>
+                          </td>
+
+                          {/* Position X */}
+                          <td className="py-3 px-3 text-center font-mono font-bold text-slate-700 text-[11px]">
                             {prod.positionX}%
-                          </span>
-                        </td>
+                          </td>
 
-                        {/* Scale */}
-                        <td className="py-3 px-3 text-center">
-                          <span className="font-mono text-slate-600 font-bold">
+                          {/* Scale */}
+                          <td className="py-3 px-3 text-center font-mono font-bold text-slate-700 text-[11px]">
                             {prod.displayScale}x
-                          </span>
-                        </td>
+                          </td>
 
-                        {/* Status Toggle */}
-                        <td className="py-3 px-3 text-center">
-                          {prod.isArchived ? (
-                            <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 text-[9px] font-bold">
-                              Archived
-                            </span>
-                          ) : (
-                            <button
-                              onClick={() => handleToggleActive(prod)}
-                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
-                                prod.isActive
-                                  ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
-                                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                              }`}
-                              title="Click to toggle visibility in public refrigerator"
-                            >
-                              {prod.isActive ? (
-                                <>
-                                  <Eye className="w-3 h-3 text-emerald-600" />
-                                  <span>Active</span>
-                                </>
-                              ) : (
-                                <>
-                                  <EyeOff className="w-3 h-3 text-slate-400" />
-                                  <span>Hidden</span>
-                                </>
-                              )}
-                            </button>
-                          )}
-                        </td>
+                          {/* Visibility Toggle */}
+                          <td className="py-3 px-3 text-center">
+                            {prod.isArchived ? (
+                              <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 text-[9px] font-bold">
+                                Archived
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => handleToggleActive(prod)}
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
+                                  prod.isActive
+                                    ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                }`}
+                                title="Click to toggle visibility in live refrigerator"
+                              >
+                                {prod.isActive ? (
+                                  <>
+                                    <Eye className="w-3 h-3 text-emerald-600" />
+                                    <span>Active</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <EyeOff className="w-3 h-3 text-slate-400" />
+                                    <span>Hidden</span>
+                                  </>
+                                )}
+                              </button>
+                            )}
+                          </td>
 
-                        {/* Actions */}
-                        <td className="py-3 px-3 text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <button
-                              onClick={() => openEditModal(prod)}
-                              className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-                              title="Edit Product"
-                            >
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </button>
+                          {/* Actions */}
+                          <td className="py-3 px-3 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                onClick={() => openEditEditor(prod)}
+                                className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                                title="Edit Product in Live Studio"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
 
-                            <button
-                              onClick={() => handleToggleArchive(prod)}
-                              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                                prod.isArchived
-                                  ? 'text-emerald-600 hover:bg-emerald-50'
-                                  : 'text-slate-400 hover:text-amber-600 hover:bg-amber-50'
-                              }`}
-                              title={prod.isArchived ? 'Restore to Active Inventory' : 'Archive Product'}
-                            >
-                              <Archive className="w-3.5 h-3.5" />
-                            </button>
+                              <button
+                                onClick={() => handleToggleArchive(prod)}
+                                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                                  prod.isArchived
+                                    ? 'text-emerald-600 hover:bg-emerald-50'
+                                    : 'text-slate-400 hover:text-amber-600 hover:bg-amber-50'
+                                }`}
+                                title={prod.isArchived ? 'Restore to Active Inventory' : 'Archive Product'}
+                              >
+                                <Archive className="w-3.5 h-3.5" />
+                              </button>
 
-                            <button
-                              onClick={() => setDeleteConfirmProduct(prod)}
-                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                              title="Delete Permanently"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+                              <button
+                                onClick={() => setDeleteConfirmProduct(prod)}
+                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                                title="Delete Permanently"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Live Refrigerator Preview Panel */}
-        {isLivePreviewOpen && (
-          <div className="lg:col-span-4 bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4">
+        {/* 
+          ========================================================================
+          Right Column: LIVE REFRIGERATOR PREVIEW STUDIO
+          Always visible side-by-side with editing controls on Desktop!
+          Sticky scrolling ensures the preview remains directly in front of the admin!
+          ========================================================================
+        */}
+        <div
+          className={`lg:col-span-5 xl:col-span-5 lg:sticky lg:top-6 space-y-4 ${
+            mobileTab === 'editor' ? 'hidden lg:block' : 'block'
+          }`}
+        >
+          <div className="bg-white rounded-3xl border border-slate-200/90 shadow-lg p-5 space-y-4">
+            {/* Live Preview Header */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <DoorOpen className="w-5 h-5 text-blue-600" />
-                <h3 className="font-heading font-black text-sm text-slate-900">
-                  Live Fridge Preview
-                </h3>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 shadow-2xs">
+                  <DoorOpen className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-heading font-black text-sm text-slate-900 leading-tight">
+                    Live Fridge Preview
+                  </h3>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[10px] font-bold text-emerald-700">
+                      Real-Time Sync Active
+                    </span>
+                  </div>
+                </div>
               </div>
-              <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">
-                Real-Time Sync
-              </span>
+
+              {/* Door Open / Closed Button */}
+              <button
+                onClick={() => setPreviewDoorOpen(!previewDoorOpen)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs ${
+                  previewDoorOpen
+                    ? 'bg-amber-100 text-amber-900 hover:bg-amber-200'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
+              >
+                {previewDoorOpen ? (
+                  <>
+                    <DoorClosed className="w-3.5 h-3.5" />
+                    <span>Close Door</span>
+                  </>
+                ) : (
+                  <>
+                    <DoorOpen className="w-3.5 h-3.5" />
+                    <span>Open Door</span>
+                  </>
+                )}
+              </button>
             </div>
 
-            <p className="text-[11px] text-slate-500 leading-snug">
-              This preview uses the exact same 3D refrigerator component rendered on the public
-              page. Tap the door or handle to see products positioned in the cavity and door bins!
-            </p>
+            {/* Perspective View Switcher Pills */}
+            <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl text-[11px] font-bold text-slate-600">
+              <button
+                onClick={() => {
+                  setPreviewDoorOpen(true)
+                  setPreviewYaw(-20)
+                }}
+                className={`flex-1 py-1 rounded-xl transition-all cursor-pointer ${
+                  previewDoorOpen && previewYaw > -40
+                    ? 'bg-white text-blue-700 shadow-xs'
+                    : 'hover:text-slate-900'
+                }`}
+              >
+                Cavity Shelves
+              </button>
 
-            <div className="pt-2 flex justify-center overflow-visible">
+              <button
+                onClick={() => {
+                  setPreviewDoorOpen(true)
+                  setPreviewYaw(-55)
+                }}
+                className={`flex-1 py-1 rounded-xl transition-all cursor-pointer ${
+                  previewDoorOpen && previewYaw <= -40
+                    ? 'bg-white text-blue-700 shadow-xs'
+                    : 'hover:text-slate-900'
+                }`}
+              >
+                Door Storage Bins
+              </button>
+
+              <button
+                onClick={() => {
+                  setPreviewDoorOpen(false)
+                  setPreviewYaw(0)
+                }}
+                className={`flex-1 py-1 rounded-xl transition-all cursor-pointer ${
+                  !previewDoorOpen ? 'bg-white text-blue-700 shadow-xs' : 'hover:text-slate-900'
+                }`}
+              >
+                Closed Front
+              </button>
+            </div>
+
+            {/* Orbit Yaw Angle Slider */}
+            <div className="flex items-center gap-3 px-1">
+              <Compass className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">
+                3D Orbit Angle:
+              </span>
+              <input
+                type="range"
+                min="-60"
+                max="60"
+                value={previewYaw}
+                onChange={(e) => setPreviewYaw(Number(e.target.value))}
+                className="w-full accent-blue-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg"
+              />
+              <span className="font-mono text-[10px] font-black text-slate-700 w-8 text-right">
+                {previewYaw}°
+              </span>
+              <button
+                onClick={() => setPreviewYaw(-25)}
+                className="p-1 text-slate-400 hover:text-slate-600 cursor-pointer"
+                title="Reset angle to default"
+              >
+                <RotateCcw className="w-3 h-3" />
+              </button>
+            </div>
+
+            {/* Currently Editing Focus Indicator */}
+            {isEditorActive && (
+              <div className="p-2.5 rounded-2xl bg-blue-50 border border-blue-200 text-blue-900 text-xs flex items-center justify-between animate-in fade-in">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
+                  <span className="text-[11px] font-bold">
+                    Target: {SHELF_DEFINITIONS[formShelf]?.label}
+                  </span>
+                </div>
+                <span className="font-mono text-[11px] font-black text-blue-700">
+                  X: {formPositionX}% • {formScale}x
+                </span>
+              </div>
+            )}
+
+            {/* 3D Refrigerator Stage */}
+            <div className="pt-2 flex justify-center overflow-visible select-none min-h-[440px]">
               <UniversalSteelFridge
-                isDoorOpen={true}
-                yaw={-45}
+                isDoorOpen={previewDoorOpen}
+                yaw={previewYaw}
                 magneticRegion={{ top: 0.1, left: 0.1, width: 0.8, height: 0.8 }}
                 surfaceRef={{ current: null }}
-                products={products}
+                products={previewProducts}
+                highlightedProductId={editingProduct?.id || (isAddMode ? 'draft-new-product-preview-id' : undefined)}
+                onSelectProduct={(prod) => openEditEditor(prod)}
               >
                 <div />
               </UniversalSteelFridge>
             </div>
-          </div>
-        )}
-      </div>
 
-      {/* ---------------------------------------------------------------------- */}
-      {/* ADD / EDIT PRODUCT MODAL */}
-      {/* ---------------------------------------------------------------------- */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in">
-          <div className="w-full max-w-xl bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-            {/* Modal Header */}
-            <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
-              <div>
-                <h3 className="font-heading font-black text-base">
-                  {editingProduct ? 'Edit Interior Product' : 'Add New Refrigerator Product'}
-                </h3>
-                <p className="text-[11px] text-slate-400">
-                  {editingProduct
-                    ? 'Modify placement, quantity, scale, or image properties'
-                    : 'Place a new grocery or beverage item inside the refrigerator'}
-                </p>
-              </div>
-              <button
-                onClick={() => setIsAddModalOpen(false)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+            {/* Interactive hint footer */}
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+              <span className="flex items-center gap-1 text-[10px] text-slate-400">
+                <span>💡 Click any product in the fridge to edit it</span>
+              </span>
 
-            {/* Modal Body */}
-            <form onSubmit={handleSaveProduct} className="p-6 overflow-y-auto space-y-4 flex-1">
-              {formError && (
-                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0" />
-                  <span>{formError}</span>
-                </div>
+              {mobileTab === 'preview' && (
+                <button
+                  onClick={() => setMobileTab('editor')}
+                  className="lg:hidden text-blue-600 font-bold hover:underline"
+                >
+                  ← Back to Editing Form
+                </button>
               )}
-
-              {/* Product Name & Category */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Product Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formName}
-                    onChange={(e) => setFormName(e.target.value)}
-                    placeholder="e.g. Organic Almond Milk"
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Category *
-                  </label>
-                  <select
-                    value={formCategory}
-                    onChange={(e) => setFormCategory(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                  >
-                    {PRODUCT_CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Shelf Compartment & Quantity */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Target Shelf Compartment *
-                  </label>
-                  <select
-                    value={formShelf}
-                    onChange={(e) => setFormShelf(e.target.value as FridgeShelf)}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                  >
-                    <optgroup label="Cabinet Cavity">
-                      <option value="freezer">Top Freezer Compartment</option>
-                      <option value="top_shelf">Upper Fresh Food Shelf</option>
-                      <option value="middle_shelf">Middle Fresh Food Shelf</option>
-                      <option value="bottom_shelf">Lower Fresh Food Shelf</option>
-                      <option value="crisper_drawer">Crisper Humidity Drawer</option>
-                    </optgroup>
-                    <optgroup label="Door-Side Storage">
-                      <option value="door_bin_top">Door Top Dairy Bin</option>
-                      <option value="door_bin_middle">Door Middle Condiment Bin</option>
-                      <option value="door_bin_bottom">Door Bottom Beverage Bin</option>
-                    </optgroup>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Quantity / Display Info
-                  </label>
-                  <input
-                    type="text"
-                    value={formQuantity}
-                    onChange={(e) => setFormQuantity(e.target.value)}
-                    placeholder="e.g. 1 Litre, Pack of 6, 250g Jar"
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-
-              {/* Horizontal Position X & Scale Sliders */}
-              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-                    Position on Shelf (Horizontal X)
-                  </span>
-                  <span className="font-mono text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
-                    {formPositionX}%
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="12"
-                  max="88"
-                  value={formPositionX}
-                  onChange={(e) => setFormPositionX(Number(e.target.value))}
-                  className="w-full accent-blue-600 cursor-pointer"
-                />
-                <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
-                  <span>← Left Side</span>
-                  <span>Center</span>
-                  <span>Right Side →</span>
-                </div>
-
-                <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-                    Display Scale
-                  </span>
-                  <span className="font-mono text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
-                    {formScale}x
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="0.5"
-                  max="1.8"
-                  step="0.05"
-                  value={formScale}
-                  onChange={(e) => setFormScale(Number(e.target.value))}
-                  className="w-full accent-blue-600 cursor-pointer"
-                />
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Description (Optional)
-                </label>
-                <textarea
-                  rows={2}
-                  value={formDescription}
-                  onChange={(e) => setFormDescription(e.target.value)}
-                  placeholder="Organic notes, farm origin, or culinary pairing..."
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              {/* Product Image Selection */}
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  Product Image Asset *
-                </label>
-
-                {/* Tabs: Approved Assets vs Custom Upload */}
-                <div className="flex rounded-xl bg-slate-100 p-1 mb-3">
-                  <button
-                    type="button"
-                    onClick={() => setFormImageTab('approved')}
-                    className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                      formImageTab === 'approved' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'
-                    }`}
-                  >
-                    Select Approved Asset
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFormImageTab('upload')}
-                    className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                      formImageTab === 'upload' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'
-                    }`}
-                  >
-                    Upload Custom Image
-                  </button>
-                </div>
-
-                {formImageTab === 'approved' ? (
-                  <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-48 overflow-y-auto p-1 border border-slate-200 rounded-2xl">
-                    {APPROVED_ASSETS.map((asset) => {
-                      const isSelected = formImageUrl === asset.path
-                      return (
-                        <button
-                          key={asset.id}
-                          type="button"
-                          onClick={() => {
-                            setFormImageUrl(asset.path)
-                            if (!formName) setFormName(asset.name)
-                            if (!formQuantity) setFormQuantity(asset.defaultQuantity)
-                            setFormShelf(asset.suggestedShelf)
-                            setFormCategory(asset.category)
-                          }}
-                          className={`p-2 rounded-xl border text-center transition-all flex flex-col items-center gap-1 cursor-pointer ${
-                            isSelected
-                              ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-500/20'
-                              : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                          }`}
-                        >
-                          <img
-                            src={asset.path}
-                            alt={asset.name}
-                            className="w-10 h-10 object-contain"
-                          />
-                          <span className="text-[9px] font-bold text-slate-700 truncate w-full">
-                            {asset.name}
-                          </span>
-                        </button>
-                      )
-                    })}
-                  </div>
-                ) : (
-                  <div className="border-2 border-dashed border-slate-300 rounded-2xl p-4 text-center space-y-2 hover:border-blue-400 transition-colors">
-                    <UploadCloud className="w-8 h-8 text-slate-400 mx-auto" />
-                    <p className="text-xs font-bold text-slate-700">
-                      Upload image from your computer
-                    </p>
-                    <p className="text-[10px] text-slate-400">
-                      PNG, JPG, WebP, or SVG up to 5MB. Transparent backgrounds look best.
-                    </p>
-                    <label className="inline-block px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-heading font-bold text-xs cursor-pointer shadow-xs">
-                      <span>Browse Files</span>
-                      <input
-                        type="file"
-                        accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                      />
-                    </label>
-
-                    {formImageUrl && (
-                      <div className="pt-2 flex items-center justify-center gap-2">
-                        <span className="text-[10px] text-slate-500">Selected image preview:</span>
-                        <div className="w-10 h-10 rounded-lg border border-slate-200 p-0.5 bg-slate-50">
-                          <img
-                            src={formImageUrl}
-                            alt="Preview"
-                            className="w-full h-full object-contain"
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Active Visibility Checkbox */}
-              <div className="flex items-center gap-2 pt-2">
-                <input
-                  type="checkbox"
-                  id="formIsActive"
-                  checked={formIsActive}
-                  onChange={(e) => setFormIsActive(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
-                />
-                <label htmlFor="formIsActive" className="text-xs font-bold text-slate-700 cursor-pointer">
-                  Immediately visible in public refrigerator interior
-                </label>
-              </div>
-
-              {/* Modal Footer */}
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-heading font-black text-xs shadow-md transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      <span>Saving...</span>
-                    </>
-                  ) : (
-                    <span>{editingProduct ? 'Save Changes' : 'Place in Fridge'}</span>
-                  )}
-                </button>
-              </div>
-            </form>
+            </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* ---------------------------------------------------------------------- */}
       {/* DELETE CONFIRMATION MODAL */}
@@ -1450,7 +1757,7 @@ export const AdminPage: React.FC = () => {
             </div>
             <button
               onClick={() => setIsSetupGuideOpen(false)}
-              className="text-slate-400 hover:text-white p-1 rounded-lg"
+              className="text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -1498,7 +1805,7 @@ export const AdminPage: React.FC = () => {
             <div className="pt-2 text-right">
               <button
                 onClick={() => setIsSetupGuideOpen(false)}
-                className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-heading font-bold text-xs"
+                className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-heading font-bold text-xs cursor-pointer"
               >
                 Close Guide
               </button>

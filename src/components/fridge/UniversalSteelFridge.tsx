@@ -29,6 +29,10 @@ export interface UniversalSteelFridgeProps {
   onYawChange?: (newYaw: number) => void
   /** Optional custom or override list of interior products */
   products?: FridgeProduct[]
+  /** Optional product ID currently being edited to display a luminous focus ring */
+  highlightedProductId?: string
+  /** Optional callback when a user taps a product in the fridge */
+  onSelectProduct?: (product: FridgeProduct) => void
 }
 
 export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
@@ -49,6 +53,8 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
   yaw = 0,
   onYawChange,
   products: propProducts,
+  highlightedProductId,
+  onSelectProduct,
 }) => {
   const [internalProducts, setInternalProducts] = useState<FridgeProduct[]>([])
 
@@ -297,6 +303,10 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                 const topPos = shelfDef.verticalCenterPercent
                 const scale = Math.max(0.4, Math.min(2.0, product.displayScale || 1.0))
 
+                const isHighlighted =
+                  Boolean(highlightedProductId && product.id === highlightedProductId) ||
+                  product.id.startsWith('draft-')
+
                 return (
                   <div
                     key={product.id}
@@ -305,22 +315,39 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                       top: `${topPos}%`,
                       left: `${leftPos}%`,
                       transform: `translate(-50%, -50%) scale(${scale})`,
-                      zIndex: 20,
+                      zIndex: isHighlighted ? 35 : 20,
                     }}
-                    className="group/product pointer-events-auto transition-transform duration-200 hover:scale-110 select-none cursor-pointer"
+                    className={`group/product pointer-events-auto transition-transform duration-200 hover:scale-110 select-none cursor-pointer ${
+                      isHighlighted ? 'scale-105' : ''
+                    }`}
                     title={`${product.name} (${product.category}${product.quantity ? ` • ${product.quantity}` : ''})`}
                     onClick={(e) => {
                       e.stopPropagation()
+                      if (onSelectProduct) {
+                        onSelectProduct(product)
+                      }
                     }}
                   >
                     {/* Shadow under product on physical shelf */}
                     <div className="absolute -bottom-2 inset-x-1 h-3 rounded-full bg-black/40 blur-xs -z-10" />
 
+                    {/* Luminous indicator if currently being edited */}
+                    {isHighlighted && (
+                      <div className="absolute left-1/2 -top-6 -translate-x-1/2 px-2 py-0.5 rounded-full bg-blue-600 text-white text-[8px] font-black uppercase tracking-wider shadow-lg whitespace-nowrap pointer-events-none z-30 animate-pulse border border-white/40 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                        <span>Live Edit</span>
+                      </div>
+                    )}
+
                     {/* Product Graphic */}
                     <img
                       src={product.imageUrl}
                       alt={product.name}
-                      className="w-11 h-14 object-contain select-none filter drop-shadow-md"
+                      className={`w-11 h-14 object-contain select-none filter drop-shadow-md transition-all ${
+                        isHighlighted
+                          ? 'ring-2 ring-blue-400 ring-offset-2 ring-offset-slate-900 rounded-lg drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]'
+                          : ''
+                      }`}
                       draggable={false}
                     />
 
@@ -518,6 +545,10 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                   const topPos = shelfDef.verticalCenterPercent
                   const scale = Math.max(0.4, Math.min(2.0, product.displayScale || 1.0))
 
+                  const isHighlighted =
+                    Boolean(highlightedProductId && product.id === highlightedProductId) ||
+                    product.id.startsWith('draft-')
+
                   return (
                     <div
                       key={product.id}
@@ -526,22 +557,39 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                         top: `${topPos}%`,
                         left: `${leftPos}%`,
                         transform: `translate(-50%, -50%) scale(${scale})`,
-                        zIndex: 20,
+                        zIndex: isHighlighted ? 35 : 20,
                       }}
-                      className="group/doorprod pointer-events-auto transition-transform duration-200 hover:scale-110 select-none cursor-pointer"
+                      className={`group/doorprod pointer-events-auto transition-transform duration-200 hover:scale-110 select-none cursor-pointer ${
+                        isHighlighted ? 'scale-105' : ''
+                      }`}
                       title={`${product.name} (${product.category}${product.quantity ? ` • ${product.quantity}` : ''})`}
                       onClick={(e) => {
                         e.stopPropagation()
+                        if (onSelectProduct) {
+                          onSelectProduct(product)
+                        }
                       }}
                     >
                       {/* Shadow behind bottle in door bin */}
                       <div className="absolute -bottom-1.5 inset-x-1 h-2 rounded-full bg-black/30 blur-xs -z-10" />
 
+                      {/* Luminous indicator if currently being edited */}
+                      {isHighlighted && (
+                        <div className="absolute left-1/2 -top-6 -translate-x-1/2 px-2 py-0.5 rounded-full bg-blue-600 text-white text-[8px] font-black uppercase tracking-wider shadow-lg whitespace-nowrap pointer-events-none z-30 animate-pulse border border-white/40 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                          <span>Live Edit</span>
+                        </div>
+                      )}
+
                       {/* Product Graphic */}
                       <img
                         src={product.imageUrl}
                         alt={product.name}
-                        className="w-10 h-14 object-contain select-none filter drop-shadow-md"
+                        className={`w-10 h-14 object-contain select-none filter drop-shadow-md transition-all ${
+                          isHighlighted
+                            ? 'ring-2 ring-blue-400 ring-offset-2 ring-offset-slate-900 rounded-lg drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]'
+                            : ''
+                        }`}
                         draggable={false}
                       />
 
