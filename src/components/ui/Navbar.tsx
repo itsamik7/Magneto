@@ -63,17 +63,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
             <span className="font-heading font-black text-xl tracking-tight text-[#1E293B]">
               Magneto
             </span>
-            <span className="block text-[10px] text-slate-500 font-semibold -mt-1">
+            <span className="hidden sm:block text-[10px] text-slate-500 font-semibold -mt-1">
               Collect Memories. Stick Forever.
             </span>
           </div>
         </Link>
 
-        {/* Center Desktop Navigation: My Fridge & Plan a Trip Pills */}
-        <nav className="hidden lg:flex items-center gap-1.5 bg-slate-100/80 p-1 rounded-2xl border border-slate-200/80 lg:absolute lg:left-1/2 lg:-translate-x-1/2">
+        {/* Center Navigation: My Fridge & Plan a Trip Pills */}
+        <nav className="hidden sm:flex items-center gap-1.5 bg-slate-100/80 p-1 rounded-2xl border border-slate-200/80 sm:absolute sm:left-1/2 sm:-translate-x-1/2">
           <Link
             to="/dashboard"
-            className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+            className={`inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 text-xs font-bold rounded-xl transition-all ${
               isFridgeActive
                 ? 'bg-[#EBF2FE] text-[#2563EB] shadow-xs'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
@@ -89,7 +89,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
 
           <Link
             to="/plan-trip"
-            className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+            className={`inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 text-xs font-bold rounded-xl transition-all ${
               isPlanActive
                 ? 'bg-[#EBF2FE] text-[#2563EB] shadow-xs'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
@@ -157,7 +157,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
         {/* Mobile Hamburger Button */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden p-2 text-slate-700 hover:bg-slate-200/60 rounded-lg"
+          className="sm:hidden p-2 text-slate-700 hover:bg-slate-200/60 rounded-lg"
           aria-label="Toggle menu"
         >
           {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -166,7 +166,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 bg-white px-4 py-4 space-y-3">
+        <div className="sm:hidden border-t border-slate-200 bg-white px-4 py-4 space-y-3 shadow-lg">
           {user ? (
             <>
               <div className="flex items-center gap-3 pb-3 border-b border-slate-200">
@@ -221,6 +221,41 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
               </Link>
             </>
           )}
+        </div>
+      )}
+
+      {/* 
+        MOBILE FLOATING BOTTOM NAV BAR (Phones < sm)
+        Provides 1-thumb native-app switching between My Fridge & Plan a Trip
+      */}
+      {user && (
+        <div className="sm:hidden fixed bottom-3 inset-x-4 z-40 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-xl p-1.5 flex items-center justify-around animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <Link
+            to="/dashboard"
+            className={`flex-1 flex flex-col items-center justify-center py-2 rounded-xl transition-all ${
+              isFridgeActive
+                ? 'bg-[#EBF2FE] text-[#2563EB] font-bold shadow-xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <svg className={`w-4 h-4 ${isFridgeActive ? 'text-[#2563EB]' : 'text-slate-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <rect x="4" y="2" width="16" height="20" rx="3" strokeWidth="2" />
+              <path strokeWidth="2" d="M4 10h16M8 6v2M8 14v4" />
+            </svg>
+            <span className="text-[10px] font-heading font-bold mt-0.5">My Fridge</span>
+          </Link>
+
+          <Link
+            to="/plan-trip"
+            className={`flex-1 flex flex-col items-center justify-center py-2 rounded-xl transition-all ${
+              isPlanActive
+                ? 'bg-[#EBF2FE] text-[#2563EB] font-bold shadow-xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <Calendar className={`w-4 h-4 ${isPlanActive ? 'text-[#2563EB]' : 'text-slate-500'}`} />
+            <span className="text-[10px] font-heading font-bold mt-0.5">Plan a Trip</span>
+          </Link>
         </div>
       )}
     </header>

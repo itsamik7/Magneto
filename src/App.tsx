@@ -24,7 +24,7 @@ export default function App() {
           <Navbar onOpenSetupModal={() => setIsSetupModalOpen(true)} />
 
           {/* Main App Content Area */}
-          <main className="flex-1 max-w-[1720px] w-full mx-auto px-2 sm:px-6 py-4">
+          <main className="flex-1 max-w-[1720px] w-full mx-auto px-3 sm:px-6 py-2 sm:py-4 pb-24 sm:pb-6">
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<LandingPage />} />

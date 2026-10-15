@@ -92,7 +92,7 @@ export const SaveMoneyModal: React.FC<SaveMoneyModalProps> = ({
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
               Select Amount
             </label>
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
               {PRESET_AMOUNTS.map((amt) => (
                 <button
                   type="button"

@@ -83,6 +83,9 @@ export const PlanTripPage: React.FC = () => {
   const [endDate, setEndDate] = useState('2026-05-20')
   const [isEditingDates, setIsEditingDates] = useState(false)
 
+  // Mobile View Switcher ('fridge' | 'catalog' | 'trip')
+  const [mobileActiveView, setMobileActiveView] = useState<'fridge' | 'catalog' | 'trip'>('fridge')
+
   // Budget Breakdown Editor
   const [isEditingBudget, setIsEditingBudget] = useState(false)
   const [itemizedBreakdown, setItemizedBreakdown] = useState({
@@ -363,6 +366,7 @@ export const PlanTripPage: React.FC = () => {
 
     setSaveSuccessMessage(`${catalogItem.name} placed on fridge!`)
     setTimeout(() => setSaveSuccessMessage(null), 2500)
+    setMobileActiveView('fridge')
   }
 
   // Delete / Remove Magnet from Fridge
@@ -485,10 +489,57 @@ export const PlanTripPage: React.FC = () => {
     <div className="w-full flex flex-col xl:flex-row items-start justify-between gap-5 pb-12 animate-in fade-in duration-200">
       
       {/* 
+        MOBILE VIEW SEGMENTED CONTROLLER (Visible only on < xl viewports)
+        Allows mobile phone users to instantly switch between Fridge, Catalog, and Trip Plan
+      */}
+      <div className="xl:hidden w-full flex items-center justify-center p-1 bg-slate-100/90 rounded-2xl border border-slate-200/80 mb-1">
+        <button
+          onClick={() => setMobileActiveView('fridge')}
+          className={`flex-1 py-2 text-xs font-heading font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+            mobileActiveView === 'fridge'
+              ? 'bg-white text-blue-600 shadow-xs'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <rect x="4" y="2" width="16" height="20" rx="3" strokeWidth="2" />
+            <path strokeWidth="2" d="M4 10h16M8 6v2M8 14v4" />
+          </svg>
+          <span>Fridge</span>
+        </button>
+
+        <button
+          onClick={() => setMobileActiveView('catalog')}
+          className={`flex-1 py-2 text-xs font-heading font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+            mobileActiveView === 'catalog'
+              ? 'bg-white text-blue-600 shadow-xs'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>Add Magnets</span>
+        </button>
+
+        <button
+          onClick={() => setMobileActiveView('trip')}
+          className={`flex-1 py-2 text-xs font-heading font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+            mobileActiveView === 'trip'
+              ? 'bg-white text-blue-600 shadow-xs'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Compass className="w-3.5 h-3.5" />
+          <span>Trip Plan</span>
+        </button>
+      </div>
+
+      {/* 
         COLUMN 1 (LEFT):
         "Add a Magnet" Discovery Catalog Matching media_1791901625496_a5fd76dc.jpg
       */}
-      <div className="w-full xl:w-[350px] bg-white rounded-3xl p-4 sm:p-5 shadow-lg border border-slate-200/90 flex flex-col h-[520px] xl:h-[760px] flex-shrink-0 overflow-hidden">
+      <div className={`w-full max-w-lg mx-auto xl:max-w-none xl:mx-0 xl:w-[350px] bg-white rounded-3xl p-4 sm:p-5 shadow-lg border border-slate-200/90 flex-col h-[520px] xl:h-[760px] flex-shrink-0 overflow-hidden ${
+        mobileActiveView === 'catalog' ? 'flex' : 'hidden xl:flex'
+      }`}>
         
         {/* Title & Subtitle */}
         <div className="mb-3">
@@ -659,7 +710,9 @@ export const PlanTripPage: React.FC = () => {
         COLUMN 2 (CENTER):
         Free-Flow Editable Fridge Workspace (No border box, unclipped zoom)
       */}
-      <div className="flex-1 w-full flex flex-col items-center justify-between min-h-0 sm:min-h-[520px] relative p-0 overflow-visible bg-transparent">
+      <div className={`flex-1 w-full flex-col items-center justify-between min-h-0 sm:min-h-[520px] relative p-0 overflow-visible bg-transparent ${
+        mobileActiveView === 'fridge' ? 'flex' : 'hidden xl:flex'
+      }`}>
         
         {/* Top Controls Bar: Fridge Selection, Auto Arrange, and Edit Mode Pill */}
         <div className="w-full flex items-center justify-between mb-2 z-20 px-1 gap-2 flex-wrap">
@@ -695,6 +748,7 @@ export const PlanTripPage: React.FC = () => {
               setPlacements(next)
             }}
             onDropMagnet={handleDropMagnet}
+            onAddDestination={() => setMobileActiveView('catalog')}
             showControls={false}
             readOnly={false}
           />
@@ -714,7 +768,9 @@ export const PlanTripPage: React.FC = () => {
         COLUMN 3 (RIGHT):
         4-Tab Trip Editor Inspector Matching media_1791901625496_a5fd76dc.jpg
       */}
-      <div className="w-full xl:w-[420px] bg-white rounded-3xl p-4 sm:p-5 shadow-xl border border-slate-200/90 flex flex-col h-[520px] xl:h-[760px] flex-shrink-0 overflow-y-auto scrollbar-thin">
+      <div className={`w-full max-w-lg mx-auto xl:max-w-none xl:mx-0 xl:w-[420px] bg-white rounded-3xl p-4 sm:p-5 shadow-xl border border-slate-200/90 flex-col h-[520px] xl:h-[760px] flex-shrink-0 overflow-y-auto scrollbar-thin ${
+        mobileActiveView === 'trip' ? 'flex' : 'hidden xl:flex'
+      }`}>
         
         {/* Destination Magnet Hero Display */}
         <div className="relative w-full h-44 flex-shrink-0 rounded-2xl overflow-hidden shadow-md group mb-3.5 bg-gradient-to-tr from-slate-900 via-slate-800 to-slate-700 flex items-center justify-center p-4">

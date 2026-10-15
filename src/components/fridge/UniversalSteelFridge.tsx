@@ -78,7 +78,7 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
       */}
       <div
         style={{
-          width: 'min(310px, 85vw)',
+          width: 'clamp(250px, 74vw, 310px)',
           aspectRatio: `${aspectRatio}`,
           perspective: '1400px',
           transformStyle: 'preserve-3d',
@@ -328,16 +328,17 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                 }}
                 style={{
                   position: 'absolute',
-                  top: '25%',
+                  top: '24%',
                   right: '0%',
-                  width: '14%',
-                  height: '38%',
+                  width: '16%',
+                  minWidth: '44px',
+                  height: '40%',
                   zIndex: 35,
                 }}
                 className={`group cursor-pointer select-none rounded-r-lg ${
                   isEffectiveOpen ? 'pointer-events-none opacity-0' : 'opacity-100'
                 }`}
-                title="Click handle to open refrigerator door"
+                title="Tap handle to open refrigerator door"
                 aria-label="Open refrigerator door"
               >
                 {/* Visual hover affordance: subtle metallic shimmer highlight on the handle */}
