@@ -268,30 +268,33 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
         </div>
 
         {/* State Badge Pill (Directly Below Magnet) */}
-        {/* State 1: Funded (Trip Pending) Amber Frosted Pill */}
         {(placement.isFundedPending ||
-          placement.magnetSlug === 'rome' ||
-          placement.magnetSlug === 'bali') ? (
-          <div className="mt-1 px-2 py-0.5 bg-amber-500/90 backdrop-blur-md text-white text-[8px] font-heading font-extrabold rounded-lg shadow-sm flex items-center justify-center gap-1 border border-amber-300/70 pointer-events-none whitespace-nowrap">
+          placement.unlockState === 'ready_to_go' ||
+          placement.progressPercentage === 100) ? (
+          /* State 1: Funded / Ready to Go Pill */
+          <div className="mt-1 px-2 py-0.5 bg-emerald-600/95 backdrop-blur-md text-white text-[8px] font-heading font-extrabold rounded-lg shadow-sm flex items-center justify-center gap-1 border border-emerald-300/70 pointer-events-none whitespace-nowrap">
             <Lock className="w-2 h-2 fill-white" />
-            <span>Funded</span>
+            <span>Funded • ₹{((placement.totalSavedMinor ?? 0) / 100).toLocaleString('en-IN')}</span>
           </div>
-        ) : (placement.totalSavedMinor !== undefined && placement.targetBudgetMinor !== undefined) ? (
+        ) : (
           /* State 2: Saving in Progress Pill with Progress Bar */
-          <div className="mt-1 px-2 py-0.5 bg-white/95 backdrop-blur-md rounded-lg shadow-xs border border-slate-200/90 pointer-events-none flex flex-col items-center gap-0.5 max-w-[85px]">
-            <span className="text-[8px] font-heading font-black text-blue-600 tracking-tight whitespace-nowrap">
-              ₹ {(placement.totalSavedMinor / 100).toLocaleString('en-IN')}
-            </span>
-            <div className="w-full h-0.5 bg-slate-200/90 rounded-full overflow-hidden">
+          <div className="mt-1 px-2 py-0.5 bg-white/95 backdrop-blur-md rounded-lg shadow-xs border border-slate-200/90 pointer-events-none flex flex-col items-center gap-0.5 min-w-[70px] max-w-[95px]">
+            <div className="flex items-center gap-1">
+              <span className="text-[7px] font-heading font-black text-slate-400 uppercase tracking-wider">SAVED</span>
+              <span className="text-[8px] font-heading font-black text-blue-600 tracking-tight whitespace-nowrap">
+                ₹ {((placement.totalSavedMinor ?? 0) / 100).toLocaleString('en-IN')}
+              </span>
+            </div>
+            <div className="w-full h-1 bg-slate-200/90 rounded-full overflow-hidden">
               <div
                 className="h-full bg-blue-600 rounded-full transition-all duration-300"
                 style={{
-                  width: `${Math.min(100, Math.round((placement.totalSavedMinor / placement.targetBudgetMinor) * 100))}%`,
+                  width: `${Math.min(100, Math.round(((placement.totalSavedMinor ?? 0) / Math.max(1, placement.targetBudgetMinor ?? 15000000)) * 100))}%`,
                 }}
               />
             </div>
           </div>
-        ) : null}
+        )}
       </div>
 
       {/* Resize Corner Handles & Floating Actions (Only in Edit Mode) */}

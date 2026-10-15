@@ -224,6 +224,106 @@ const FEATURED_DETAILS: Record<string, DestinationDetail> = {
       other: 3000,
     },
   },
+  delhi: {
+    id: 'delhi',
+    name: 'India Gate, New Delhi',
+    country: 'India',
+    description:
+      'The majestic all-India war memorial archway standing in the heart of Rajpath, symbolizing timeless valour and pride.',
+    bannerUrl:
+      'https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=1200&q=80',
+    targetBudgetMinor: 2500000,
+    totalSavedMinor: 2500000,
+    targetDate: '2025-11-15',
+    breakdown: {
+      flights: 8000,
+      stay: 8000,
+      food: 4000,
+      transport: 2500,
+      activities: 1500,
+      other: 1000,
+    },
+  },
+  'india-gate': {
+    id: 'india-gate',
+    name: 'India Gate, New Delhi',
+    country: 'India',
+    description:
+      'The majestic all-India war memorial archway standing in the heart of Rajpath, symbolizing timeless valour and pride.',
+    bannerUrl:
+      'https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=1200&q=80',
+    targetBudgetMinor: 2500000,
+    totalSavedMinor: 2500000,
+    targetDate: '2025-11-15',
+    breakdown: {
+      flights: 8000,
+      stay: 8000,
+      food: 4000,
+      transport: 2500,
+      activities: 1500,
+      other: 1000,
+    },
+  },
+  'taj-mahal': {
+    id: 'taj-mahal',
+    name: 'Taj Mahal, Agra',
+    country: 'India',
+    description:
+      'The ivory-white marble wonder of the world built on the southern banks of the Yamuna River, a testament to eternal devotion.',
+    bannerUrl:
+      'https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1200&q=80',
+    targetBudgetMinor: 3000000,
+    totalSavedMinor: 3000000,
+    targetDate: '2025-12-10',
+    breakdown: {
+      flights: 10000,
+      stay: 10000,
+      food: 5000,
+      transport: 2500,
+      activities: 1500,
+      other: 1000,
+    },
+  },
+  'royal-elephant': {
+    id: 'royal-elephant',
+    name: 'Jaipur & Amber Fort',
+    country: 'India',
+    description:
+      'The ceremonial splendour of the Pink City with royal elephant processions, majestic Amber hill palaces, and gemstone bazaars.',
+    bannerUrl:
+      'https://images.unsplash.com/photo-1603288940356-9b04456722ce?auto=format&fit=crop&w=1200&q=80',
+    targetBudgetMinor: 3500000,
+    totalSavedMinor: 3500000,
+    targetDate: '2026-01-20',
+    breakdown: {
+      flights: 10000,
+      stay: 12000,
+      food: 6000,
+      transport: 3500,
+      activities: 2000,
+      other: 1500,
+    },
+  },
+  london: {
+    id: 'london',
+    name: 'London, United Kingdom',
+    country: 'United Kingdom',
+    description:
+      'Iconic red double-decker buses, Big Ben, Westminster Abbey, Buckingham Palace, and historic River Thames landmarks.',
+    bannerUrl:
+      'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=1200&q=80',
+    targetBudgetMinor: 20000000,
+    totalSavedMinor: 20000000,
+    targetDate: '2026-05-12',
+    breakdown: {
+      flights: 50000,
+      stay: 70000,
+      food: 35000,
+      transport: 20000,
+      activities: 15000,
+      other: 10000,
+    },
+  },
 }
 
 const DEFAULT_CHECKLIST = [
@@ -315,19 +415,63 @@ export const MyFridgePage: React.FC = () => {
     }
   }, [user])
 
+  // Populate destinationOverrides whenever userMagnets update
+  useEffect(() => {
+    const overrides: Record<string, { totalSavedMinor: number }> = {}
+    userMagnets.forEach((m) => {
+      if (m.total_saved_minor !== undefined) {
+        overrides[m.destination_slug.toLowerCase()] = {
+          totalSavedMinor: m.total_saved_minor,
+        }
+      }
+    })
+    setDestinationOverrides((prev) => ({ ...overrides, ...prev }))
+  }, [userMagnets])
+
   // Current Destination Details
   const currentDetail = useMemo(() => {
-    const key = Object.keys(FEATURED_DETAILS).find((k) => areSlugsEquivalent(k, selectedSlug)) || 'santorini'
-    const base = FEATURED_DETAILS[key] || FEATURED_DETAILS['santorini']
-    const override = destinationOverrides[key] || destinationOverrides[selectedSlug]
-    if (override) {
+    const key = Object.keys(FEATURED_DETAILS).find((k) => areSlugsEquivalent(k, selectedSlug))
+    const base = key ? FEATURED_DETAILS[key] : null
+    const matchedMagnet = userMagnets.find((m) => areSlugsEquivalent(m.destination_slug, selectedSlug))
+
+    const totalSavedMinor =
+      destinationOverrides[selectedSlug]?.totalSavedMinor ??
+      matchedMagnet?.total_saved_minor ??
+      base?.totalSavedMinor ??
+      8000000
+
+    const targetBudgetMinor =
+      matchedMagnet?.target_budget_minor ??
+      base?.targetBudgetMinor ??
+      15000000
+
+    if (base) {
       return {
         ...base,
-        totalSavedMinor: override.totalSavedMinor,
+        totalSavedMinor,
+        targetBudgetMinor,
       }
     }
-    return base
-  }, [selectedSlug, destinationOverrides])
+
+    return {
+      id: selectedSlug,
+      name: matchedMagnet?.destination_name || 'Travel Destination',
+      country: matchedMagnet?.country_name || 'World',
+      description: 'Turn your travel dreams into destinations with your personalized collectible souvenir fridge.',
+      bannerUrl: matchedMagnet?.asset_url || 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=1200&q=80',
+      targetBudgetMinor,
+      totalSavedMinor,
+      targetDate: '2026-12-31',
+      breakdown: {
+        flights: Math.round((targetBudgetMinor / 100) * 0.35),
+        stay: Math.round((targetBudgetMinor / 100) * 0.35),
+        food: Math.round((targetBudgetMinor / 100) * 0.15),
+        transport: Math.round((targetBudgetMinor / 100) * 0.08),
+        activities: Math.round((targetBudgetMinor / 100) * 0.05),
+        other: Math.round((targetBudgetMinor / 100) * 0.02),
+      },
+    }
+  }, [selectedSlug, destinationOverrides, userMagnets])
 
   // Math for savings
   const targetBudget = currentDetail.targetBudgetMinor / 100
@@ -365,29 +509,27 @@ export const MyFridgePage: React.FC = () => {
   }
 
   // Handle savings top-up from modal
-  const handleSaveMoneySuccess = (depositMinor: number) => {
-    const newSaved = currentDetail.totalSavedMinor + depositMinor
+  const handleSaveMoneySuccess = async (depositMinor: number) => {
+    const uid = user?.id || 'guest'
+    const result = await userMagnetService.recordMagnetDeposit(
+      uid,
+      selectedSlug,
+      depositMinor,
+      {
+        targetBudgetMinor: currentDetail.targetBudgetMinor,
+        source: 'MyFridgePage',
+      }
+    )
+
     setDestinationOverrides((prev) => ({
       ...prev,
-      [selectedSlug]: { totalSavedMinor: newSaved },
+      [selectedSlug]: { totalSavedMinor: result.newTotalSavedMinor },
     }))
 
-    // Update placements on fridge canvas if matches
-    setPlacements((prev) =>
-      prev.map((p) => {
-        if (areSlugsEquivalent(p.magnetSlug, selectedSlug)) {
-          const newPct = Math.min(100, Math.round((newSaved / currentDetail.targetBudgetMinor) * 100))
-          return {
-            ...p,
-            totalSavedMinor: newSaved,
-            progressPercentage: newPct,
-            unlockState: newPct >= 100 ? 'ready_to_go' : 'saving',
-            isFundedPending: newPct >= 100,
-          }
-        }
-        return p
-      })
-    )
+    const refreshedMagnets = userMagnetService.getUserFridgeMagnetsSync(uid)
+    setUserMagnets(refreshedMagnets)
+    const refreshedPlacements = fridgeService.getFridgePlacements(uid, activeModel.id, refreshedMagnets)
+    setPlacements(refreshedPlacements)
   }
 
   // When a magnet on the fridge is clicked, select it in the inspector
@@ -398,10 +540,7 @@ export const MyFridgePage: React.FC = () => {
     const matchedPlacement = placements.find((p) => p.id === placementId)
     if (matchedPlacement) {
       const slug = matchedPlacement.magnetSlug.toLowerCase()
-      const key = Object.keys(FEATURED_DETAILS).find((k) => areSlugsEquivalent(k, slug))
-      if (key && FEATURED_DETAILS[key]) {
-        setSelectedSlug(key)
-      }
+      setSelectedSlug(slug)
     }
   }
 
@@ -412,13 +551,14 @@ export const MyFridgePage: React.FC = () => {
         LEFT & CENTER STAGE:
         Clean, Focused Refrigerator Stage (Appliance Only)
       */}
-      <div className="flex-1 w-full flex items-center justify-center relative min-h-[760px] rounded-3xl p-4 sm:p-8 lg:p-10 overflow-visible bg-white border border-slate-200/90 shadow-sm">
+      <div className="flex-1 w-full flex items-center justify-center relative min-h-[580px] sm:min-h-[760px] rounded-3xl p-3 sm:p-8 lg:p-10 overflow-visible bg-white border border-slate-200/90 shadow-sm">
         {/* Center: The Photorealistic Refrigerator */}
         <div className="relative z-10 w-full flex flex-col items-center">
           <FridgeWorkspace
             userId={user?.id || 'guest'}
             currentModel={activeModel}
             magnets={userMagnets}
+            placements={placements}
             selectedPlacementId={selectedPlacementId}
             onSelectPlacementId={handleSelectPlacement}
             onChangeFridgeModel={setActiveModel}

@@ -34,6 +34,7 @@ export interface FridgeWorkspaceProps {
   onRemoveMagnet?: (placementIdOrSlug: string) => void
   onPlacementsChange?: (placements: MagnetPlacement[]) => void
   onDropMagnet?: (magnetData: any, dropCoords: { x: number; y: number }) => void
+  placements?: MagnetPlacement[]
 }
 
 export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
@@ -50,14 +51,26 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
   onRemoveMagnet,
   onPlacementsChange,
   onDropMagnet,
+  placements: controlledPlacements,
 }) => {
   const surfaceRef = useRef<HTMLDivElement>(null)
   const [isDragOver, setIsDragOver] = useState(false)
   const [isModelModalOpen, setIsModelModalOpen] = useState(false)
   const [internalSelectedId, setInternalSelectedId] = useState<string | null>(null)
-  const [placements, setPlacements] = useState<MagnetPlacement[]>([])
+  const [placements, setPlacements] = useState<MagnetPlacement[]>(() => {
+    return controlledPlacements && controlledPlacements.length > 0
+      ? controlledPlacements
+      : fridgeService.getFridgePlacements(userId, currentModel.id, magnets)
+  })
   const placementsRef = useRef<MagnetPlacement[]>([])
   placementsRef.current = placements
+
+  // Synchronize if parent passes controlled placements
+  useEffect(() => {
+    if (controlledPlacements !== undefined && controlledPlacements.length > 0) {
+      setPlacements(controlledPlacements)
+    }
+  }, [controlledPlacements])
 
   // Active Model synchronization (guarantees immediate re-render when user selects a different fridge)
   const [activeModel, setActiveModel] = useState<FridgeModel>(currentModel)

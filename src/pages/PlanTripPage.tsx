@@ -95,8 +95,32 @@ export const PlanTripPage: React.FC = () => {
     other: 20000,
   })
 
-  // Dynamic Savings amounts for current trip
-  const [savedAmount, setSavedAmount] = useState<number>(80000)
+  // Matching magnet for the selected destination
+  const matchedMagnet = useMemo(() => {
+    return (
+      userMagnets.find((m) => areSlugsEquivalent(m.destination_slug, selectedDestinationSlug)) ||
+      placements.find((p) => areSlugsEquivalent(p.magnetSlug, selectedDestinationSlug))
+    )
+  }, [userMagnets, placements, selectedDestinationSlug])
+
+  const [savedAmountOverrides, setSavedAmountOverrides] = useState<Record<string, number>>({})
+
+  // Dynamic Savings amounts for current trip derived from matched magnet or destination
+  const savedAmount = useMemo(() => {
+    const slug = selectedDestinationSlug.toLowerCase()
+    if (savedAmountOverrides[slug] !== undefined) {
+      return savedAmountOverrides[slug]
+    }
+    if (matchedMagnet) {
+      if ('totalSavedMinor' in matchedMagnet && matchedMagnet.totalSavedMinor !== undefined) {
+        return matchedMagnet.totalSavedMinor / 100
+      }
+      if ('total_saved_minor' in matchedMagnet && matchedMagnet.total_saved_minor !== undefined) {
+        return matchedMagnet.total_saved_minor / 100
+      }
+    }
+    return areSlugsEquivalent(selectedDestinationSlug, 'santorini') ? 80000 : 0
+  }, [matchedMagnet, selectedDestinationSlug, savedAmountOverrides])
 
   // Checklist
   const [checklistItems, setChecklistItems] = useState([
@@ -430,8 +454,32 @@ export const PlanTripPage: React.FC = () => {
   }
 
   // Handle Save Money modal success
-  const handleSaveMoneySuccess = (depositMinor: number) => {
-    setSavedAmount((prev) => prev + depositMinor / 100)
+  const handleSaveMoneySuccess = async (depositMinor: number) => {
+    const uid = user?.id || 'guest'
+    const cleanSlug = selectedDestinationSlug.toLowerCase()
+    const result = await userMagnetService.recordMagnetDeposit(
+      uid,
+      cleanSlug,
+      depositMinor,
+      {
+        targetBudgetMinor: totalEstimatedCost * 100,
+        source: 'PlanTripPage',
+      }
+    )
+
+    setSavedAmountOverrides((prev) => ({
+      ...prev,
+      [cleanSlug]: result.newTotalSavedMinor / 100,
+    }))
+
+    // Reload latest magnets & placements immediately
+    const refreshedMagnets = userMagnetService.getUserFridgeMagnetsSync(uid)
+    setUserMagnets(refreshedMagnets)
+    const refreshedPlacements = fridgeService.getFridgePlacements(uid, activeModel.id, refreshedMagnets)
+    setPlacements(refreshedPlacements)
+
+    setSaveSuccessMessage(`₹ ${(depositMinor / 100).toLocaleString('en-IN')} deposited for ${currentCatalogItem.name}!`)
+    setTimeout(() => setSaveSuccessMessage(null), 3000)
   }
 
   const toggleFavorite = (id: string, e: React.MouseEvent) => {
@@ -451,7 +499,7 @@ export const PlanTripPage: React.FC = () => {
         COLUMN 1 (LEFT):
         "Add a Magnet" Discovery Catalog Matching media_1791901625496_a5fd76dc.jpg
       */}
-      <div className="w-full xl:w-[350px] bg-white rounded-3xl p-5 shadow-lg border border-slate-200/90 flex flex-col h-[760px] flex-shrink-0 overflow-hidden">
+      <div className="w-full xl:w-[350px] bg-white rounded-3xl p-4 sm:p-5 shadow-lg border border-slate-200/90 flex flex-col h-[520px] xl:h-[760px] flex-shrink-0 overflow-hidden">
         
         {/* Title & Subtitle */}
         <div className="mb-3">
@@ -622,7 +670,7 @@ export const PlanTripPage: React.FC = () => {
         COLUMN 2 (CENTER):
         Editable Fridge Workspace with Edit Controls & Dotted Slots
       */}
-      <div className="flex-1 w-full flex flex-col items-center justify-between min-h-[760px] relative rounded-3xl p-5 overflow-hidden bg-white border border-slate-200/90 shadow-sm">
+      <div className="flex-1 w-full flex flex-col items-center justify-between min-h-[580px] sm:min-h-[760px] relative rounded-3xl p-3 sm:p-5 overflow-hidden bg-white border border-slate-200/90 shadow-sm">
         
         {/* Top Controls Bar: Fridge Selection, Auto Arrange, and Edit Mode Pill */}
         <div className="w-full flex items-center justify-between mb-3 z-20 px-1 gap-2 flex-wrap">
@@ -671,6 +719,7 @@ export const PlanTripPage: React.FC = () => {
             userId={user?.id || 'guest'}
             currentModel={activeModel}
             magnets={userMagnets}
+            placements={placements}
             selectedPlacementId={selectedPlacementId}
             onSelectPlacementId={setSelectedPlacementId}
             onSelectMagnetItem={(magnet) => {
@@ -701,7 +750,7 @@ export const PlanTripPage: React.FC = () => {
         COLUMN 3 (RIGHT):
         4-Tab Trip Editor Inspector Matching media_1791901625496_a5fd76dc.jpg
       */}
-      <div className="w-full xl:w-[420px] bg-white rounded-3xl p-5 shadow-xl border border-slate-200/90 flex flex-col h-[760px] flex-shrink-0 overflow-y-auto scrollbar-thin">
+      <div className="w-full xl:w-[420px] bg-white rounded-3xl p-4 sm:p-5 shadow-xl border border-slate-200/90 flex flex-col h-[520px] xl:h-[760px] flex-shrink-0 overflow-y-auto scrollbar-thin">
         
         {/* Destination Magnet Hero Display */}
         <div className="relative w-full h-44 flex-shrink-0 rounded-2xl overflow-hidden shadow-md group mb-3.5 bg-gradient-to-tr from-slate-900 via-slate-800 to-slate-700 flex items-center justify-center p-4">

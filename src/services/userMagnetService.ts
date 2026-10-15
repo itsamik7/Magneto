@@ -2,7 +2,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import type { DestinationWithMagnet } from '../types/destination'
 import { DESTINATIONS_CATALOG } from '../data/destinationsCatalog'
 import { tripService } from './tripService'
-import { areSlugsEquivalent } from './fridgeService'
+import { areSlugsEquivalent, fridgeService } from './fridgeService'
 
 export interface FridgeMagnetItem {
   id: string
@@ -32,6 +32,8 @@ export const DEFAULT_FEATURED_MAGNETS: FridgeMagnetItem[] = [
     magnet_shape: 'arch',
     acquired_at: '2024-01-10T10:00:00Z',
     unlock_state: 'ready_to_go',
+    target_budget_minor: 6000000,
+    total_saved_minor: 6000000,
     progress_percentage: 100,
   },
   {
@@ -44,6 +46,8 @@ export const DEFAULT_FEATURED_MAGNETS: FridgeMagnetItem[] = [
     magnet_shape: 'arch',
     acquired_at: '2024-01-12T10:00:00Z',
     unlock_state: 'ready_to_go',
+    target_budget_minor: 2500000,
+    total_saved_minor: 2500000,
     progress_percentage: 100,
   },
   {
@@ -56,6 +60,8 @@ export const DEFAULT_FEATURED_MAGNETS: FridgeMagnetItem[] = [
     magnet_shape: 'arch',
     acquired_at: '2024-01-14T10:00:00Z',
     unlock_state: 'ready_to_go',
+    target_budget_minor: 3500000,
+    total_saved_minor: 3500000,
     progress_percentage: 100,
   },
   {
@@ -68,6 +74,8 @@ export const DEFAULT_FEATURED_MAGNETS: FridgeMagnetItem[] = [
     magnet_shape: 'arch',
     acquired_at: '2024-01-20T10:00:00Z',
     unlock_state: 'ready_to_go',
+    target_budget_minor: 4000000,
+    total_saved_minor: 4000000,
     progress_percentage: 100,
   },
   {
@@ -80,6 +88,8 @@ export const DEFAULT_FEATURED_MAGNETS: FridgeMagnetItem[] = [
     magnet_shape: 'arch',
     acquired_at: '2024-01-25T10:00:00Z',
     unlock_state: 'ready_to_go',
+    target_budget_minor: 3000000,
+    total_saved_minor: 3000000,
     progress_percentage: 100,
   },
 
@@ -94,6 +104,8 @@ export const DEFAULT_FEATURED_MAGNETS: FridgeMagnetItem[] = [
     magnet_shape: 'arch',
     acquired_at: '2024-02-01T10:00:00Z',
     unlock_state: 'ready_to_go',
+    target_budget_minor: 22000000,
+    total_saved_minor: 22000000,
     progress_percentage: 100,
   },
   {
@@ -106,6 +118,8 @@ export const DEFAULT_FEATURED_MAGNETS: FridgeMagnetItem[] = [
     magnet_shape: 'arch',
     acquired_at: '2024-02-10T10:00:00Z',
     unlock_state: 'ready_to_go',
+    target_budget_minor: 20000000,
+    total_saved_minor: 20000000,
     progress_percentage: 100,
   },
   {
@@ -118,6 +132,8 @@ export const DEFAULT_FEATURED_MAGNETS: FridgeMagnetItem[] = [
     magnet_shape: 'arch',
     acquired_at: '2024-02-15T10:00:00Z',
     unlock_state: 'ready_to_go',
+    target_budget_minor: 28000000,
+    total_saved_minor: 28000000,
     progress_percentage: 100,
   },
   {
@@ -130,6 +146,8 @@ export const DEFAULT_FEATURED_MAGNETS: FridgeMagnetItem[] = [
     magnet_shape: 'arch',
     acquired_at: '2024-02-20T10:00:00Z',
     unlock_state: 'ready_to_go',
+    target_budget_minor: 12000000,
+    total_saved_minor: 12000000,
     progress_percentage: 100,
   },
   {
@@ -142,6 +160,8 @@ export const DEFAULT_FEATURED_MAGNETS: FridgeMagnetItem[] = [
     magnet_shape: 'arch',
     acquired_at: '2024-03-01T10:00:00Z',
     unlock_state: 'ready_to_go',
+    target_budget_minor: 18000000,
+    total_saved_minor: 18000000,
     progress_percentage: 100,
   },
   {
@@ -509,6 +529,143 @@ export const userMagnetService = {
       return true
     } catch {
       return false
+    }
+  },
+
+  /**
+   * Record a savings deposit for a specific destination magnet.
+   * Updates total saved amount, calculates new progress percentage,
+   * transitions unlock state to ready_to_go if 100% funded,
+   * updates the magnet placement on the active fridge, and persists to storage and Supabase.
+   */
+  async recordMagnetDeposit(
+    userId: string,
+    destinationSlug: string,
+    depositMinor: number,
+    options?: {
+      note?: string
+      source?: string
+      targetBudgetMinor?: number
+    }
+  ): Promise<{
+    updatedMagnet: FridgeMagnetItem
+    newTotalSavedMinor: number
+    targetBudgetMinor: number
+    progressPercentage: number
+    unlockState: 'dreaming' | 'saving' | 'ready_to_go'
+  }> {
+    const magnets = await userMagnetService.getUserFridgeMagnets(userId)
+    const cleanSlug = destinationSlug.toLowerCase().replace(/^magnet-/, '')
+    const canonicalId = `magnet-${cleanSlug}`
+
+    let magnetIndex = magnets.findIndex(
+      (m) =>
+        m.id === canonicalId ||
+        areSlugsEquivalent(m.destination_slug, cleanSlug) ||
+        areSlugsEquivalent(m.id, cleanSlug)
+    )
+
+    if (magnetIndex === -1) {
+      // Find from destinations catalog
+      const cat = DESTINATIONS_CATALOG.find((d) => areSlugsEquivalent(d.slug, cleanSlug))
+      const newMagnet: FridgeMagnetItem = {
+        id: canonicalId,
+        destination_slug: cleanSlug,
+        destination_name: cat?.name || destinationSlug,
+        country_name: cat?.country_name || '',
+        continent: cat?.continent || 'Asia',
+        asset_url: cat?.asset_url || `/magnets/destinations/${cleanSlug}.png`,
+        magnet_shape: 'arch',
+        acquired_at: new Date().toISOString(),
+        unlock_state: 'saving',
+        progress_percentage: 0,
+        total_saved_minor: 0,
+        target_budget_minor: options?.targetBudgetMinor || 15000000,
+      }
+      magnets.push(newMagnet)
+      magnetIndex = magnets.length - 1
+    }
+
+    const currentMagnet = magnets[magnetIndex]
+    const targetBudget = options?.targetBudgetMinor || currentMagnet.target_budget_minor || 15000000
+    const currentSaved = currentMagnet.total_saved_minor || 0
+    const newTotalSaved = currentSaved + depositMinor
+    const newPct = Math.min(100, Math.round((newTotalSaved / targetBudget) * 100))
+    const newUnlockState: 'ready_to_go' | 'saving' = newPct >= 100 ? 'ready_to_go' : 'saving'
+
+    const updatedMagnet: FridgeMagnetItem = {
+      ...currentMagnet,
+      total_saved_minor: newTotalSaved,
+      target_budget_minor: targetBudget,
+      progress_percentage: newPct,
+      unlock_state: newUnlockState,
+    }
+
+    magnets[magnetIndex] = updatedMagnet
+
+    // Persist magnets to storage
+    await userMagnetService.saveUserFridgeMagnets(userId, magnets, options?.source || 'recordMagnetDeposit')
+
+    // Update placements on the active fridge
+    try {
+      const activeFridgeId = fridgeService.getActiveFridgeId(userId)
+      const placements = fridgeService.getFridgePlacements(userId, activeFridgeId, magnets)
+      const updatedPlacements = placements.map((p) => {
+        if (
+          p.id === canonicalId ||
+          areSlugsEquivalent(p.magnetSlug, cleanSlug) ||
+          areSlugsEquivalent(p.id, cleanSlug)
+        ) {
+          return {
+            ...p,
+            totalSavedMinor: newTotalSaved,
+            targetBudgetMinor: targetBudget,
+            progressPercentage: newPct,
+            unlockState: newUnlockState,
+            isFundedPending: newPct >= 100,
+          }
+        }
+        return p
+      })
+      fridgeService.saveFridgePlacements(userId, activeFridgeId, updatedPlacements, options?.source || 'recordMagnetDeposit')
+    } catch {
+      // Ignore fridge placement update error
+    }
+
+    // Attempt Supabase deposit record if trip linked & configured
+    if (isSupabaseConfigured && currentMagnet.trip_id) {
+      try {
+        await supabase.from('savings_transactions').insert({
+          trip_id: currentMagnet.trip_id,
+          user_id: userId,
+          amount_minor: depositMinor,
+          currency: 'INR',
+          note: options?.note || 'Savings Deposit',
+        })
+      } catch (err) {
+        console.warn('Failed to insert savings_transaction to Supabase:', err)
+      }
+    }
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('magneto_sync', {
+          detail: {
+            userId,
+            source: options?.source || 'recordMagnetDeposit',
+            slug: cleanSlug,
+            newTotalSavedMinor: newTotalSaved,
+          },
+        })
+      )
+    }
+
+    return {
+      updatedMagnet,
+      newTotalSavedMinor: newTotalSaved,
+      targetBudgetMinor: targetBudget,
+      progressPercentage: newPct,
+      unlockState: newUnlockState,
     }
   },
 }

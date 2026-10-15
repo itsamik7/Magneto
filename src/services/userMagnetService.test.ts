@@ -86,4 +86,37 @@ describe('userMagnetService', () => {
     fridge = await userMagnetService.getUserFridgeMagnets(testUserId)
     expect(fridge.length).toBe(0)
   }, 15000)
+
+  it('should accurately record savings deposit, update total saved, and transition unlock state', async () => {
+    const dest = DESTINATIONS_CATALOG[0] // Taj Mahal
+    await userMagnetService.addMagnetToFridge(testUserId, dest)
+
+    // Deposit ₹500 (50,000 paise) towards a target of ₹1,000 (100,000 paise)
+    const res1 = await userMagnetService.recordMagnetDeposit(testUserId, dest.slug, 50000, {
+      targetBudgetMinor: 100000,
+      note: 'First savings installment',
+    })
+
+    expect(res1.newTotalSavedMinor).toBe(50000)
+    expect(res1.progressPercentage).toBe(50)
+    expect(res1.unlockState).toBe('saving')
+
+    // Verify stored magnet
+    let fridge = await userMagnetService.getUserFridgeMagnets(testUserId)
+    expect(fridge[0].total_saved_minor).toBe(50000)
+    expect(fridge[0].unlock_state).toBe('saving')
+
+    // Deposit remaining ₹500 to hit 100% funding
+    const res2 = await userMagnetService.recordMagnetDeposit(testUserId, dest.slug, 50000, {
+      targetBudgetMinor: 100000,
+    })
+
+    expect(res2.newTotalSavedMinor).toBe(100000)
+    expect(res2.progressPercentage).toBe(100)
+    expect(res2.unlockState).toBe('ready_to_go')
+
+    fridge = await userMagnetService.getUserFridgeMagnets(testUserId)
+    expect(fridge[0].total_saved_minor).toBe(100000)
+    expect(fridge[0].unlock_state).toBe('ready_to_go')
+  }, 15000)
 })
