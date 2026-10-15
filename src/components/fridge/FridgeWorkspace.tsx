@@ -505,14 +505,12 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
 
       {/* 
         INTERACTIVE ZOOM & PAN VIEWPORT
-        Allows natural two-finger expand/collapse (pinch-to-zoom) or trackpad pinch!
+        Free-flow unclipped canvas allowing smooth magnification & natural two-finger expand/collapse
       */}
       <div
         ref={viewportRef}
         onDoubleClick={handleDoubleClick}
-        className={`relative w-full flex flex-col items-center justify-center ${
-          zoomLevel > 1.0 ? 'overflow-hidden' : 'overflow-visible'
-        } rounded-3xl p-1 sm:p-2 pt-0 sm:pt-0 ${
+        className={`relative w-full flex flex-col items-center justify-center overflow-visible p-0 ${
           zoomLevel > 1.0 ? (isPanning ? 'cursor-grabbing' : 'cursor-grab') : ''
         }`}
         style={{

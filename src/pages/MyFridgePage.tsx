@@ -549,11 +549,11 @@ export const MyFridgePage: React.FC = () => {
       
       {/* 
         LEFT & CENTER STAGE:
-        Clean, Focused Refrigerator Stage (Appliance Only)
+        Free-Flow Photorealistic Refrigerator Stage (No border box, unclipped zoom)
       */}
-      <div className="flex-1 w-full flex items-center justify-center relative min-h-0 sm:min-h-[520px] rounded-3xl p-2 sm:p-4 lg:p-5 pt-1 sm:pt-2 pb-2 sm:pb-3 overflow-visible bg-white border border-slate-200/90 shadow-sm">
+      <div className="flex-1 w-full flex items-center justify-center relative min-h-0 sm:min-h-[520px] p-0 overflow-visible bg-transparent">
         {/* Center: The Photorealistic Refrigerator */}
-        <div className="relative z-10 w-full flex flex-col items-center">
+        <div className="relative z-10 w-full flex flex-col items-center overflow-visible">
           <FridgeWorkspace
             userId={user?.id || 'guest'}
             currentModel={activeModel}
