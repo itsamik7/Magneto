@@ -219,6 +219,7 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
       ref={magnetRef}
       data-magnet="true"
       onPointerDown={handlePointerDown}
+      onClick={(e) => e.stopPropagation()}
       style={{
         position: 'absolute',
         left: `${placement.x * 100}%`,

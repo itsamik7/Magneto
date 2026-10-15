@@ -267,9 +267,7 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                 transform: 'translateZ(8px)',
                 backfaceVisibility: 'hidden',
               }}
-              className="rounded-lg shadow-2xl overflow-hidden bg-slate-200 border border-slate-400 cursor-pointer"
-              onClick={handleToggle}
-              title={isEffectiveOpen ? 'Click door to close' : 'Click door to open'}
+              className="rounded-lg shadow-2xl overflow-hidden bg-slate-200 border border-slate-400"
             >
               {/* Clean Cropped Stainless Steel Door Image (Zero White Margins) */}
               <img
@@ -289,11 +287,6 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
               <div
                 ref={surfaceRef}
                 onClick={(e) => {
-                  const target = e.target as HTMLElement
-                  const clickedMagnet = target.closest('[data-magnet="true"], .group.select-none')
-                  if (!clickedMagnet) {
-                    handleToggle()
-                  }
                   if (onSurfaceClick) onSurfaceClick(e)
                 }}
                 onDragOver={onDragOver}
@@ -307,12 +300,53 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                   height: `${magneticRegion.height * 100}%`,
                 }}
                 className={`relative select-none ${
-                  isEffectiveOpen ? 'pointer-events-none' : 'cursor-pointer'
+                  isEffectiveOpen ? 'pointer-events-none' : 'cursor-default'
                 } z-20 ${
                   isDragOver ? 'ring-4 ring-blue-500/50 bg-blue-500/10 rounded-lg' : ''
                 }`}
               >
                 {children}
+              </div>
+
+              {/* 
+                INTERACTIVE REFRIGERATOR CHROME HANDLE
+                Only clicking this dedicated handle opens the refrigerator door!
+              */}
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleToggle()
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    handleToggle()
+                  }
+                }}
+                style={{
+                  position: 'absolute',
+                  top: '25%',
+                  right: '0%',
+                  width: '14%',
+                  height: '38%',
+                  zIndex: 35,
+                }}
+                className={`group cursor-pointer select-none rounded-r-lg ${
+                  isEffectiveOpen ? 'pointer-events-none opacity-0' : 'opacity-100'
+                }`}
+                title="Click handle to open refrigerator door"
+                aria-label="Open refrigerator door"
+              >
+                {/* Visual hover affordance: subtle metallic shimmer highlight on the handle */}
+                <div className="absolute inset-0 rounded-r-lg group-hover:bg-gradient-to-l group-hover:from-white/30 group-hover:via-white/10 group-hover:to-transparent transition-all duration-200 pointer-events-none" />
+
+                {/* Subtle handle pull hint on hover */}
+                <div className="absolute -left-20 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded-md bg-slate-900/90 text-white text-[9px] font-heading font-bold shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none whitespace-nowrap border border-white/20 flex items-center gap-1">
+                  <span>Pull Handle</span>
+                </div>
               </div>
             </div>
 
