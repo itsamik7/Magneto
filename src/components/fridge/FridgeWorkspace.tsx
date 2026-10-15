@@ -99,6 +99,8 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
   // 3D Door Open/Close State
   const [isMainDoorOpen, setIsMainDoorOpen] = useState(false)
   const [isFreezerDoorOpen, setIsFreezerDoorOpen] = useState(false)
+  const [isCrisperOpen, setIsCrisperOpen] = useState(false)
+  const [isInternalFreezerOpen, setIsInternalFreezerOpen] = useState(false)
 
   const handleResetZoom = () => {
     setZoomLevel(1.0)
@@ -227,6 +229,10 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
   const handleToggleMainDoor = () => {
     setIsMainDoorOpen((prev) => {
       const next = !prev
+      if (!next) {
+        setIsCrisperOpen(false)
+        setIsInternalFreezerOpen(false)
+      }
       setFridgeYaw(next ? -45 : 0)
       return next
     })
@@ -244,6 +250,8 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
     if (isMainDoorOpen || isFreezerDoorOpen) {
       setIsMainDoorOpen(false)
       setIsFreezerDoorOpen(false)
+      setIsCrisperOpen(false)
+      setIsInternalFreezerOpen(false)
       setFridgeYaw(0)
     } else {
       setIsMainDoorOpen(true)
@@ -508,6 +516,10 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
               isFreezerDoorOpen={isFreezerDoorOpen}
               onToggleMainDoor={handleToggleMainDoor}
               onToggleFreezerDoor={handleToggleFreezerDoor}
+              isCrisperOpen={isCrisperOpen}
+              onToggleCrisper={() => setIsCrisperOpen((v) => !v)}
+              isFreezerOpen={isInternalFreezerOpen}
+              onToggleFreezer={() => setIsInternalFreezerOpen((v) => !v)}
               magneticRegion={magneticRegion}
               surfaceRef={surfaceRef}
               aspectRatio={activeModel.aspectRatio}
