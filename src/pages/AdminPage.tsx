@@ -201,8 +201,28 @@ export const AdminPage: React.FC = () => {
       } else if (formShelf === 'freezer') {
         setPreviewFreezerOpen(true)
       }
+
+      const range = SHELF_DEFINITIONS[formShelf]?.horizontalRange || [14, 86]
+      setFormPositionX((prev) => Math.max(range[0], Math.min(range[1], prev)))
     }
   }, [formShelf, isEditorActive])
+
+  // Drag-and-drop live shelf snap mover handler
+  const handleMoveProduct = (productId: string, newShelf: FridgeShelf, newX: number) => {
+    if (isEditorActive) {
+      if (editingProduct?.id === productId || isAddMode) {
+        setFormShelf(newShelf)
+        setFormPositionX(newX)
+        return
+      }
+    }
+    const target = products.find((p) => p.id === productId)
+    if (target) {
+      openEditEditor(target)
+      setFormShelf(newShelf)
+      setFormPositionX(newX)
+    }
+  }
 
   // 4. Real-time dynamic preview products calculation
   // Reflects slider movements, shelf changes, image asset updates, scale, multi-units, and visibility immediately!
@@ -1079,19 +1099,29 @@ export const AdminPage: React.FC = () => {
                         {formPositionX}%
                       </span>
                     </div>
-                    <input
-                      type="range"
-                      min="12"
-                      max="88"
-                      value={formPositionX}
-                      onChange={(e) => setFormPositionX(Number(e.target.value))}
-                      className="w-full accent-blue-600 cursor-pointer h-2 bg-slate-200 rounded-lg"
-                    />
-                    <div className="flex justify-between text-[10px] text-slate-400 font-bold mt-1 px-1">
-                      <span>← Left Edge (12%)</span>
-                      <span className="text-slate-500">Center (50%)</span>
-                      <span>Right Edge (88%) →</span>
-                    </div>
+                    {(() => {
+                      const [shelfMinX, shelfMaxX] =
+                        SHELF_DEFINITIONS[formShelf]?.horizontalRange || [14, 86]
+                      return (
+                        <>
+                          <input
+                            type="range"
+                            min={shelfMinX}
+                            max={shelfMaxX}
+                            value={formPositionX}
+                            onChange={(e) => setFormPositionX(Number(e.target.value))}
+                            className="w-full accent-blue-600 cursor-pointer h-2 bg-slate-200 rounded-lg"
+                          />
+                          <div className="flex justify-between text-[10px] text-slate-400 font-bold mt-1 px-1">
+                            <span>← Left Edge ({shelfMinX}%)</span>
+                            <span className="text-slate-500">
+                              Center ({Math.round((shelfMinX + shelfMaxX) / 2)}%)
+                            </span>
+                            <span>Right Edge ({shelfMaxX}%) →</span>
+                          </div>
+                        </>
+                      )
+                    })()}
                   </div>
 
                   <div className="pt-3 border-t border-slate-200/70">
@@ -2048,6 +2078,7 @@ export const AdminPage: React.FC = () => {
                 products={previewProducts}
                 highlightedProductId={editingProduct?.id || (isAddMode ? 'draft-new-product-preview-id' : undefined)}
                 onSelectProduct={(prod) => openEditEditor(prod)}
+                onMoveProduct={handleMoveProduct}
               >
                 <div />
               </UniversalSteelFridge>

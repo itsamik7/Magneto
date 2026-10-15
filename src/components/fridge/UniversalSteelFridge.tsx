@@ -1,7 +1,11 @@
 import React, { useRef, useState, useEffect } from 'react'
 import type { MagneticRegion } from '../../types/fridge'
-import type { FridgeProduct, StackingArrangement } from '../../types/fridgeProduct'
-import { SHELF_DEFINITIONS } from '../../types/fridgeProduct'
+import type { FridgeProduct, StackingArrangement, FridgeShelf } from '../../types/fridgeProduct'
+import {
+  SHELF_DEFINITIONS,
+  getProductDimensions,
+  type ProductVisualDimensions,
+} from '../../types/fridgeProduct'
 import {
   getPublicActiveProducts,
   FRIDGE_PRODUCTS_UPDATED_EVENT,
@@ -49,6 +53,8 @@ export interface UniversalSteelFridgeProps {
   highlightedProductId?: string
   /** Optional callback when a user taps a product in the fridge */
   onSelectProduct?: (product: FridgeProduct) => void
+  /** Optional callback when a product is dragged to a new shelf or position */
+  onMoveProduct?: (productId: string, newShelf: FridgeShelf, newPositionX: number) => void
 }
 
 interface RenderUnit {
@@ -66,7 +72,8 @@ interface RenderUnit {
 function calculateProductUnits(
   count: number = 1,
   arrangement: StackingArrangement = 'single',
-  spacing: number = 18
+  spacing: number = 18,
+  dims?: ProductVisualDimensions
 ): RenderUnit[] {
   const safeCount = Math.max(1, Math.min(12, count))
 
@@ -76,12 +83,13 @@ function calculateProductUnits(
 
   if (arrangement === 'row') {
     const units: RenderUnit[] = []
+    const effSpacing = dims ? Math.max(dims.widthPx * 0.75, spacing) : spacing
     for (let i = 0; i < safeCount; i++) {
-      const offsetX = (i - (safeCount - 1) / 2) * spacing
+      const offsetX = (i - (safeCount - 1) / 2) * effSpacing
       units.push({
         key: `unit-${i}`,
         offsetX,
-        offsetY: 0,
+        offsetY: 0, // Every row unit rests firmly on the shelf surface
         scaleFactor: 1.0,
         zIndex: 10 + i,
       })
@@ -91,13 +99,15 @@ function calculateProductUnits(
 
   if (arrangement === 'depth') {
     const units: RenderUnit[] = []
+    const effSpacing = dims ? Math.max(dims.widthPx * 0.75, spacing) : spacing
     const cols = Math.ceil(safeCount / 2)
     for (let i = 0; i < safeCount; i++) {
       const isBack = i % 2 === 1
       const colIndex = Math.floor(i / 2)
-      const offsetX = (colIndex - (cols - 1) / 2) * spacing + (isBack ? spacing * 0.35 : 0)
-      const offsetY = isBack ? -8 : 2
-      const scaleFactor = isBack ? 0.91 : 1.0
+      const offsetX = (colIndex - (cols - 1) / 2) * effSpacing + (isBack ? effSpacing * 0.35 : 0)
+      // Back units recede into perspective depth (-Z) by sitting slightly higher with slight scale down
+      const offsetY = isBack ? -6 : 0
+      const scaleFactor = isBack ? 0.92 : 1.0
       units.push({
         key: `unit-${i}`,
         offsetX,
@@ -111,19 +121,21 @@ function calculateProductUnits(
 
   if (arrangement === 'grid') {
     const units: RenderUnit[] = []
+    const effSpacing = dims ? Math.max(dims.widthPx * 0.75, spacing) : spacing
     const cols = safeCount > 4 ? 3 : 2
-    const rows = Math.ceil(safeCount / cols)
     for (let i = 0; i < safeCount; i++) {
       const c = i % cols
       const r = Math.floor(i / cols)
-      const offsetX = (c - (cols - 1) / 2) * spacing
-      const offsetY = (r - (rows - 1) / 2) * (spacing * 0.7)
+      const offsetX = (c - (cols - 1) / 2) * effSpacing
+      // Front row at offsetY = 0 (on shelf), back rows recede into shelf depth
+      const offsetY = -r * Math.max(5, effSpacing * 0.3)
+      const scaleFactor = Math.max(0.86, 1.0 - r * 0.05)
       units.push({
         key: `unit-${i}`,
         offsetX,
         offsetY,
-        scaleFactor: 0.94,
-        zIndex: 10 + r * 5 + c,
+        scaleFactor,
+        zIndex: 10 + (2 - r) * 5 + c,
       })
     }
     return units
@@ -131,11 +143,13 @@ function calculateProductUnits(
 
   if (arrangement === 'stack') {
     const units: RenderUnit[] = []
+    // Physical vertical step for stacking items on top of one another
+    const effStep = dims ? Math.max(12, dims.heightPx * 0.72) : Math.max(12, spacing * 0.7)
     for (let i = 0; i < safeCount; i++) {
       units.push({
         key: `unit-${i}`,
         offsetX: 0,
-        offsetY: -i * (spacing * 0.65),
+        offsetY: -i * effStep, // Unit 0 rests on shelf, subsequent units stack upwards
         scaleFactor: 1.0,
         zIndex: 10 + i,
       })
@@ -170,10 +184,18 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
   products: propProducts,
   highlightedProductId,
   onSelectProduct,
+  onMoveProduct,
 }) => {
   const [internalProducts, setInternalProducts] = useState<FridgeProduct[]>([])
   const [internalCrisperOpen, setInternalCrisperOpen] = useState(false)
   const [internalFreezerOpen, setInternalFreezerOpen] = useState(false)
+  const cavityRef = useRef<HTMLDivElement>(null)
+  const doorRef = useRef<HTMLDivElement>(null)
+  const [activeDrag, setActiveDrag] = useState<{
+    productId: string
+    shelf: FridgeShelf
+    positionX: number
+  } | null>(null)
 
   const crisperOpen = propCrisperOpen !== undefined ? propCrisperOpen : internalCrisperOpen
   const freezerOpen = propFreezerOpen !== undefined ? propFreezerOpen : internalFreezerOpen
@@ -188,6 +210,84 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
     e.stopPropagation()
     if (onToggleFreezer) onToggleFreezer()
     else setInternalFreezerOpen((prev) => !prev)
+  }
+
+  const handleProductPointerDown = (
+    e: React.PointerEvent,
+    product: FridgeProduct,
+    containerType: 'shelf' | 'crisper' | 'freezer' | 'door'
+  ) => {
+    if (!onMoveProduct && !onSelectProduct) return
+
+    const startX = e.clientX
+    const startY = e.clientY
+    let hasMoved = false
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const dist = Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY)
+      if (dist > 5) {
+        hasMoved = true
+      }
+
+      if (!hasMoved || !onMoveProduct) return
+
+      if (containerType === 'door') {
+        const rect = doorRef.current?.getBoundingClientRect()
+        if (!rect) return
+        const pctX = Math.round(((moveEvent.clientX - rect.left) / rect.width) * 100)
+        const pctY = Math.round(((moveEvent.clientY - rect.top) / rect.height) * 100)
+
+        let targetShelf: FridgeShelf = 'door_bin_middle'
+        if (pctY < 36) targetShelf = 'door_bin_top'
+        else if (pctY >= 66) targetShelf = 'door_bin_bottom'
+        else targetShelf = 'door_bin_middle'
+
+        const shelfDef = SHELF_DEFINITIONS[targetShelf]
+        const clampedX = Math.max(
+          shelfDef.horizontalRange[0],
+          Math.min(shelfDef.horizontalRange[1], pctX)
+        )
+
+        setActiveDrag({ productId: product.id, shelf: targetShelf, positionX: clampedX })
+        onMoveProduct(product.id, targetShelf, clampedX)
+      } else {
+        const rect = cavityRef.current?.getBoundingClientRect()
+        if (!rect) return
+        const pctX = Math.round(((moveEvent.clientX - rect.left) / rect.width) * 100)
+        const pctY = Math.round(((moveEvent.clientY - rect.top) / rect.height) * 100)
+
+        let targetShelf: FridgeShelf = 'middle_shelf'
+        if (pctY < 23 && freezerOpen) targetShelf = 'freezer'
+        else if (pctY >= 77 && crisperOpen) targetShelf = 'crisper_drawer'
+        else if (pctY < 52) targetShelf = 'top_shelf'
+        else if (pctY >= 67) targetShelf = 'bottom_shelf'
+        else targetShelf = 'middle_shelf'
+
+        const shelfDef = SHELF_DEFINITIONS[targetShelf]
+        const clampedX = Math.max(
+          shelfDef.horizontalRange[0],
+          Math.min(shelfDef.horizontalRange[1], pctX)
+        )
+
+        setActiveDrag({ productId: product.id, shelf: targetShelf, positionX: clampedX })
+        onMoveProduct(product.id, targetShelf, clampedX)
+      }
+    }
+
+    const handlePointerUp = () => {
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', handlePointerUp)
+      window.removeEventListener('pointercancel', handlePointerUp)
+      setActiveDrag(null)
+
+      if (!hasMoved && onSelectProduct) {
+        onSelectProduct(product)
+      }
+    }
+
+    window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('pointerup', handlePointerUp)
+    window.addEventListener('pointercancel', handlePointerUp)
   }
 
   const isEffectiveOpen =
@@ -269,50 +369,54 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
   }
 
   /**
-   * Helper to render a product with full multi-unit stacking and physical ground contact shadows
+   * Helper to render a product with physically anchored bottom placement and realistic ambient contact shadows
    */
   const renderProductCluster = (
     product: FridgeProduct,
     baseLeftPercent: number,
-    baseTopPercent: number,
+    baseBaselinePercent: number,
     baseScale: number = 1.0,
     containerType: 'shelf' | 'crisper' | 'freezer' | 'door' = 'shelf'
   ) => {
     const isHighlighted =
       Boolean(highlightedProductId && product.id === highlightedProductId) ||
       product.id.startsWith('draft-')
+    const isBeingDragged = activeDrag?.productId === product.id
 
     const count = Math.max(1, Math.min(12, product.itemCount || 1))
     const arrangement = product.arrangement || 'single'
     const spacing = Math.max(10, Math.min(45, product.spacing || 18))
-    const units = calculateProductUnits(count, arrangement, spacing)
+    const dims = getProductDimensions(product)
+    const units = calculateProductUnits(count, arrangement, spacing, dims)
 
     return (
       <div
         key={product.id}
         style={{
           position: 'absolute',
-          top: `${baseTopPercent}%`,
+          top: `${baseBaselinePercent}%`,
           left: `${baseLeftPercent}%`,
-          transform: `translate(-50%, -50%) scale(${baseScale})`,
-          zIndex: isHighlighted ? 40 : 20,
+          transform: `translate(-50%, -100%) scale(${baseScale})`,
+          transformOrigin: 'bottom center',
+          zIndex: isHighlighted || isBeingDragged ? 45 : containerType === 'crisper' ? 30 : 20,
+          touchAction: 'none',
         }}
-        className={`group/product pointer-events-auto transition-transform duration-200 select-none cursor-pointer ${
+        className={`group/product pointer-events-auto transition-transform duration-150 select-none cursor-grab active:cursor-grabbing ${
           isHighlighted ? 'scale-105' : 'hover:scale-105'
-        }`}
+        } ${isBeingDragged ? 'opacity-90 scale-105' : ''}`}
         title={`${product.name} (${product.category}${product.quantity ? ` • ${product.quantity}` : ''}${
           count > 1 ? ` • ${count} units` : ''
-        })`}
-        onClick={(e) => {
-          if (onSelectProduct) {
+        }) - Drag to reposition on shelf`}
+        onPointerDown={(e) => {
+          if (onMoveProduct || onSelectProduct) {
             e.stopPropagation()
-            onSelectProduct(product)
+            handleProductPointerDown(e, product, containerType)
           }
         }}
       >
         {/* Luminous indicator if currently being edited */}
         {isHighlighted && (
-          <div className="absolute left-1/2 -top-7 -translate-x-1/2 px-2 py-0.5 rounded-full bg-blue-600 text-white text-[8px] font-black uppercase tracking-wider shadow-lg whitespace-nowrap pointer-events-none z-50 animate-pulse border border-white/50 flex items-center gap-1">
+          <div className="absolute left-1/2 -top-8 -translate-x-1/2 px-2 py-0.5 rounded-full bg-blue-600 text-white text-[8px] font-black uppercase tracking-wider shadow-lg whitespace-nowrap pointer-events-none z-50 animate-pulse border border-white/50 flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
             <span>
               Live Edit {count > 1 ? `(${count})` : ''}
@@ -321,7 +425,7 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
         )}
 
         {/* Hover Tooltip */}
-        <div className="absolute left-1/2 -top-8 -translate-x-1/2 px-2.5 py-0.5 rounded-md bg-slate-900/95 backdrop-blur-md text-white text-[9px] font-medium whitespace-nowrap opacity-0 group-hover/product:opacity-100 transition-opacity duration-150 pointer-events-none border border-white/20 shadow-xl z-50 flex items-center gap-1.5">
+        <div className="absolute left-1/2 -top-9 -translate-x-1/2 px-2.5 py-0.5 rounded-md bg-slate-900/95 backdrop-blur-md text-white text-[9px] font-medium whitespace-nowrap opacity-0 group-hover/product:opacity-100 transition-opacity duration-150 pointer-events-none border border-white/20 shadow-xl z-50 flex items-center gap-1.5">
           <span className="font-bold">{product.name}</span>
           {count > 1 && (
             <span className="px-1 py-0.2 rounded-xs bg-blue-500/30 text-blue-300 font-mono text-[8px] font-bold">
@@ -335,47 +439,124 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
           )}
         </div>
 
-        {/* Render Units with individual physical contact shadows */}
-        <div className="relative flex items-center justify-center">
-          {units.map((unit) => (
-            <div
-              key={unit.key}
-              style={{
-                position: unit.key === 'unit-0' ? 'relative' : 'absolute',
-                transform: `translate(${unit.offsetX}px, ${unit.offsetY}px) scale(${unit.scaleFactor})`,
-                zIndex: unit.zIndex,
-              }}
-              className="transition-transform duration-200"
-            >
-              {/* Physical Contact Shadow anchored under each unit */}
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: containerType === 'crisper' ? '-4px' : '-5px',
-                  left: '10%',
-                  right: '10%',
-                  height: '8px',
-                  background:
-                    'radial-gradient(ellipse at center, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.25) 45%, transparent 75%)',
-                  filter: 'blur(1.5px)',
-                  zIndex: -1,
-                  pointerEvents: 'none',
-                }}
-              />
+        {/* Render Units anchored to bottom shelf surface */}
+        <div
+          className="relative flex items-end justify-center"
+          style={{ width: `${dims.widthPx}px`, height: `${dims.heightPx}px` }}
+        >
+          {units.map((unit) => {
+            const isGroundUnit = unit.offsetY === 0
 
-              {/* Product Graphic */}
-              <img
-                src={product.imageUrl}
-                alt={product.name}
-                className={`w-11 h-14 object-contain select-none filter drop-shadow-md transition-all ${
-                  isHighlighted
-                    ? 'ring-2 ring-blue-400 ring-offset-2 ring-offset-slate-900 rounded-lg drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]'
-                    : ''
-                }`}
-                draggable={false}
-              />
-            </div>
-          ))}
+            return (
+              <div
+                key={unit.key}
+                style={{
+                  position: unit.key === 'unit-0' ? 'relative' : 'absolute',
+                  bottom: 0,
+                  transform: `translate(${unit.offsetX}px, ${unit.offsetY}px) scale(${unit.scaleFactor})`,
+                  transformOrigin: 'bottom center',
+                  zIndex: unit.zIndex,
+                  width: `${dims.widthPx}px`,
+                  height: `${dims.heightPx}px`,
+                }}
+                className="flex flex-col items-center justify-end transition-transform duration-200"
+              >
+                {/* Physical Contact Shadow & Ambient Occlusion (Casted onto shelf by ground units) */}
+                {isGroundUnit && (
+                  <>
+                    {/* 1. Deep Core Ambient Occlusion Line */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        bottom: '-1px',
+                        left: `${(100 - dims.shadowWidthPercent) / 2}%`,
+                        width: `${dims.shadowWidthPercent}%`,
+                        height: '3.5px',
+                        background:
+                          dims.shadowShape === 'rounded-rect'
+                            ? 'radial-gradient(ellipse at center, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.45) 55%, transparent 85%)'
+                            : 'radial-gradient(ellipse at center, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.4) 50%, transparent 80%)',
+                        borderRadius: dims.shadowShape === 'rounded-rect' ? '2px' : '9999px',
+                        filter: 'blur(0.6px)',
+                        zIndex: -1,
+                        pointerEvents: 'none',
+                      }}
+                    />
+
+                    {/* 2. Soft Ambient Contact Shadow */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        bottom: '-3.5px',
+                        left: `${(100 - (dims.shadowWidthPercent + 12)) / 2}%`,
+                        width: `${dims.shadowWidthPercent + 12}%`,
+                        height: '6.5px',
+                        background:
+                          'radial-gradient(ellipse at center, rgba(15, 23, 42, 0.42) 0%, rgba(15, 23, 42, 0.16) 50%, transparent 80%)',
+                        borderRadius: '9999px',
+                        filter: 'blur(1.8px)',
+                        zIndex: -2,
+                        pointerEvents: 'none',
+                      }}
+                    />
+
+                    {/* 3. Translucent Glass Specular Highlight (Tempered Glass Shelves) */}
+                    {containerType === 'shelf' && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: '0px',
+                          left: '10%',
+                          right: '10%',
+                          height: '1px',
+                          background:
+                            'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%)',
+                          zIndex: -1,
+                          pointerEvents: 'none',
+                        }}
+                      />
+                    )}
+                  </>
+                )}
+
+                {/* Stacked Inter-Unit Contact Shadow (for stacked units resting on top of another unit) */}
+                {!isGroundUnit && arrangement === 'stack' && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: '-2px',
+                      left: '8%',
+                      right: '8%',
+                      height: '4px',
+                      background:
+                        'radial-gradient(ellipse at center, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.2) 60%, transparent 80%)',
+                      filter: 'blur(1px)',
+                      zIndex: -1,
+                      pointerEvents: 'none',
+                    }}
+                  />
+                )}
+
+                {/* Product Graphic with bottom-anchored object position */}
+                <img
+                  src={product.imageUrl}
+                  alt={product.name}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    objectPosition: 'bottom center',
+                  }}
+                  className={`select-none filter drop-shadow-md transition-all ${
+                    isHighlighted
+                      ? 'ring-2 ring-blue-400 ring-offset-2 ring-offset-slate-900 rounded-lg drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]'
+                      : ''
+                  }`}
+                  draggable={false}
+                />
+              </div>
+            )
+          })}
         </div>
       </div>
     )
@@ -514,6 +695,7 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
             ========================================================================
           */}
           <div
+            ref={cavityRef}
             style={{
               position: 'absolute',
               inset: 0,
@@ -620,11 +802,21 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                 </div>
 
                 {/* Products assigned to the Freezer */}
-                <div className="absolute inset-0 flex items-center justify-end pr-3">
+                <div className="absolute inset-0 flex items-end justify-end pr-3 pointer-events-none">
                   {freezerProducts.map((product) => {
-                    const leftPos = Math.max(30, Math.min(85, product.positionX))
-                    const scale = Math.max(0.4, Math.min(1.8, (product.displayScale || 1.0) * 0.9))
-                    return renderProductCluster(product, leftPos, 62, scale, 'freezer')
+                    const shelfDef = SHELF_DEFINITIONS.freezer
+                    const leftPos = Math.max(
+                      shelfDef.horizontalRange[0],
+                      Math.min(shelfDef.horizontalRange[1], product.positionX)
+                    )
+                    const scale = Math.max(0.4, Math.min(1.8, (product.displayScale || 1.0) * 0.95))
+                    return renderProductCluster(
+                      product,
+                      leftPos,
+                      shelfDef.surfaceTopPercent,
+                      scale,
+                      'freezer'
+                    )
                   })}
                 </div>
               </div>
@@ -675,9 +867,9 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
             {/* 
               --------------------------------------------------------------------
               B. DYNAMIC PRODUCTS ON CAVITY GLASS SHELVES
-              Upper Glass Shelf (top_shelf: ~37% center, glass at 44.5%)
-              Middle Glass Shelf (middle_shelf: ~53% center, glass at 60.5%)
-              Lower Glass Shelf (bottom_shelf: ~69% center, glass at 77.5%)
+              Upper Glass Shelf (top_shelf: glass surface at 44.8%)
+              Middle Glass Shelf (middle_shelf: glass surface at 60.1%)
+              Lower Glass Shelf (bottom_shelf: glass surface at 73.4%)
               --------------------------------------------------------------------
             */}
             <div
@@ -685,13 +877,31 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                 isEffectiveOpen ? 'opacity-100' : 'opacity-0'
               }`}
             >
+              {/* Shelf Snap Guideline Highlight during drag */}
+              {activeDrag && (
+                <>
+                  {activeDrag.shelf === 'top_shelf' && (
+                    <div className="absolute top-[44.8%] inset-x-3 h-0.5 bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.8)] z-30 animate-pulse pointer-events-none" />
+                  )}
+                  {activeDrag.shelf === 'middle_shelf' && (
+                    <div className="absolute top-[60.1%] inset-x-3 h-0.5 bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.8)] z-30 animate-pulse pointer-events-none" />
+                  )}
+                  {activeDrag.shelf === 'bottom_shelf' && (
+                    <div className="absolute top-[73.4%] inset-x-3 h-0.5 bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.8)] z-30 animate-pulse pointer-events-none" />
+                  )}
+                </>
+              )}
+
               {cavityProducts.map((product) => {
                 const shelfDef = SHELF_DEFINITIONS[product.shelf] || SHELF_DEFINITIONS.middle_shelf
-                const leftPos = Math.max(12, Math.min(88, product.positionX))
-                const topPos = shelfDef.verticalCenterPercent
+                const leftPos = Math.max(
+                  shelfDef.horizontalRange[0],
+                  Math.min(shelfDef.horizontalRange[1], product.positionX)
+                )
+                const baselinePos = shelfDef.surfaceTopPercent
                 const scale = Math.max(0.4, Math.min(2.0, product.displayScale || 1.0))
 
-                return renderProductCluster(product, leftPos, topPos, scale, 'shelf')
+                return renderProductCluster(product, leftPos, baselinePos, scale, 'shelf')
               })}
             </div>
 
@@ -757,11 +967,21 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                 </div>
 
                 {/* Crisper Drawer Products (Slide forward along with drawer) */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none pb-3">
+                <div className="absolute inset-0 pointer-events-none pb-1">
                   {crisperProducts.map((product) => {
-                    const leftPos = Math.max(16, Math.min(84, product.positionX))
+                    const shelfDef = SHELF_DEFINITIONS.crisper_drawer
+                    const leftPos = Math.max(
+                      shelfDef.horizontalRange[0],
+                      Math.min(shelfDef.horizontalRange[1], product.positionX)
+                    )
                     const scale = Math.max(0.4, Math.min(1.8, (product.displayScale || 1.0) * 0.95))
-                    return renderProductCluster(product, leftPos, 50, scale, 'crisper')
+                    return renderProductCluster(
+                      product,
+                      leftPos,
+                      shelfDef.surfaceTopPercent,
+                      scale,
+                      'crisper'
+                    )
                   })}
                 </div>
               </div>
@@ -907,6 +1127,7 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
               and multi-tier door storage bins (dairy, condiments, chilled cans, tall bottles).
             */}
             <div
+              ref={doorRef}
               style={{
                 position: 'absolute',
                 inset: 0,
@@ -941,16 +1162,34 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                 </div>
               </div>
 
+              {/* Door Snap Guideline Highlights during drag */}
+              {activeDrag && (
+                <>
+                  {activeDrag.shelf === 'door_bin_top' && (
+                    <div className="absolute top-[26.2%] inset-x-3 h-0.5 bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.8)] z-30 animate-pulse pointer-events-none" />
+                  )}
+                  {activeDrag.shelf === 'door_bin_middle' && (
+                    <div className="absolute top-[48.2%] inset-x-3 h-0.5 bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.8)] z-30 animate-pulse pointer-events-none" />
+                  )}
+                  {activeDrag.shelf === 'door_bin_bottom' && (
+                    <div className="absolute top-[88.5%] inset-x-3 h-0.5 bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.8)] z-30 animate-pulse pointer-events-none" />
+                  )}
+                </>
+              )}
+
               {/* Dynamic Admin-Managed Products in Door Bins (Multi-Unit Supported) */}
               <div className="absolute inset-0 pointer-events-none z-10">
                 {doorProducts.map((product) => {
                   const shelfDef =
                     SHELF_DEFINITIONS[product.shelf] || SHELF_DEFINITIONS.door_bin_middle
-                  const leftPos = Math.max(15, Math.min(85, product.positionX))
-                  const topPos = shelfDef.verticalCenterPercent
+                  const leftPos = Math.max(
+                    shelfDef.horizontalRange[0],
+                    Math.min(shelfDef.horizontalRange[1], product.positionX)
+                  )
+                  const baselinePos = shelfDef.surfaceTopPercent
                   const scale = Math.max(0.4, Math.min(2.0, product.displayScale || 1.0))
 
-                  return renderProductCluster(product, leftPos, topPos, scale, 'door')
+                  return renderProductCluster(product, leftPos, baselinePos, scale, 'door')
                 })}
               </div>
             </div>
