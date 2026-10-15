@@ -1,4 +1,11 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+
+vi.mock('../lib/supabase', () => ({
+  isSupabaseConfigured: false,
+  supabase: {},
+  checkSupabaseReady: () => ({ ready: false }),
+}))
+
 import {
   getPublicActiveProducts,
   getAllAdminProducts,
@@ -30,7 +37,7 @@ describe('fridgeProductService', () => {
     const created = await createProduct({
       name: 'Cold Brew Coffee',
       category: 'Beverages',
-      imageUrl: '/assets/products/water-bottle.svg',
+      imageUrl: '/assets/products/water-bottle.png',
       description: 'Slow-steeped organic arabica cold brew',
       shelf: 'middle_shelf',
       positionX: 42,
@@ -58,7 +65,7 @@ describe('fridgeProductService', () => {
     const p1 = await createProduct({
       name: 'Item 1',
       category: 'Dairy',
-      imageUrl: '/assets/products/milk-carton.svg',
+      imageUrl: '/assets/products/milk-carton.png',
       shelf: 'middle_shelf',
       positionX: 20,
       displayScale: 1.0,
@@ -70,7 +77,7 @@ describe('fridgeProductService', () => {
     const p2 = await createProduct({
       name: 'Item 2',
       category: 'Beverages',
-      imageUrl: '/assets/products/water-bottle.svg',
+      imageUrl: '/assets/products/water-bottle.png',
       shelf: 'bottom_shelf',
       positionX: 60,
       displayScale: 1.0,
@@ -94,7 +101,7 @@ describe('fridgeProductService', () => {
     const created = await createProduct({
       name: 'Initial Name',
       category: 'Dairy',
-      imageUrl: '/assets/products/milk-carton.svg',
+      imageUrl: '/assets/products/milk-carton.png',
       shelf: 'top_shelf',
       positionX: 20,
       displayScale: 1.0,
@@ -118,7 +125,7 @@ describe('fridgeProductService', () => {
     const created = await createProduct({
       name: 'Yogurt',
       category: 'Dairy',
-      imageUrl: '/assets/products/yogurt-jar.svg',
+      imageUrl: '/assets/products/yogurt-jar.png',
       shelf: 'top_shelf',
       positionX: 50,
       displayScale: 1.0,
@@ -140,7 +147,7 @@ describe('fridgeProductService', () => {
     const created = await createProduct({
       name: 'Temporary Snack',
       category: 'Snacks',
-      imageUrl: '/assets/products/yogurt-jar.svg',
+      imageUrl: '/assets/products/yogurt-jar.png',
       shelf: 'top_shelf',
       positionX: 50,
       displayScale: 1.0,
