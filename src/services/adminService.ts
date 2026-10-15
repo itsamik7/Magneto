@@ -11,19 +11,39 @@ export interface AdminAuthResult {
 
 const MEMORY_ADMIN_SESSION_KEY = 'magneto_admin_verified_session'
 
+// Configured list of trusted primary administrator accounts
+export const AUTHORIZED_SUPERADMIN_EMAILS: string[] = [
+  '1amiteshk@gmail.com',
+  ...(import.meta.env.VITE_ADMIN_EMAILS
+    ? import.meta.env.VITE_ADMIN_EMAILS.split(',').map((e: string) => e.trim().toLowerCase())
+    : []),
+]
+
 /**
  * Checks whether the current user is an authorized administrator.
  * Validates against:
- * 1. The PostgreSQL security definer function `public.is_admin()`
- * 2. The protected `public.user_roles` table
- * 3. Supabase Auth JWT app_metadata (`app_metadata.role in ('admin', 'super_admin')`)
+ * 1. Configured trusted primary administrator accounts
+ * 2. Supabase Auth JWT app_metadata (`app_metadata.role in ('admin', 'super_admin')`)
+ * 3. The PostgreSQL security definer function `public.is_admin()`
+ * 4. The protected `public.user_roles` table
  */
 export async function verifyUserAdminRole(user: User | null): Promise<AdminAuthResult> {
   if (!user) {
     return { isAdmin: false, error: 'No authenticated user session.' }
   }
 
-  // 1. Check Supabase JWT app_metadata first (fast & server-signed)
+  // 1. Check primary authorized administrator accounts
+  const normalizedEmail = user.email?.trim().toLowerCase()
+  if (normalizedEmail && AUTHORIZED_SUPERADMIN_EMAILS.includes(normalizedEmail)) {
+    return {
+      isAdmin: true,
+      role: 'super_admin',
+      userId: user.id,
+      email: user.email,
+    }
+  }
+
+  // 2. Check Supabase JWT app_metadata (server-signed)
   const appRole = (user.app_metadata?.role as string) || (user.user_metadata?.role as string)
   if (appRole === 'admin' || appRole === 'super_admin') {
     return {
@@ -113,11 +133,15 @@ export async function adminSignIn(
 
   if (!isSupabaseConfigured) {
     // Offline / Demo mode handling
-    if (trimmedEmail.startsWith('admin@') || trimmedEmail === 'admin@magneto.internal') {
+    if (
+      AUTHORIZED_SUPERADMIN_EMAILS.includes(trimmedEmail) ||
+      trimmedEmail.startsWith('admin@') ||
+      trimmedEmail === 'admin@magneto.internal'
+    ) {
       const mockAdminUser: User = {
         id: 'admin-offline-id-001',
-        app_metadata: { role: 'admin' },
-        user_metadata: { display_name: 'Administrator' },
+        app_metadata: { role: 'super_admin' },
+        user_metadata: { display_name: 'Super Administrator' },
         aud: 'authenticated',
         created_at: new Date().toISOString(),
         email: trimmedEmail,
@@ -193,14 +217,15 @@ export function getAdminSetupInstructions(): {
     description:
       'For security, ordinary users cannot grant themselves admin access. Administrator roles are strictly managed in the public.user_roles table with Row Level Security.',
     steps: [
-      'Register a new account or choose an existing user account in your Supabase Auth dashboard.',
-      'Copy the UUID of the target user from Supabase Auth > Users.',
-      'Execute the SQL command below in your Supabase SQL Editor to grant admin role.',
-      'The designated administrator can now sign in at the /admin portal.',
+      'Open your Supabase Project Dashboard > SQL Editor.',
+      'Execute the SQL command below to grant super_admin to 1amiteshk@gmail.com.',
+      'Reload /admin to access the inventory dashboard immediately.',
     ],
-    sqlSnippet: `-- Grant Administrator Role to a specific user UUID
+    sqlSnippet: `-- Grant Administrator Role to 1amiteshk@gmail.com
 INSERT INTO public.user_roles (user_id, role)
-VALUES ('<REPLACE-WITH-USER-UUID>', 'admin')
+SELECT id, 'super_admin'
+FROM auth.users
+WHERE email = '1amiteshk@gmail.com'
 ON CONFLICT (user_id, role) DO NOTHING;`,
   }
 }

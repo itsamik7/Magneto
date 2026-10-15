@@ -31,6 +31,19 @@ describe('adminService', () => {
     expect(resSuper.role).toBe('super_admin')
   })
 
+  it('should authorize primary super admin account 1amiteshk@gmail.com', async () => {
+    const ownerUser = {
+      id: 'usr-owner-1',
+      email: '1amiteshk@gmail.com',
+      app_metadata: {},
+      user_metadata: {},
+    } as unknown as User
+
+    const res = await verifyUserAdminRole(ownerUser)
+    expect(res.isAdmin).toBe(true)
+    expect(res.role).toBe('super_admin')
+  })
+
   it('should deny standard user without admin role', async () => {
     const normalUser = {
       id: 'usr-normal-1',
