@@ -7,7 +7,6 @@ import { FridgeModelModal } from './FridgeModelModal'
 import { UniversalSteelFridge } from './UniversalSteelFridge'
 import {
   Sparkles,
-  LayoutGrid,
   Plus,
   Compass,
   SlidersHorizontal,
@@ -445,20 +444,13 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
     [userId, activeModel.id, selectedPlacementId, onPlacementsChange, onRemoveMagnet]
   )
 
-  // Auto-arrange all collected magnets
-  const handleAutoArrange = () => {
-    const arranged = fridgeService.autoArrangeAll(userId, activeModel.id, magnets)
-    setPlacements(arranged)
-    if (onPlacementsChange) onPlacementsChange(arranged)
-  }
-
   const selectedPlacement = placements.find((p) => p.id === selectedPlacementId)
   const magneticRegion = activeModel.magneticRegion
 
   return (
     <div className="w-full flex flex-col items-center select-none">
       
-      {/* Top Floating Utility Controls Bar: Model & Auto-Arrange (Only rendered when showControls is true) */}
+      {/* Top Floating Utility Controls Bar: Model & Actions (Only rendered when showControls is true) */}
       {showControls && (
         <div className="w-full max-w-2xl mb-1.5 flex items-center justify-between gap-2 px-1 text-xs flex-wrap">
           <div className="flex items-center gap-1.5 flex-wrap">
@@ -477,18 +469,6 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5">
-            {/* Auto Arrange Layout */}
-            {magnets.length > 0 && (
-              <button
-                onClick={handleAutoArrange}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 rounded-xl shadow-xs border border-slate-200 font-heading font-bold text-[11px] transition-all hover:scale-105 active:scale-95"
-                title="Automatically organize magnets evenly across the fridge"
-              >
-                <LayoutGrid className="w-3.5 h-3.5 text-slate-500" />
-                <span className="hidden sm:inline">Auto Arrange</span>
-              </button>
-            )}
-
             {/* Add Magnet Button */}
             {onAddDestination && (
               <button

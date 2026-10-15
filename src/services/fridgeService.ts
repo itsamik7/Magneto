@@ -511,18 +511,4 @@ export const fridgeService = {
 
     return resolvedCombined.slice(existingPlacements.length)
   },
-
-  /**
-   * Reset and auto-arrange all magnets on the fridge into clean non-overlapping positions
-   */
-  autoArrangeAll(
-    userId: string,
-    modelId: string,
-    currentMagnets: FridgeMagnetItem[]
-  ): MagnetPlacement[] {
-    const arranged = this.generateAutoLayout(currentMagnets, 0, [])
-    const resolved = resolveMagnetOverlaps(arranged)
-    this.saveFridgePlacements(userId, modelId, resolved, 'autoArrangeAll')
-    return resolved
-  },
 }

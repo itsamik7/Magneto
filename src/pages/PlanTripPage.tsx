@@ -17,7 +17,6 @@ import {
   Sparkles,
   Calendar,
   PiggyBank,
-  Edit2,
   Plane,
   Building2,
   Utensils,
@@ -407,16 +406,6 @@ export const PlanTripPage: React.FC = () => {
     setTimeout(() => setSaveSuccessMessage(null), 2500)
   }
 
-  // Auto-arrange all magnets cleanly on the fridge
-  const handleAutoArrange = () => {
-    const uid = user?.id || 'guest'
-    const arranged = fridgeService.autoArrangeAll(uid, activeModel.id, userMagnets)
-    setPlacements(arranged)
-    fridgeService.saveFridgePlacements(uid, activeModel.id, arranged, 'PlanTripPage')
-    setSaveSuccessMessage('Magnets auto-arranged!')
-    setTimeout(() => setSaveSuccessMessage(null), 2500)
-  }
-
   // Switch Refrigerator Model
   const handleSelectFridgeModel = (newModel: FridgeModel) => {
     setActiveModel(newModel)
@@ -686,31 +675,6 @@ export const PlanTripPage: React.FC = () => {
             </span>
             <ChevronRight className="w-3 h-3 text-slate-400" />
           </button>
-
-          <div className="flex items-center gap-2">
-            {/* Auto Arrange Layout Button */}
-            <button
-              onClick={handleAutoArrange}
-              disabled={userMagnets.length === 0}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 rounded-xl shadow-xs border border-slate-200 font-heading font-bold text-xs transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
-              title="Automatically organize magnets evenly across the fridge"
-            >
-              <LayoutGrid className="w-3.5 h-3.5 text-blue-600" />
-              <span>Auto Arrange</span>
-            </button>
-
-            {/* Auto-Saved Badge */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 font-heading font-bold text-xs rounded-xl shadow-xs border border-emerald-200">
-              <Check className="w-3 h-3 text-emerald-600" />
-              <span>Auto-Saved</span>
-            </div>
-
-            {/* Edit Mode Badge */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 font-heading font-bold text-xs rounded-xl shadow-xs border border-blue-200">
-              <Edit2 className="w-3 h-3 text-blue-600" />
-              <span>Edit Mode</span>
-            </div>
-          </div>
         </div>
 
         {/* Center Fridge Workspace with Draggable Magnets */}
