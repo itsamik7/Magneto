@@ -116,14 +116,27 @@ create policy "Only admins can delete fridge products"
   on public.fridge_products for delete
   using (public.is_admin());
 
+-- Function to update updated_at timestamp
+create or replace function public.update_updated_at_column()
+returns trigger as $$
+begin
+  new.updated_at = timezone('utc'::text, now());
+  return new;
+end;
+$$ language plpgsql;
+
 -- Trigger to keep updated_at current
+drop trigger if exists trigger_fridge_products_updated_at on public.fridge_products;
 create trigger trigger_fridge_products_updated_at
   before update on public.fridge_products
   for each row execute procedure public.update_updated_at_column();
 
 -- --------------------------------------------------------------------
--- 3. INITIAL STATE: COMPLETELY EMPTY REFRIGERATOR
--- The refrigerator starts 100% empty. Administrators can add products
--- through the Admin Dashboard at /admin.
+-- 3. PROVISION PRIMARY SUPER ADMIN
+-- Automatically grants super_admin role to 1amiteshk@gmail.com
 -- --------------------------------------------------------------------
--- (Stock grocery templates are available on-demand inside the Admin Panel)
+insert into public.user_roles (user_id, role)
+select id, 'super_admin'
+from auth.users
+where email = '1amiteshk@gmail.com'
+on conflict (user_id, role) do nothing;
