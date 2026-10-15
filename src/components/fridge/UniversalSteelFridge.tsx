@@ -190,6 +190,19 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
     else setInternalFreezerOpen((prev) => !prev)
   }
 
+  const isEffectiveOpen =
+    isDoorOpen !== undefined
+      ? isDoorOpen
+      : Boolean(isMainDoorOpen || isFreezerDoorOpen)
+
+  // Auto-close internal drawer and freezer when main door closes
+  useEffect(() => {
+    if (!isEffectiveOpen) {
+      setInternalCrisperOpen(false)
+      setInternalFreezerOpen(false)
+    }
+  }, [isEffectiveOpen])
+
   useEffect(() => {
     let isMounted = true
     getPublicActiveProducts().then((loaded) => {
@@ -232,11 +245,6 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
   const doorProducts = activeProducts.filter(
     (p) => SHELF_DEFINITIONS[p.shelf]?.location === 'door'
   )
-
-  const isEffectiveOpen =
-    isDoorOpen !== undefined
-      ? isDoorOpen
-      : Boolean(isMainDoorOpen || isFreezerDoorOpen)
 
   const isAnimatingRef = useRef(false)
 
@@ -296,8 +304,8 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
           count > 1 ? ` • ${count} units` : ''
         })`}
         onClick={(e) => {
-          e.stopPropagation()
           if (onSelectProduct) {
+            e.stopPropagation()
             onSelectProduct(product)
           }
         }}
@@ -510,11 +518,16 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
               position: 'absolute',
               inset: 0,
               transform: 'translateZ(-6px)',
+              zIndex: isEffectiveOpen ? 25 : 5,
             }}
-            className={`rounded-lg shadow-2xl overflow-hidden bg-slate-900 border border-slate-500 ${
+            className={`rounded-lg shadow-2xl overflow-hidden bg-slate-900 border border-slate-500 pointer-events-auto ${
               isEffectiveOpen ? 'cursor-pointer' : ''
             }`}
-            onClick={isEffectiveOpen ? handleToggle : undefined}
+            onClick={(e) => {
+              if (e.target === e.currentTarget && isEffectiveOpen) {
+                handleToggle()
+              }
+            }}
             title={isEffectiveOpen ? 'Click outer frame to close refrigerator door' : undefined}
           >
             {/* Photorealistic Pure Cavity Background Image */}
@@ -557,8 +570,8 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                 perspective: '700px',
                 transformStyle: 'preserve-3d',
               }}
-              onClick={(e) => e.stopPropagation()}
-              className="select-none overflow-visible"
+              onClick={handleToggleFreezer}
+              className="select-none overflow-visible cursor-pointer pointer-events-auto group/freezer"
             >
               {/* Sub-Zero Internal Cavity Box (revealed when door opens) */}
               <div
@@ -571,10 +584,17 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                 <div className="absolute inset-0 bg-gradient-to-b from-cyan-400/20 via-transparent to-black/40 pointer-events-none" />
                 <div className="absolute inset-x-0 top-0 h-4 bg-cyan-200/40 blur-xs pointer-events-none" />
 
-                {/* Sub-Zero Header Badge */}
-                <div className="absolute top-1 left-2 flex items-center gap-1 text-[8px] font-bold text-cyan-200/90 pointer-events-none">
-                  <Snowflake className="w-2.5 h-2.5 text-cyan-300 animate-spin-slow" />
-                  <span>SUB-ZERO • -18°C</span>
+                {/* Sub-Zero Header Badge & Close Affordance */}
+                <div className="absolute top-1 inset-x-2 flex items-center justify-between pointer-events-none">
+                  <div className="flex items-center gap-1 text-[8px] font-bold text-cyan-200/90">
+                    <Snowflake className="w-2.5 h-2.5 text-cyan-300 animate-spin-slow" />
+                    <span>SUB-ZERO • -18°C</span>
+                  </div>
+                  {freezerOpen && (
+                    <div className="px-1.5 py-0.5 rounded bg-sky-900/80 border border-cyan-400/30 text-[7px] font-bold text-cyan-200 flex items-center gap-1">
+                      <span>Tap to Close ▲</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Modeled Ice Maker & Crystal Ice Cube Tray */}
@@ -620,6 +640,7 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                   transition: 'transform 500ms cubic-bezier(0.25, 1, 0.4, 1), box-shadow 500ms ease',
                   backfaceVisibility: 'hidden',
                   zIndex: 26,
+                  pointerEvents: freezerOpen ? 'none' : 'auto',
                 }}
                 className={`group/freezer cursor-pointer rounded-md overflow-hidden border border-white/60 shadow-md ${
                   freezerOpen
@@ -691,8 +712,8 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                 perspective: '900px',
                 transformStyle: 'preserve-3d',
               }}
-              onClick={(e) => e.stopPropagation()}
-              className="select-none"
+              onClick={handleToggleCrisper}
+              className="select-none cursor-pointer pointer-events-auto group/crisper"
             >
               {/* Drawer Container (Translates forward in 3D when opened) */}
               <div
@@ -762,7 +783,8 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
               transform: isEffectiveOpen ? 'rotateY(-78deg)' : 'rotateY(0deg)',
               transition: 'transform 600ms cubic-bezier(0.25, 1, 0.4, 1)',
               transformStyle: 'preserve-3d',
-              zIndex: 30,
+              zIndex: isEffectiveOpen ? 20 : 30,
+              pointerEvents: isEffectiveOpen ? 'none' : 'auto',
             }}
           >
             {/* 
@@ -777,7 +799,9 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                 transform: 'translateZ(8px)',
                 backfaceVisibility: 'hidden',
               }}
-              className="rounded-lg shadow-2xl overflow-hidden bg-slate-200 border border-slate-400"
+              className={`rounded-lg shadow-2xl overflow-hidden bg-slate-200 border border-slate-400 ${
+                isEffectiveOpen ? 'pointer-events-none' : 'pointer-events-auto'
+              }`}
             >
               {/* Clean Cropped Stainless Steel Door Image (Zero White Margins) */}
               <img
@@ -889,7 +913,9 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                 transform: 'rotateY(180deg) translateZ(8px)',
                 backfaceVisibility: 'hidden',
               }}
-              className="rounded-lg shadow-2xl overflow-hidden bg-white border border-slate-300 flex flex-col cursor-pointer"
+              className={`rounded-lg shadow-2xl overflow-hidden bg-white border border-slate-300 flex flex-col cursor-pointer ${
+                isEffectiveOpen ? 'pointer-events-auto' : 'pointer-events-none'
+              }`}
               onClick={handleToggle}
               title="Click anywhere on door background to close refrigerator"
             >
