@@ -534,10 +534,10 @@ export const MyFridgePage: React.FC = () => {
     setPlacements(refreshedPlacements)
   }
 
-  // Inspector panel open/close toggle state
-  const [isInspectorOpen, setIsInspectorOpen] = useState(true)
+  // Inspector panel open/close toggle state (closed by default in normal mode so fridge is centered)
+  const [isInspectorOpen, setIsInspectorOpen] = useState(false)
 
-  // When a magnet on the fridge is clicked, select it in the inspector
+  // When a magnet on the fridge is clicked, select it in the inspector and open panel
   const handleSelectPlacement = (placementId: string | null) => {
     setSelectedPlacementId(placementId)
     if (!placementId) return
@@ -551,7 +551,7 @@ export const MyFridgePage: React.FC = () => {
   }
 
   return (
-    <div className="relative w-full max-w-[1720px] mx-auto flex flex-col xl:flex-row items-center xl:items-start justify-center gap-6 pb-2 sm:pb-4 animate-in fade-in duration-200">
+    <div className="relative w-full max-w-[1720px] mx-auto flex flex-col xl:flex-row items-center xl:items-start justify-center pb-2 sm:pb-4 animate-in fade-in duration-200 min-h-[calc(100vh-140px)]">
       
       {/* 
         CENTER HERO REFRIGERATOR STAGE:
@@ -580,7 +580,7 @@ export const MyFridgePage: React.FC = () => {
       {!isInspectorOpen && (
         <button
           onClick={() => setIsInspectorOpen(true)}
-          className="fixed xl:absolute right-4 top-20 xl:top-2 z-30 inline-flex items-center gap-2 px-3.5 py-2 bg-white/95 hover:bg-white backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-md text-xs font-heading font-bold text-slate-800 transition-all hover:scale-105 cursor-pointer"
+          className="fixed right-4 top-20 xl:top-4 z-30 inline-flex items-center gap-2 px-3.5 py-2 bg-white/95 hover:bg-white backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-md text-xs font-heading font-bold text-slate-800 transition-all hover:scale-105 cursor-pointer"
           title="Open Destination Details"
         >
           <Compass className="w-4 h-4 text-blue-600" />
@@ -589,12 +589,12 @@ export const MyFridgePage: React.FC = () => {
       )}
 
       {/* 
-        RIGHT COLUMN:
+        RIGHT SLIDE-OVER DRAWER:
         Trip & Destination Inspector Panel Matching media_1791901625472_ea35fd75.jpg
-        Positioned as xl:absolute xl:right-0 xl:top-0 so it never offsets the fridge from the 50% screen center.
+        Positioned as fixed/absolute slide-over drawer so it never offsets the fridge from the 50% screen center.
       */}
       {isInspectorOpen && (
-        <div className="w-full max-w-[400px] xl:w-[380px] 2xl:w-[400px] xl:absolute xl:right-0 xl:top-0 bg-white rounded-3xl p-4 sm:p-5 shadow-2xl border border-slate-200/90 flex flex-col gap-3.5 flex-shrink-0 z-30 animate-in fade-in slide-in-from-right-4 duration-300">
+        <div className="fixed xl:absolute right-3 sm:right-6 top-20 xl:top-2 w-[calc(100vw-24px)] sm:w-[380px] max-w-[400px] max-h-[calc(100vh-100px)] overflow-y-auto scrollbar-thin bg-white rounded-3xl p-4 sm:p-5 shadow-2xl border border-slate-200/90 flex flex-col gap-3.5 flex-shrink-0 z-40 animate-in fade-in slide-in-from-right-4 duration-300">
           
           {/* Destination Hero Banner */}
           <div className="relative w-full h-36 sm:h-40 rounded-2xl overflow-hidden shadow-md group">
