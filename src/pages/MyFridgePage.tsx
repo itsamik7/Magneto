@@ -18,10 +18,35 @@ import {
   Car,
   Star,
   FileText,
+  ShoppingBag,
   SlidersHorizontal,
   Plus,
   Sparkles,
 } from 'lucide-react'
+import { budgetService, type BudgetItem } from '../services/budgetService'
+
+const renderBudgetItemIcon = (item: BudgetItem) => {
+  const lower = (item.name + ' ' + (item.category || '')).toLowerCase()
+  if (lower.includes('flight') || lower.includes('air') || lower.includes('fly') || lower.includes('plane') || lower.includes('ticket')) {
+    return <Plane className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+  }
+  if (lower.includes('stay') || lower.includes('hotel') || lower.includes('resort') || lower.includes('villa') || lower.includes('room') || lower.includes('airbnb') || lower.includes('hostel')) {
+    return <Building2 className="w-3.5 h-3.5 text-indigo-600 flex-shrink-0" />
+  }
+  if (lower.includes('food') || lower.includes('drink') || lower.includes('meal') || lower.includes('dining') || lower.includes('restaurant') || lower.includes('cafe') || lower.includes('snack') || lower.includes('lunch') || lower.includes('dinner')) {
+    return <Utensils className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+  }
+  if (lower.includes('transport') || lower.includes('car') || lower.includes('cab') || lower.includes('taxi') || lower.includes('train') || lower.includes('metro') || lower.includes('bus') || lower.includes('ferry') || lower.includes('bike')) {
+    return <Car className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+  }
+  if (lower.includes('activit') || lower.includes('tour') || lower.includes('sight') || lower.includes('museum') || lower.includes('safari') || lower.includes('cruise') || lower.includes('excursion') || lower.includes('scuba') || lower.includes('water sports')) {
+    return <Star className="w-3.5 h-3.5 text-yellow-500 flex-shrink-0" />
+  }
+  if (lower.includes('shop') || lower.includes('souvenir') || lower.includes('gift') || lower.includes('market') || lower.includes('cloth')) {
+    return <ShoppingBag className="w-3.5 h-3.5 text-pink-500 flex-shrink-0" />
+  }
+  return <FileText className="w-3.5 h-3.5 text-purple-600 flex-shrink-0" />
+}
 
 interface DestinationDetail {
   id: string
@@ -473,8 +498,30 @@ export const MyFridgePage: React.FC = () => {
     }
   }, [selectedSlug, destinationOverrides, userMagnets])
 
+  // Listen for budget updates
+  const [budgetVersion, setBudgetVersion] = useState(0)
+  useEffect(() => {
+    const handleBudgetUpdate = () => {
+      setBudgetVersion((v) => v + 1)
+    }
+    window.addEventListener('magneto_sync', handleBudgetUpdate)
+    window.addEventListener('storage', handleBudgetUpdate)
+    return () => {
+      window.removeEventListener('magneto_sync', handleBudgetUpdate)
+      window.removeEventListener('storage', handleBudgetUpdate)
+    }
+  }, [])
+
+  const currentBudgetItems = useMemo(() => {
+    return budgetService.getBudgetItems(selectedSlug, currentDetail.targetBudgetMinor)
+  }, [selectedSlug, currentDetail.targetBudgetMinor, budgetVersion])
+
+  const customTotalInr = useMemo(() => {
+    return budgetService.calculateTotalCost(currentBudgetItems)
+  }, [currentBudgetItems])
+
   // Math for savings
-  const targetBudget = currentDetail.targetBudgetMinor / 100
+  const targetBudget = customTotalInr > 0 ? customTotalInr : currentDetail.targetBudgetMinor / 100
   const savedAmount = currentDetail.totalSavedMinor / 100
   const remainingAmount = Math.max(0, targetBudget - savedAmount)
   const progressPercent = Math.min(100, Math.round((savedAmount / targetBudget) * 100))
@@ -698,53 +745,15 @@ export const MyFridgePage: React.FC = () => {
           </div>
 
           <div className="space-y-2 text-xs">
-            <div className="flex items-center justify-between text-slate-600">
-              <span className="flex items-center gap-2">
-                <Plane className="w-3.5 h-3.5 text-blue-600" />
-                <span>Flights</span>
-              </span>
-              <span className="font-medium">₹ {currentDetail.breakdown.flights.toLocaleString('en-IN')}</span>
-            </div>
-
-            <div className="flex items-center justify-between text-slate-600">
-              <span className="flex items-center gap-2">
-                <Building2 className="w-3.5 h-3.5 text-indigo-600" />
-                <span>Stay (7 nights)</span>
-              </span>
-              <span className="font-medium">₹ {currentDetail.breakdown.stay.toLocaleString('en-IN')}</span>
-            </div>
-
-            <div className="flex items-center justify-between text-slate-600">
-              <span className="flex items-center gap-2">
-                <Utensils className="w-3.5 h-3.5 text-amber-600" />
-                <span>Food & Drinks</span>
-              </span>
-              <span className="font-medium">₹ {currentDetail.breakdown.food.toLocaleString('en-IN')}</span>
-            </div>
-
-            <div className="flex items-center justify-between text-slate-600">
-              <span className="flex items-center gap-2">
-                <Car className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Local Transport</span>
-              </span>
-              <span className="font-medium">₹ {currentDetail.breakdown.transport.toLocaleString('en-IN')}</span>
-            </div>
-
-            <div className="flex items-center justify-between text-slate-600">
-              <span className="flex items-center gap-2">
-                <Star className="w-3.5 h-3.5 text-yellow-500" />
-                <span>Activities & Tours</span>
-              </span>
-              <span className="font-medium">₹ {currentDetail.breakdown.activities.toLocaleString('en-IN')}</span>
-            </div>
-
-            <div className="flex items-center justify-between text-slate-600">
-              <span className="flex items-center gap-2">
-                <FileText className="w-3.5 h-3.5 text-purple-600" />
-                <span>Other (Visa, Insurance etc.)</span>
-              </span>
-              <span className="font-medium">₹ {currentDetail.breakdown.other.toLocaleString('en-IN')}</span>
-            </div>
+            {currentBudgetItems.map((item) => (
+              <div key={item.id} className="flex items-center justify-between text-slate-600">
+                <span className="flex items-center gap-2 truncate pr-2">
+                  {renderBudgetItemIcon(item)}
+                  <span className="truncate">{item.name}</span>
+                </span>
+                <span className="font-medium whitespace-nowrap">₹ {item.amount.toLocaleString('en-IN')}</span>
+              </div>
+            ))}
 
             <div className="pt-2 border-t border-slate-100 flex items-center justify-between font-heading font-black text-slate-900 text-sm">
               <span>Total Estimated</span>

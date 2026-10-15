@@ -23,6 +23,7 @@ import {
   Car,
   Star,
   FileText,
+  ShoppingBag,
   LayoutGrid,
   Globe2,
   Mountain,
@@ -32,6 +33,7 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import { FridgeModelModal } from '../components/fridge/FridgeModelModal'
+import { budgetService, type BudgetItem } from '../services/budgetService'
 
 const FILTER_PILLS = ['All', 'Countries', 'Cities', 'Nature', 'Monuments']
 
@@ -86,16 +88,37 @@ export const PlanTripPage: React.FC = () => {
   // Mobile View Switcher ('fridge' | 'catalog' | 'trip')
   const [mobileActiveView, setMobileActiveView] = useState<'fridge' | 'catalog' | 'trip'>('fridge')
 
-  // Budget Breakdown Editor
+  // Budget Plan State
   const [isEditingBudget, setIsEditingBudget] = useState(false)
-  const [itemizedBreakdown, setItemizedBreakdown] = useState({
-    flights: 60000,
-    stay: 80000,
-    food: 40000,
-    transport: 20000,
-    activities: 30000,
-    other: 20000,
+  const [budgetItems, setBudgetItems] = useState<BudgetItem[]>(() => {
+    return budgetService.getBudgetItems('santorini')
   })
+  const [newExpenseName, setNewExpenseName] = useState('')
+  const [newExpenseAmount, setNewExpenseAmount] = useState('')
+  const [isAddingExpense, setIsAddingExpense] = useState(false)
+
+  // Update budget items when destination changes
+  useEffect(() => {
+    setBudgetItems(budgetService.getBudgetItems(selectedDestinationSlug))
+    setIsEditingBudget(false)
+    setIsAddingExpense(false)
+  }, [selectedDestinationSlug])
+
+  // Sync budget updates from external events
+  useEffect(() => {
+    const handleBudgetSync = (e: Event) => {
+      const detail = (e as CustomEvent)?.detail
+      if (detail?.source === 'budgetService' && areSlugsEquivalent(detail?.slug, selectedDestinationSlug)) {
+        if (detail?.items) {
+          setBudgetItems(detail.items)
+        } else {
+          setBudgetItems(budgetService.getBudgetItems(selectedDestinationSlug))
+        }
+      }
+    }
+    window.addEventListener('magneto_sync', handleBudgetSync)
+    return () => window.removeEventListener('magneto_sync', handleBudgetSync)
+  }, [selectedDestinationSlug])
 
   // Matching magnet for the selected destination
   const matchedMagnet = useMemo(() => {
@@ -230,7 +253,9 @@ export const PlanTripPage: React.FC = () => {
     placements.some((p) => areSlugsEquivalent(p.magnetSlug, currentCatalogItem.id))
 
   // Budget calculations
-  const totalEstimatedCost = Object.values(itemizedBreakdown).reduce((a, b) => a + b, 0)
+  const totalEstimatedCost = useMemo(() => {
+    return budgetService.calculateTotalCost(budgetItems)
+  }, [budgetItems])
   const remainingBudget = Math.max(0, totalEstimatedCost - savedAmount)
   const percentSaved = Math.min(100, Math.round((savedAmount / Math.max(1, totalEstimatedCost)) * 100))
 
@@ -239,6 +264,73 @@ export const PlanTripPage: React.FC = () => {
   const now = new Date()
   const daysLeft = Math.max(1, Math.ceil((startD.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
   const dailySavingsRequired = remainingBudget > 0 ? Math.ceil(remainingBudget / daysLeft) : 0
+
+  // Budget Item Actions
+  const handleUpdateBudgetItem = (id: string, updates: Partial<BudgetItem>) => {
+    const updated = budgetItems.map((item) => {
+      if (item.id === id) {
+        return { ...item, ...updates }
+      }
+      return item
+    })
+    setBudgetItems(updated)
+    budgetService.saveBudgetItems(selectedDestinationSlug, updated)
+  }
+
+  const handleDeleteBudgetItem = (id: string) => {
+    const updated = budgetItems.filter((item) => item.id !== id)
+    setBudgetItems(updated)
+    budgetService.saveBudgetItems(selectedDestinationSlug, updated)
+  }
+
+  const handleAddBudgetItem = (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+    const trimmedName = newExpenseName.trim()
+    const numAmount = parseInt(newExpenseAmount.replace(/[^0-9]/g, ''), 10) || 0
+    if (!trimmedName) return
+
+    const newItem: BudgetItem = {
+      id: `item-${Date.now()}`,
+      name: trimmedName,
+      amount: numAmount,
+      category: 'other',
+    }
+
+    const updated = [...budgetItems, newItem]
+    setBudgetItems(updated)
+    budgetService.saveBudgetItems(selectedDestinationSlug, updated)
+    setNewExpenseName('')
+    setNewExpenseAmount('')
+    setIsAddingExpense(false)
+  }
+
+  const handleResetBudget = () => {
+    const restored = budgetService.resetBudgetItems(selectedDestinationSlug)
+    setBudgetItems(restored)
+  }
+
+  const renderBudgetItemIcon = (item: BudgetItem) => {
+    const lower = (item.name + ' ' + (item.category || '')).toLowerCase()
+    if (lower.includes('flight') || lower.includes('air') || lower.includes('fly') || lower.includes('plane') || lower.includes('ticket')) {
+      return <Plane className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+    }
+    if (lower.includes('stay') || lower.includes('hotel') || lower.includes('resort') || lower.includes('villa') || lower.includes('room') || lower.includes('airbnb') || lower.includes('hostel')) {
+      return <Building2 className="w-3.5 h-3.5 text-indigo-600 flex-shrink-0" />
+    }
+    if (lower.includes('food') || lower.includes('drink') || lower.includes('meal') || lower.includes('dining') || lower.includes('restaurant') || lower.includes('cafe') || lower.includes('snack') || lower.includes('lunch') || lower.includes('dinner')) {
+      return <Utensils className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+    }
+    if (lower.includes('transport') || lower.includes('car') || lower.includes('cab') || lower.includes('taxi') || lower.includes('train') || lower.includes('metro') || lower.includes('bus') || lower.includes('ferry') || lower.includes('bike')) {
+      return <Car className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+    }
+    if (lower.includes('activit') || lower.includes('tour') || lower.includes('sight') || lower.includes('museum') || lower.includes('safari') || lower.includes('cruise') || lower.includes('excursion') || lower.includes('scuba') || lower.includes('water sports')) {
+      return <Star className="w-3.5 h-3.5 text-yellow-500 flex-shrink-0" />
+    }
+    if (lower.includes('shop') || lower.includes('souvenir') || lower.includes('gift') || lower.includes('market') || lower.includes('cloth')) {
+      return <ShoppingBag className="w-3.5 h-3.5 text-pink-500 flex-shrink-0" />
+    }
+    return <FileText className="w-3.5 h-3.5 text-purple-600 flex-shrink-0" />
+  }
 
   // Add Magnet to Fridge action
   const handleAddMagnetToFridge = async (magnet: SouvenirMagnetData) => {
@@ -921,12 +1013,29 @@ export const PlanTripPage: React.FC = () => {
                   <FileText className="w-3.5 h-3.5 text-blue-600" />
                   <span>Budget Plan</span>
                 </div>
-                <button
-                  onClick={() => setIsEditingBudget(!isEditingBudget)}
-                  className="text-[10px] font-bold text-blue-600 hover:text-blue-800"
-                >
-                  {isEditingBudget ? 'Done' : 'Edit'}
-                </button>
+                <div className="flex items-center gap-2">
+                  {isEditingBudget && (
+                    <button
+                      type="button"
+                      onClick={handleResetBudget}
+                      className="text-[10px] text-slate-400 hover:text-slate-600 font-semibold"
+                      title="Reset to default breakdown"
+                    >
+                      Reset
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingBudget(!isEditingBudget)}
+                    className={`text-[10px] font-bold px-2.5 py-1 rounded-full transition-all ${
+                      isEditingBudget
+                        ? 'bg-blue-600 text-white shadow-xs hover:bg-blue-700'
+                        : 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'
+                    }`}
+                  >
+                    {isEditingBudget ? 'Done ✓' : 'Edit'}
+                  </button>
+                </div>
               </div>
 
               <div>
@@ -951,48 +1060,126 @@ export const PlanTripPage: React.FC = () => {
 
               {/* Itemized List */}
               <div className="space-y-1.5 text-xs pt-2 border-t border-slate-200">
-                <div className="flex items-center justify-between text-slate-600">
-                  <span className="flex items-center gap-1.5">
-                    <Plane className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Flights</span>
-                  </span>
-                  <span>₹ {itemizedBreakdown.flights.toLocaleString('en-IN')}</span>
-                </div>
-                <div className="flex items-center justify-between text-slate-600">
-                  <span className="flex items-center gap-1.5">
-                    <Building2 className="w-3.5 h-3.5 text-indigo-600" />
-                    <span>Stay (7 nights)</span>
-                  </span>
-                  <span>₹ {itemizedBreakdown.stay.toLocaleString('en-IN')}</span>
-                </div>
-                <div className="flex items-center justify-between text-slate-600">
-                  <span className="flex items-center gap-1.5">
-                    <Utensils className="w-3.5 h-3.5 text-amber-600" />
-                    <span>Food & Drinks</span>
-                  </span>
-                  <span>₹ {itemizedBreakdown.food.toLocaleString('en-IN')}</span>
-                </div>
-                <div className="flex items-center justify-between text-slate-600">
-                  <span className="flex items-center gap-1.5">
-                    <Car className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Local Transport</span>
-                  </span>
-                  <span>₹ {itemizedBreakdown.transport.toLocaleString('en-IN')}</span>
-                </div>
-                <div className="flex items-center justify-between text-slate-600">
-                  <span className="flex items-center gap-1.5">
-                    <Star className="w-3.5 h-3.5 text-yellow-500" />
-                    <span>Activities & Tours</span>
-                  </span>
-                  <span>₹ {itemizedBreakdown.activities.toLocaleString('en-IN')}</span>
-                </div>
-                <div className="flex items-center justify-between text-slate-600">
-                  <span className="flex items-center gap-1.5">
-                    <FileText className="w-3.5 h-3.5 text-purple-600" />
-                    <span>Other (Visa, Insurance etc.)</span>
-                  </span>
-                  <span>₹ {itemizedBreakdown.other.toLocaleString('en-IN')}</span>
-                </div>
+                {budgetItems.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between gap-1.5 group">
+                    {isEditingBudget ? (
+                      // EDIT MODE ROW:
+                      <div className="flex items-center gap-1.5 w-full bg-white p-1.5 rounded-xl border border-slate-200/90 shadow-2xs">
+                        {renderBudgetItemIcon(item)}
+                        <input
+                          type="text"
+                          value={item.name}
+                          onChange={(e) => handleUpdateBudgetItem(item.id, { name: e.target.value })}
+                          className="flex-1 min-w-0 text-xs font-medium text-slate-800 bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-blue-500 rounded px-1"
+                          placeholder="Expense title"
+                        />
+                        <div className="flex items-center gap-0.5 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">
+                          <span className="text-[10px] text-slate-400 font-bold">₹</span>
+                          <input
+                            type="number"
+                            min="0"
+                            step="500"
+                            value={item.amount === 0 ? '' : item.amount}
+                            onChange={(e) =>
+                              handleUpdateBudgetItem(item.id, {
+                                amount: Math.max(0, parseInt(e.target.value, 10) || 0),
+                              })
+                            }
+                            className="w-16 text-right text-xs font-bold text-slate-900 bg-transparent border-0 focus:outline-none"
+                            placeholder="0"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteBudgetItem(item.id)}
+                          className="text-slate-400 hover:text-red-500 p-1 rounded hover:bg-red-50 transition-colors"
+                          title="Delete this expense"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      // VIEW MODE ROW:
+                      <div className="flex items-center justify-between w-full py-0.5 text-slate-600 hover:text-slate-900">
+                        <span className="flex items-center gap-1.5 truncate pr-2">
+                          {renderBudgetItemIcon(item)}
+                          <span className="truncate">{item.name}</span>
+                        </span>
+                        <span className="font-semibold text-slate-800 whitespace-nowrap">
+                          ₹ {item.amount.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {/* ADD NEW EXPENSE ROW */}
+                {isEditingBudget || isAddingExpense ? (
+                  <form
+                    onSubmit={handleAddBudgetItem}
+                    className="mt-2.5 p-2 bg-blue-50/70 rounded-xl border border-blue-200/80 space-y-2"
+                  >
+                    <div className="text-[10px] font-bold text-blue-900 flex items-center justify-between">
+                      <span>+ Add Custom Expense</span>
+                      {!isEditingBudget && (
+                        <button
+                          type="button"
+                          onClick={() => setIsAddingExpense(false)}
+                          className="text-slate-400 hover:text-slate-600"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="text"
+                        value={newExpenseName}
+                        onChange={(e) => setNewExpenseName(e.target.value)}
+                        placeholder="e.g. Visa, Scuba, Shopping..."
+                        className="flex-1 min-w-0 bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        autoFocus
+                      />
+                      <div className="flex items-center gap-0.5 bg-white border border-slate-300 rounded-lg px-2 py-1 w-24">
+                        <span className="text-[10px] text-slate-400 font-bold">₹</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="500"
+                          value={newExpenseAmount}
+                          onChange={(e) => setNewExpenseAmount(e.target.value)}
+                          placeholder="Amount"
+                          className="w-full text-right text-xs font-bold text-slate-900 bg-transparent border-0 focus:outline-none"
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={!newExpenseName.trim()}
+                        className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white p-1.5 rounded-lg text-xs font-bold transition-colors flex items-center justify-center shadow-xs"
+                        title="Add Expense"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="pt-2 flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAddingExpense(true)
+                        setIsEditingBudget(true)
+                      }}
+                      className="flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:underline py-0.5"
+                    >
+                      <Plus className="w-3 h-3" />
+                      <span>Add Custom Expense</span>
+                    </button>
+                    <span className="text-[10px] text-slate-400">
+                      {budgetItems.length} items
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
