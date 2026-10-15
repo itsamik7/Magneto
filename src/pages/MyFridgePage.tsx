@@ -553,7 +553,7 @@ export const MyFridgePage: React.FC = () => {
         The Refrigerator is centered in the exact middle of this white space
         so that [Left Margin to Fridge] == [Fridge to Trip Card].
       */}
-      <div className="flex-1 w-full min-w-0 flex items-center justify-center relative min-h-0 sm:min-h-[580px] p-0 overflow-visible bg-transparent">
+      <div className="flex-1 w-full min-w-0 flex items-center justify-center relative min-h-0 sm:min-h-[580px] pt-6 sm:pt-8 pb-2 overflow-visible bg-transparent">
         {/* Center: The Photorealistic Refrigerator */}
         <div className="relative z-10 w-full flex flex-col items-center overflow-visible">
           <FridgeWorkspace
