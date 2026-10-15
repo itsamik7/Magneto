@@ -670,10 +670,10 @@ export const PlanTripPage: React.FC = () => {
         COLUMN 2 (CENTER):
         Editable Fridge Workspace with Edit Controls & Dotted Slots
       */}
-      <div className="flex-1 w-full flex flex-col items-center justify-between min-h-[580px] sm:min-h-[760px] relative rounded-3xl p-3 sm:p-5 overflow-hidden bg-white border border-slate-200/90 shadow-sm">
+      <div className="flex-1 w-full flex flex-col items-center justify-between min-h-0 sm:min-h-[520px] relative rounded-3xl p-2 sm:p-4 pt-1 sm:pt-2 pb-2 sm:pb-3 overflow-visible bg-white border border-slate-200/90 shadow-sm">
         
         {/* Top Controls Bar: Fridge Selection, Auto Arrange, and Edit Mode Pill */}
-        <div className="w-full flex items-center justify-between mb-3 z-20 px-1 gap-2 flex-wrap">
+        <div className="w-full flex items-center justify-between mb-2 z-20 px-1 gap-2 flex-wrap">
           {/* Fridge Model Switcher Button */}
           <button
             onClick={() => setIsModelModalOpen(true)}

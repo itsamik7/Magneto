@@ -296,14 +296,31 @@ export const fridgeService = {
     if (currentMagnets !== undefined) {
       if (currentMagnets.length > 0) {
         // Retain placements that correspond to currentMagnets (using alias equivalence)
-        placements = placements.filter((p) =>
-          currentMagnets.some(
-            (m) =>
-              m.id === p.id ||
-              areSlugsEquivalent(m.destination_slug, p.magnetSlug) ||
-              areSlugsEquivalent(m.id, p.id)
+        placements = placements
+          .filter((p) =>
+            currentMagnets.some(
+              (m) =>
+                m.id === p.id ||
+                areSlugsEquivalent(m.destination_slug, p.magnetSlug) ||
+                areSlugsEquivalent(m.id, p.id)
+            )
           )
-        )
+          .map((p) => {
+            const match = currentMagnets.find(
+              (m) =>
+                m.id === p.id ||
+                areSlugsEquivalent(m.destination_slug, p.magnetSlug) ||
+                areSlugsEquivalent(m.id, p.id)
+            )
+            if (match && (p.totalSavedMinor === undefined || p.totalSavedMinor === null || p.totalSavedMinor === 0)) {
+              return {
+                ...p,
+                totalSavedMinor: match.total_saved_minor ?? p.totalSavedMinor,
+                targetBudgetMinor: match.target_budget_minor ?? p.targetBudgetMinor,
+              }
+            }
+            return p
+          })
 
         // Identify unplaced magnets
         const unplaced = currentMagnets.filter(

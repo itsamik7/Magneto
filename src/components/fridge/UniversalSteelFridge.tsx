@@ -74,9 +74,9 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
       <div
         style={{
           width: '100%',
-          maxWidth: '360px',
+          maxWidth: 'min(310px, 30vw)',
           aspectRatio: `${aspectRatio}`,
-          maxHeight: '780px',
+          maxHeight: 'min(58vh, 560px)',
           perspective: '1400px',
           transformStyle: 'preserve-3d',
           overflow: 'visible',
@@ -374,14 +374,14 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
         Smooth horizontal slider to rotate and inspect the fridge from any angle
         ========================================================================
       */}
-      <div className="w-full max-w-[360px] mt-4 px-4 py-3 bg-white/95 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col gap-2.5">
+      <div className="w-full max-w-[310px] mt-2.5 px-3 py-2 bg-white/95 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col gap-1.5">
         <div className="flex items-center justify-between text-xs font-heading font-bold text-slate-800">
           <div className="flex items-center gap-1.5">
             <Rotate3d className="w-3.5 h-3.5 text-blue-600" />
             <span>3D Angle Rotation</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
+            <span className="text-[10px] font-mono text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
               {yaw === 0 ? 'Front (0°)' : `${yaw > 0 ? '+' : ''}${yaw}°`}
             </span>
             {yaw !== 0 && (
@@ -398,8 +398,8 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
         </div>
 
         {/* The Range Slider */}
-        <div className="flex items-center gap-2.5">
-          <span className="text-[10px] font-medium text-slate-400 shrink-0">-60°</span>
+        <div className="flex items-center gap-2">
+          <span className="text-[9px] font-medium text-slate-400 shrink-0">-60°</span>
           <input
             type="range"
             min="-60"
@@ -407,46 +407,46 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
             step="1"
             value={yaw}
             onChange={(e) => onYawChange?.(Number(e.target.value))}
-            className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-hidden"
+            className="flex-1 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-hidden"
             title="Slide to rotate refrigerator in 3D"
           />
-          <span className="text-[10px] font-medium text-slate-400 shrink-0">+60°</span>
+          <span className="text-[9px] font-medium text-slate-400 shrink-0">+60°</span>
         </div>
 
         {/* Quick Angle Presets */}
-        <div className="grid grid-cols-3 gap-1.5 pt-1 border-t border-slate-100 text-[10px]">
+        <div className="grid grid-cols-3 gap-1 pt-1 border-t border-slate-100 text-[9px] sm:text-[10px]">
           <button
             onClick={() => onYawChange?.(-45)}
-            className={`py-1 px-1.5 rounded-lg text-center font-heading font-bold transition-all cursor-pointer ${
+            className={`py-0.5 sm:py-1 px-1 rounded-md text-center font-heading font-bold transition-all cursor-pointer ${
               yaw === -45
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/80'
             }`}
             title="Rotate to view door-side storage and inside cabinet"
           >
-            Door Storage (-45°)
+            Door (-45°)
           </button>
           <button
             onClick={() => onYawChange?.(0)}
-            className={`py-1 px-1.5 rounded-lg text-center font-heading font-bold transition-all cursor-pointer ${
+            className={`py-0.5 sm:py-1 px-1 rounded-md text-center font-heading font-bold transition-all cursor-pointer ${
               yaw === 0
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/80'
             }`}
             title="Front straight-on view"
           >
-            Front View (0°)
+            Front (0°)
           </button>
           <button
             onClick={() => onYawChange?.(45)}
-            className={`py-1 px-1.5 rounded-lg text-center font-heading font-bold transition-all cursor-pointer ${
+            className={`py-0.5 sm:py-1 px-1 rounded-md text-center font-heading font-bold transition-all cursor-pointer ${
               yaw === 45
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/80'
             }`}
             title="Rotate to view right interior depth"
           >
-            Right Depth (+45°)
+            Right (+45°)
           </button>
         </div>
       </div>

@@ -545,13 +545,13 @@ export const MyFridgePage: React.FC = () => {
   }
 
   return (
-    <div className="w-full flex flex-col xl:flex-row items-start justify-center gap-6 lg:gap-8 pb-12 animate-in fade-in duration-200">
+    <div className="w-full flex flex-col xl:flex-row items-start justify-center gap-4 lg:gap-6 pb-2 sm:pb-4 animate-in fade-in duration-200">
       
       {/* 
         LEFT & CENTER STAGE:
         Clean, Focused Refrigerator Stage (Appliance Only)
       */}
-      <div className="flex-1 w-full flex items-center justify-center relative min-h-[580px] sm:min-h-[760px] rounded-3xl p-3 sm:p-8 lg:p-10 overflow-visible bg-white border border-slate-200/90 shadow-sm">
+      <div className="flex-1 w-full flex items-center justify-center relative min-h-0 sm:min-h-[520px] rounded-3xl p-2 sm:p-4 lg:p-5 pt-1 sm:pt-2 pb-2 sm:pb-3 overflow-visible bg-white border border-slate-200/90 shadow-sm">
         {/* Center: The Photorealistic Refrigerator */}
         <div className="relative z-10 w-full flex flex-col items-center">
           <FridgeWorkspace
@@ -574,10 +574,10 @@ export const MyFridgePage: React.FC = () => {
         RIGHT COLUMN:
         Trip & Destination Inspector Panel Matching media_1791901625472_ea35fd75.jpg
       */}
-      <div className="w-full xl:w-[420px] bg-white rounded-3xl p-6 shadow-xl border border-slate-200/90 flex flex-col gap-5 flex-shrink-0">
+      <div className="w-full xl:w-[400px] bg-white rounded-3xl p-4 sm:p-5 shadow-xl border border-slate-200/90 flex flex-col gap-3.5 flex-shrink-0">
         
         {/* Destination Hero Banner */}
-        <div className="relative w-full h-44 rounded-2xl overflow-hidden shadow-md group">
+        <div className="relative w-full h-36 sm:h-40 rounded-2xl overflow-hidden shadow-md group">
           <img
             src={currentDetail.bannerUrl}
             alt={currentDetail.name}
