@@ -17,6 +17,8 @@ import {
   deleteProductPermanent,
   uploadProductImage,
   resetToDefaultProducts,
+  clearAllProducts,
+  populateStockTemplates,
   FRIDGE_PRODUCTS_UPDATED_EVENT,
 } from '../services/fridgeProductService'
 import type {
@@ -405,18 +407,34 @@ export const AdminPage: React.FC = () => {
     }
   }
 
-  // Reset to default seed products
-  const handleResetDefaults = async () => {
+  // Clear all products to make the fridge 100% empty
+  const handleClearAll = async () => {
     if (
       window.confirm(
-        'Restore catalogue to factory standard groceries? This will re-populate all 12 stock refrigerator items.'
+        'Empty the entire refrigerator? All product overlays will be removed.'
       )
     ) {
-      await resetToDefaultProducts()
+      await clearAllProducts()
+      await loadInventory()
+      setFeedbackMessage({
+        type: 'info',
+        text: 'The refrigerator has been completely emptied. No products are inside.',
+      })
+    }
+  }
+
+  // Optional: Load starter templates
+  const handleLoadTemplates = async () => {
+    if (
+      window.confirm(
+        'Load the 12 starter grocery templates into inventory?'
+      )
+    ) {
+      await populateStockTemplates()
       await loadInventory()
       setFeedbackMessage({
         type: 'success',
-        text: 'Inventory restored to factory default groceries.',
+        text: 'Loaded 12 grocery templates into inventory.',
       })
     }
   }
@@ -816,11 +834,21 @@ export const AdminPage: React.FC = () => {
               </select>
 
               <button
-                onClick={handleResetDefaults}
-                className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors"
-                title="Restore Default Stock Items"
+                onClick={handleClearAll}
+                className="px-2.5 py-1.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-[11px] font-bold transition-colors flex items-center gap-1 cursor-pointer"
+                title="Empty the entire refrigerator"
               >
-                <RotateCcw className="w-4 h-4" />
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Empty Fridge</span>
+              </button>
+
+              <button
+                onClick={handleLoadTemplates}
+                className="px-2.5 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 text-[11px] font-bold transition-colors flex items-center gap-1 cursor-pointer"
+                title="Load 12 starter grocery templates"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>Load Groceries</span>
               </button>
             </div>
           </div>

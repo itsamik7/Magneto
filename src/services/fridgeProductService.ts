@@ -1,11 +1,14 @@
 import type { FridgeProduct, FridgeShelf, ProductCategory } from '../types/fridgeProduct'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 
-const STORAGE_KEY = 'magneto_fridge_interior_products_v1'
+const STORAGE_KEY = 'magneto_fridge_interior_products_v2'
 export const FRIDGE_PRODUCTS_UPDATED_EVENT = 'magneto_fridge_products_changed'
 
-// Default stock products matching database seed migration
-export const DEFAULT_FRIDGE_PRODUCTS: FridgeProduct[] = [
+// Empty initial products array: the refrigerator starts completely empty!
+export const DEFAULT_FRIDGE_PRODUCTS: FridgeProduct[] = []
+
+// Optional stock grocery templates available in Admin Panel
+export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
   {
     id: '11111111-1111-1111-1111-111111111101',
     name: 'Fresh Whole Milk Carton',
@@ -181,19 +184,29 @@ const memoryStore = new Map<string, string>()
 
 function getLocalProducts(): FridgeProduct[] {
   try {
-    const raw = typeof window !== 'undefined' && window.localStorage
-      ? window.localStorage.getItem(STORAGE_KEY)
-      : memoryStore.get(STORAGE_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw) as FridgeProduct[]
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed
+    if (typeof window !== 'undefined' && window.localStorage) {
+      // Clear legacy v1 key that pre-seeded items
+      window.localStorage.removeItem('magneto_fridge_interior_products_v1')
+      const raw = window.localStorage.getItem(STORAGE_KEY)
+      if (raw !== null) {
+        const parsed = JSON.parse(raw) as FridgeProduct[]
+        if (Array.isArray(parsed)) {
+          return parsed
+        }
+      }
+    } else {
+      const raw = memoryStore.get(STORAGE_KEY)
+      if (raw) {
+        const parsed = JSON.parse(raw) as FridgeProduct[]
+        if (Array.isArray(parsed)) {
+          return parsed
+        }
       }
     }
   } catch (err) {
     console.warn('[FridgeProductService] Error parsing local products:', err)
   }
-  return [...DEFAULT_FRIDGE_PRODUCTS]
+  return []
 }
 
 function saveLocalProducts(products: FridgeProduct[]): void {
@@ -584,9 +597,24 @@ export async function uploadProductImage(file: File): Promise<string> {
 }
 
 /**
- * Restores catalogue to stock default products.
+ * Clears all products so the refrigerator interior is 100% completely empty.
+ */
+export async function clearAllProducts(): Promise<FridgeProduct[]> {
+  saveLocalProducts([])
+  return []
+}
+
+/**
+ * Restores catalogue to default state (completely empty).
  */
 export async function resetToDefaultProducts(): Promise<FridgeProduct[]> {
-  saveLocalProducts([...DEFAULT_FRIDGE_PRODUCTS])
-  return [...DEFAULT_FRIDGE_PRODUCTS]
+  return clearAllProducts()
+}
+
+/**
+ * Optional admin helper: populates all 12 stock grocery templates.
+ */
+export async function populateStockTemplates(): Promise<FridgeProduct[]> {
+  saveLocalProducts([...STOCK_GROCERY_TEMPLATES])
+  return [...STOCK_GROCERY_TEMPLATES]
 }
