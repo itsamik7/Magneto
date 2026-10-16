@@ -401,7 +401,7 @@ export async function getPublicActiveProducts(): Promise<FridgeProduct[]> {
         .order('display_order', { ascending: true })
 
       const timeoutPromise = new Promise<{ data: null; error: Error }>((_, reject) =>
-        setTimeout(() => reject(new Error('Supabase query timed out')), 2500)
+        setTimeout(() => reject(new Error('Supabase query timed out')), 3500)
       )
 
       const result = (await Promise.race([queryPromise, timeoutPromise])) as {
@@ -410,13 +410,16 @@ export async function getPublicActiveProducts(): Promise<FridgeProduct[]> {
       }
       const { data, error } = result
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         const mapped = data.map((d) => mapRowToProduct(d as unknown as DbFridgeProduct))
-        saveLocalProducts(mapped, { broadcast: false })
-        return mapped
+        const localActive = getLocalProducts().filter((p) => p.isActive && !p.isArchived)
+        const localOnly = localActive.filter((loc) => !mapped.some((rem) => rem.id === loc.id))
+        const merged = [...mapped, ...localOnly]
+        saveLocalProducts(merged, { broadcast: false })
+        return merged
       }
     } catch (err) {
-      console.warn('[FridgeProductService] Failed fetching public products from Supabase, using local:', err)
+      console.warn('[FridgeProductService] Remote fetch fallback to local inventory:', err)
     }
   }
 
@@ -436,7 +439,7 @@ export async function getAllAdminProducts(): Promise<FridgeProduct[]> {
         .order('display_order', { ascending: true })
 
       const timeoutPromise = new Promise<{ data: null; error: Error }>((_, reject) =>
-        setTimeout(() => reject(new Error('Supabase query timed out')), 2500)
+        setTimeout(() => reject(new Error('Supabase query timed out')), 3500)
       )
 
       const result = (await Promise.race([queryPromise, timeoutPromise])) as {
@@ -445,13 +448,16 @@ export async function getAllAdminProducts(): Promise<FridgeProduct[]> {
       }
       const { data, error } = result
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         const mapped = data.map((d) => mapRowToProduct(d as unknown as DbFridgeProduct))
-        saveLocalProducts(mapped, { broadcast: false })
-        return mapped
+        const local = getLocalProducts()
+        const localOnly = local.filter((loc) => !mapped.some((rem) => rem.id === loc.id))
+        const merged = [...mapped, ...localOnly]
+        saveLocalProducts(merged, { broadcast: false })
+        return merged
       }
     } catch (err) {
-      console.warn('[FridgeProductService] Failed fetching admin products from Supabase, using local:', err)
+      console.warn('[FridgeProductService] Remote fetch fallback to local inventory:', err)
     }
   }
 
