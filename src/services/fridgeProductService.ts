@@ -242,7 +242,7 @@ function getLocalProducts(): FridgeProduct[] {
   } catch (err) {
     console.warn('[FridgeProductService] Error parsing local products:', err)
   }
-  return []
+  return [...STOCK_GROCERY_TEMPLATES]
 }
 
 /**
@@ -250,6 +250,17 @@ function getLocalProducts(): FridgeProduct[] {
  */
 export function getLocalCachedProducts(): FridgeProduct[] {
   return getLocalProducts()
+}
+
+/**
+ * Helper to update a product's shelf and horizontal position during drag-and-drop.
+ */
+export async function moveProduct(
+  id: string,
+  newShelf: FridgeShelf,
+  newPositionX: number
+): Promise<FridgeProduct> {
+  return updateProduct(id, { shelf: newShelf, positionX: newPositionX })
 }
 
 function saveLocalProducts(products: FridgeProduct[], options?: { broadcast?: boolean }): void {
