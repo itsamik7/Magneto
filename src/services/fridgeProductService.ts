@@ -245,14 +245,22 @@ function getLocalProducts(): FridgeProduct[] {
   return []
 }
 
-function saveLocalProducts(products: FridgeProduct[]): void {
+/**
+ * Returns current cached products synchronously for zero-latency initial UI rendering.
+ */
+export function getLocalCachedProducts(): FridgeProduct[] {
+  return getLocalProducts()
+}
+
+function saveLocalProducts(products: FridgeProduct[], options?: { broadcast?: boolean }): void {
   try {
     const serialized = JSON.stringify(products)
     if (typeof window !== 'undefined' && window.localStorage) {
       window.localStorage.setItem(STORAGE_KEY, serialized)
     }
     memoryStore.set(STORAGE_KEY, serialized)
-    if (typeof window !== 'undefined') {
+    // Only broadcast when actual changes happen (not on passive read-sync) to avoid infinite loop
+    if (options?.broadcast !== false && typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent(FRIDGE_PRODUCTS_UPDATED_EVENT, { detail: products }))
     }
   } catch (err) {
@@ -374,16 +382,26 @@ function mapProductToRow(product: Partial<FridgeProduct>): DbFridgeProductUpdate
 export async function getPublicActiveProducts(): Promise<FridgeProduct[]> {
   if (isSupabaseConfigured) {
     try {
-      const { data, error } = await supabase
+      const queryPromise = supabase
         .from('fridge_products')
         .select('*')
         .eq('is_active', true)
         .eq('is_archived', false)
         .order('display_order', { ascending: true })
 
+      const timeoutPromise = new Promise<{ data: null; error: Error }>((_, reject) =>
+        setTimeout(() => reject(new Error('Supabase query timed out')), 2500)
+      )
+
+      const result = (await Promise.race([queryPromise, timeoutPromise])) as {
+        data: DbFridgeProduct[] | null
+        error: { message?: string } | null
+      }
+      const { data, error } = result
+
       if (!error && data && data.length > 0) {
         const mapped = data.map((d) => mapRowToProduct(d as unknown as DbFridgeProduct))
-        saveLocalProducts(mapped)
+        saveLocalProducts(mapped, { broadcast: false })
         return mapped
       }
     } catch (err) {
@@ -401,14 +419,24 @@ export async function getPublicActiveProducts(): Promise<FridgeProduct[]> {
 export async function getAllAdminProducts(): Promise<FridgeProduct[]> {
   if (isSupabaseConfigured) {
     try {
-      const { data, error } = await supabase
+      const queryPromise = supabase
         .from('fridge_products')
         .select('*')
         .order('display_order', { ascending: true })
 
+      const timeoutPromise = new Promise<{ data: null; error: Error }>((_, reject) =>
+        setTimeout(() => reject(new Error('Supabase query timed out')), 2500)
+      )
+
+      const result = (await Promise.race([queryPromise, timeoutPromise])) as {
+        data: DbFridgeProduct[] | null
+        error: { message?: string } | null
+      }
+      const { data, error } = result
+
       if (!error && data && data.length > 0) {
         const mapped = data.map((d) => mapRowToProduct(d as unknown as DbFridgeProduct))
-        saveLocalProducts(mapped)
+        saveLocalProducts(mapped, { broadcast: false })
         return mapped
       }
     } catch (err) {

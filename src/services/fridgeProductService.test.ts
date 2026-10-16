@@ -17,6 +17,7 @@ import {
   deleteProductPermanent,
   resetToDefaultProducts,
   populateStockTemplates,
+  getLocalCachedProducts,
   DEFAULT_FRIDGE_PRODUCTS,
 } from './fridgeProductService'
 
@@ -227,5 +228,23 @@ describe('fridgeProductService', () => {
       expect(updated.displayScale).toBe(1.15)
       expect(updated.itemCount).toBe(3)
     }
+  })
+
+  it('should return local cached products synchronously with getLocalCachedProducts', async () => {
+    await createProduct({
+      name: 'Organic Whole Milk',
+      category: 'Dairy',
+      imageUrl: '/assets/products/milk-carton.png',
+      shelf: 'middle_shelf',
+      positionX: 50,
+      displayScale: 1.0,
+      isActive: true,
+      isArchived: false,
+      displayOrder: 1,
+    })
+
+    const cached = getLocalCachedProducts()
+    expect(cached.length).toBe(1)
+    expect(cached[0].name).toBe('Organic Whole Milk')
   })
 })

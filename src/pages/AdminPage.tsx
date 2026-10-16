@@ -9,6 +9,7 @@ import {
 } from '../services/adminService'
 import {
   getAllAdminProducts,
+  getLocalCachedProducts,
   createProduct,
   updateProduct,
   toggleProductActive,
@@ -92,9 +93,9 @@ export const AdminPage: React.FC = () => {
   const [isSetupGuideOpen, setIsSetupGuideOpen] = useState(false)
   const [copiedSql, setCopiedSql] = useState(false)
 
-  // Inventory state
-  const [products, setProducts] = useState<FridgeProduct[]>([])
-  const [isLoadingProducts, setIsLoadingProducts] = useState(true)
+  // Inventory state initialized synchronously from local cache for instant UI rendering
+  const [products, setProducts] = useState<FridgeProduct[]>(() => getLocalCachedProducts())
+  const [isLoadingProducts, setIsLoadingProducts] = useState<boolean>(() => getLocalCachedProducts().length === 0)
   const [feedbackMessage, setFeedbackMessage] = useState<{
     type: 'success' | 'error' | 'info'
     text: string
@@ -155,8 +156,10 @@ export const AdminPage: React.FC = () => {
   }, [user])
 
   // 2. Fetch products once authorized
-  const loadInventory = async () => {
-    setIsLoadingProducts(true)
+  const loadInventory = async (showLoadingState = false) => {
+    if (showLoadingState) {
+      setIsLoadingProducts(true)
+    }
     try {
       const items = await getAllAdminProducts()
       setProducts(items)
@@ -170,15 +173,23 @@ export const AdminPage: React.FC = () => {
 
   useEffect(() => {
     if (isAuthorizedAdmin) {
-      loadInventory()
+      // Re-sync with Supabase in the background; only show full-panel loader if cache is empty
+      loadInventory(products.length === 0)
 
-      const handleUpdate = () => loadInventory()
+      const handleUpdate = (e: Event) => {
+        const customEvent = e as CustomEvent<FridgeProduct[]>
+        if (customEvent.detail && Array.isArray(customEvent.detail)) {
+          setProducts(customEvent.detail)
+        } else {
+          loadInventory(false)
+        }
+      }
       if (typeof window !== 'undefined') {
-        window.addEventListener(FRIDGE_PRODUCTS_UPDATED_EVENT, handleUpdate)
+        window.addEventListener(FRIDGE_PRODUCTS_UPDATED_EVENT, handleUpdate as EventListener)
       }
       return () => {
         if (typeof window !== 'undefined') {
-          window.removeEventListener(FRIDGE_PRODUCTS_UPDATED_EVENT, handleUpdate)
+          window.removeEventListener(FRIDGE_PRODUCTS_UPDATED_EVENT, handleUpdate as EventListener)
         }
       }
     }
@@ -1715,7 +1726,7 @@ export const AdminPage: React.FC = () => {
             </div>
 
             {/* Products List Table */}
-            {isLoadingProducts ? (
+            {isLoadingProducts && products.length === 0 ? (
               <div className="py-16 text-center">
                 <RefreshCw className="w-8 h-8 text-blue-500 animate-spin mx-auto mb-2" />
                 <p className="text-xs text-slate-500">Loading refrigerator inventory...</p>
