@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, Navigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -11,6 +11,30 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate()
   const [authError, setAuthError] = useState<string | null>(null)
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false)
+
+  // Catch OAuth cancellation or errors passed back in URL hash/search
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const hash = window.location.hash.startsWith('#')
+      ? window.location.hash.substring(1)
+      : ''
+    const search = window.location.search.startsWith('?')
+      ? window.location.search.substring(1)
+      : ''
+    const params = new URLSearchParams(hash || search)
+    const errorDesc = params.get('error_description')
+    const error = params.get('error')
+
+    if (errorDesc || error) {
+      const friendlyMessage = errorDesc
+        ? errorDesc.replace(/\+/g, ' ')
+        : 'Google sign-in was cancelled or encountered an error. Please try again.'
+      setAuthError(friendlyMessage)
+      if (window.history.replaceState) {
+        window.history.replaceState(null, '', window.location.pathname)
+      }
+    }
+  }, [])
 
   const {
     register,
