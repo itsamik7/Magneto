@@ -589,17 +589,16 @@ export const MyFridgePage: React.FC = () => {
   }
 
   return (
-    <div className="w-full max-w-[1720px] mx-auto flex flex-col xl:flex-row items-center xl:items-start justify-center gap-6 lg:gap-8 pb-2 sm:pb-4 animate-in fade-in duration-200 min-h-[calc(100vh-140px)]">
+    <div className="w-full max-w-[1720px] mx-auto flex flex-col xl:flex-row items-center xl:items-center justify-center gap-6 lg:gap-8 pb-6 sm:pb-8 animate-in fade-in duration-200 min-h-[calc(100vh-140px)]">
       
       {/* 
         LEFT HERO REFRIGERATOR STAGE (THE WHITE SPACE):
         Occupies all the available white space to the left of the destination card.
-        The Refrigerator is centered in the exact middle of this white space
-        so that [Left Margin to Fridge] == [Fridge to Trip Card].
+        The Refrigerator is centered vertically and horizontally to align with the trip card.
       */}
-      <div className="flex-1 w-full min-w-0 flex items-center justify-center relative min-h-0 sm:min-h-[580px] pt-4 sm:pt-8 pb-2 overflow-visible bg-transparent">
+      <div className="flex-1 w-full min-w-0 flex flex-col items-center justify-center relative min-h-0 sm:min-h-[580px] xl:min-h-[760px] my-auto pt-4 sm:pt-6 xl:pt-10 pb-4 overflow-visible bg-transparent">
         {/* Center: The Photorealistic Refrigerator */}
-        <div className="relative z-10 w-full flex flex-col items-center overflow-visible">
+        <div className="relative z-10 w-full flex flex-col items-center justify-center my-auto overflow-visible">
           <FridgeWorkspace
             userId={user?.id || 'guest'}
             currentModel={activeModel}
