@@ -714,30 +714,34 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
               position: 'absolute',
               inset: 0,
               transform: 'translateZ(-4px)',
+              transformStyle: 'preserve-3d',
               zIndex: isEffectiveOpen ? 25 : 5,
             }}
-            className="rounded-lg shadow-2xl overflow-hidden bg-slate-900 border border-slate-500 pointer-events-auto select-none"
+            className="rounded-lg shadow-2xl overflow-visible bg-slate-100 border border-slate-400/80 pointer-events-auto select-none"
           >
-            {/* Photorealistic Pure Cavity Background Image */}
-            <img
-              src="/fridges/realistic-fridge-interior.png"
-              alt="Illuminated Refrigerator Interior Cavity"
-              className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none rounded-lg"
-            />
+            {/* Background container: clips ONLY the interior background photo & lighting gradient to the cabinet rounded corners */}
+            <div className="absolute inset-0 rounded-lg overflow-hidden pointer-events-none">
+              {/* Photorealistic Pure Cavity Background Image */}
+              <img
+                src="/fridges/realistic-fridge-interior.png"
+                alt="Illuminated Refrigerator Interior Cavity"
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none rounded-lg"
+              />
 
-            {/* 5000K Daylight LED Interior Lighting Engine */}
-            <div
-              className={`absolute inset-0 pointer-events-none transition-opacity duration-500 ease-in-out ${
-                isEffectiveOpen ? 'opacity-100' : 'opacity-0'
-              }`}
-            >
-              <div className="absolute top-0 inset-x-4 h-28 bg-gradient-to-b from-white/80 via-sky-100/20 to-transparent blur-xs pointer-events-none" />
-              <div className="absolute top-[28%] inset-x-2 h-6 bg-gradient-to-b from-white/35 to-transparent pointer-events-none" />
-              <div className="absolute top-[48%] inset-x-2 h-6 bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
+              {/* 5000K Daylight LED Interior Lighting Engine */}
+              <div
+                className={`absolute inset-0 pointer-events-none transition-opacity duration-500 ease-in-out ${
+                  isEffectiveOpen ? 'opacity-100' : 'opacity-0'
+                }`}
+              >
+                <div className="absolute top-0 inset-x-4 h-28 bg-gradient-to-b from-white/80 via-sky-100/20 to-transparent blur-xs pointer-events-none" />
+                <div className="absolute top-[28%] inset-x-2 h-6 bg-gradient-to-b from-white/35 to-transparent pointer-events-none" />
+                <div className="absolute top-[48%] inset-x-2 h-6 bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
 
-              <div className="absolute top-3 left-3 px-2 py-0.5 rounded-md bg-slate-900/80 backdrop-blur-xs text-white border border-white/20 text-[8px] font-heading font-bold flex items-center gap-1 shadow-md z-30">
-                <Lightbulb className="w-2.5 h-2.5 text-amber-300 fill-amber-300" />
-                <span>5000K LED ACTIVE</span>
+                <div className="absolute top-3 left-3 px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-xs text-slate-800 border border-slate-300 text-[8px] font-heading font-bold flex items-center gap-1 shadow-md z-30">
+                  <Lightbulb className="w-2.5 h-2.5 text-amber-500 fill-amber-400" />
+                  <span>5000K LED ACTIVE</span>
+                </div>
               </div>
             </div>
 
@@ -745,7 +749,8 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
               --------------------------------------------------------------------
               A. INTERACTIVE SUB-ZERO FREEZER COMPARTMENT (TOP: 3.2% to 25.5%)
               Inner freezer door opens outward toward the right side around a realistic right-side hinge!
-              When opened, clearly reveals freezer interior, ice maker, crystal ice cubes, and products!
+              Engineered with photorealistic white appliance-grade plastic, realistic depth,
+              true 3D door thickness, gasket sealing, and zero clipping or disappearing!
               --------------------------------------------------------------------
             */}
             <div
@@ -763,29 +768,42 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
             >
               {/* 1. Sub-Zero Internal Cavity Box (Fixed in back depth at -8px) */}
               <div
-                className="absolute inset-0 rounded-md overflow-hidden bg-gradient-to-b from-slate-950 via-sky-950 to-slate-900 border border-sky-400/40 shadow-inner"
+                className="absolute inset-0 rounded-md overflow-hidden bg-gradient-to-b from-slate-100 via-white to-sky-50 border border-slate-300/80 shadow-[inset_0_3px_10px_rgba(15,23,42,0.12),inset_0_0_0_1px_rgba(255,255,255,0.9),inset_0_-4px_8px_rgba(15,23,42,0.06)]"
                 style={{
                   transform: 'translateZ(-8px)',
                 }}
               >
-                {/* Frosted Back Shading & Sub-Zero LED */}
-                <div className="absolute inset-0 bg-gradient-to-b from-cyan-400/20 via-transparent to-black/45 pointer-events-none" />
-                <div className="absolute inset-x-0 top-0 h-4 bg-cyan-200/40 blur-xs pointer-events-none" />
+                {/* Evaporator cooling coils / horizontal ribbed back-wall texture */}
+                <div
+                  className="absolute inset-0 pointer-events-none opacity-40"
+                  style={{
+                    backgroundImage:
+                      'repeating-linear-gradient(180deg, rgba(203, 213, 225, 0.6) 0px, rgba(203, 213, 225, 0.6) 1.5px, transparent 1.5px, transparent 10px)',
+                  }}
+                />
+
+                {/* Sub-Zero Ambient Glow & Frost Lighting */}
+                <div className="absolute inset-0 bg-gradient-to-b from-cyan-100/40 via-transparent to-slate-200/30 pointer-events-none" />
+                <div className="absolute inset-x-0 top-0 h-4 bg-gradient-to-b from-cyan-200/50 to-transparent blur-xs pointer-events-none" />
+
+                {/* Molded shelf track ridges on left and right inner walls */}
+                <div className="absolute inset-y-1.5 left-1 w-0.5 rounded-full bg-slate-300/70 shadow-xs pointer-events-none" />
+                <div className="absolute inset-y-1.5 right-1 w-0.5 rounded-full bg-slate-300/70 shadow-xs pointer-events-none" />
 
                 {/* Sub-Zero Header Badge & Close Button */}
-                <div className="absolute top-1 inset-x-2 flex items-center justify-between z-10 pointer-events-auto">
-                  <div className="flex items-center gap-1 text-[8px] font-bold text-cyan-200/90 pointer-events-none">
-                    <Snowflake className="w-2.5 h-2.5 text-cyan-300 animate-spin-slow" />
-                    <span>SUB-ZERO • -18°C</span>
+                <div className="absolute top-1.5 inset-x-2 flex items-center justify-between z-20 pointer-events-auto">
+                  <div className="flex items-center gap-1 text-[8px] font-bold text-slate-700 bg-white/80 backdrop-blur-xs px-1.5 py-0.5 rounded border border-slate-200/80 shadow-2xs pointer-events-none">
+                    <Snowflake className="w-2.5 h-2.5 text-cyan-600 animate-spin-slow" />
+                    <span className="font-mono text-[7.5px] font-extrabold tracking-tight">SUB-ZERO • -18°C</span>
                   </div>
                   {freezerOpen && (
                     <button
                       type="button"
                       onClick={handleToggleFreezer}
-                      className="px-2 py-0.5 rounded bg-sky-900/90 hover:bg-sky-800 border border-cyan-400/40 text-[7px] font-bold text-cyan-200 flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
+                      className="px-2 py-0.5 rounded bg-white/95 hover:bg-cyan-50 border border-cyan-400/80 text-[7.5px] font-bold text-cyan-800 flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
                       title="Click to close freezer door"
                     >
-                      <DoorClosed className="w-2 h-2 text-cyan-300" />
+                      <DoorClosed className="w-2.5 h-2.5 text-cyan-600" />
                       <span>Close Door ◀</span>
                     </button>
                   )}
@@ -793,23 +811,24 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
 
                 {/* Modeled Ice Maker & Crystal Ice Cube Tray (Left Side) */}
                 <div
-                  className="absolute bottom-1.5 left-2 px-1.5 py-1 rounded bg-sky-950/80 border border-cyan-400/30 flex flex-col gap-1 shadow-sm pointer-events-none z-10"
+                  className="absolute bottom-1.5 left-2 px-1.5 py-1 rounded bg-white/95 border border-slate-200/90 flex flex-col gap-1 shadow-sm pointer-events-none z-10"
                   title="Sub-Zero Automatic Ice Maker"
                 >
                   <div className="flex items-center justify-between gap-1">
-                    <span className="text-[6px] font-black uppercase text-cyan-300 tracking-wider">
+                    <span className="text-[6.5px] font-black uppercase text-slate-700 tracking-wider">
                       Ice Maker
                     </span>
-                    <span className="w-1 h-1 rounded-full bg-cyan-400 animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_4px_rgba(6,182,212,0.8)] animate-pulse" />
                   </div>
                   {/* Ice Tray Grid with 8 Translucent Ice Cubes */}
-                  <div className="grid grid-cols-4 gap-1 p-0.5 bg-slate-900/70 rounded border border-white/10">
+                  <div className="grid grid-cols-4 gap-1 p-0.5 bg-sky-50/80 rounded border border-sky-200/60 shadow-2xs">
                     {Array.from({ length: 8 }).map((_, idx) => (
                       <div
                         key={idx}
-                        className="w-2.5 h-2.5 rounded-2xs bg-gradient-to-br from-white/90 via-cyan-100/75 to-sky-200/90 border border-white/70 shadow-2xs transform rotate-2"
+                        className="w-2.5 h-2.5 rounded-2xs bg-gradient-to-br from-white via-cyan-50/90 to-sky-200/80 border border-white/90 shadow-2xs transform rotate-2"
                         style={{
-                          boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.85), 0 1px 2px rgba(0,0,0,0.6)',
+                          boxShadow:
+                            'inset 0 1px 1px rgba(255,255,255,0.95), 0 1px 2px rgba(15,23,42,0.18)',
                         }}
                       />
                     ))}
@@ -844,17 +863,18 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                   bottom: '1px',
                   right: '-1px',
                   width: '6px',
-                  zIndex: 38,
+                  zIndex: 39,
                 }}
-                className="pointer-events-none rounded-full bg-gradient-to-r from-slate-400 via-slate-200 to-slate-500 border border-slate-400 shadow-md flex flex-col justify-between items-center py-0.5"
+                className="pointer-events-none rounded-full bg-gradient-to-r from-slate-400 via-slate-200 to-slate-400 border border-slate-300 shadow-md flex flex-col justify-between items-center py-0.5"
                 title="Freezer Door Right Hinge"
               >
-                <div className="w-1 h-1 rounded-full bg-slate-700 shadow-inner" />
-                <div className="w-1 h-1 rounded-full bg-slate-700 shadow-inner" />
+                <div className="w-1.5 h-1.5 rounded-full bg-slate-600 shadow-inner" />
+                <div className="w-1.5 h-1.5 rounded-full bg-slate-600 shadow-inner" />
               </div>
 
               {/* 
                 3. Sub-Zero Freezer Front Door (Swings outward to the right around right-side hinge)
+                Engineered with 3D physical thickness, beveled outer face, perimeter gasket, and zero clipping!
                 Full-coverage clickable hit area. Opens when clicked, closes when clicked again.
               */}
               <div
@@ -870,37 +890,83 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                 style={{
                   position: 'absolute',
                   inset: 0,
-                  transformOrigin: 'right center',
-                  transform: freezerOpen ? 'rotateY(88deg)' : 'rotateY(0deg)',
+                  transformOrigin: 'calc(100% - 2px) center',
+                  transform: freezerOpen ? 'rotateY(74deg)' : 'rotateY(0deg)',
                   transition: 'transform 550ms cubic-bezier(0.25, 1, 0.4, 1), box-shadow 550ms ease',
                   transformStyle: 'preserve-3d',
-                  zIndex: 37,
+                  zIndex: 38,
                   cursor: 'pointer',
                   pointerEvents: 'auto',
                   boxShadow: freezerOpen
-                    ? '-6px 2px 14px rgba(0, 0, 0, 0.55)'
-                    : '0 2px 8px rgba(0, 0, 0, 0.25)',
+                    ? '-6px 3px 16px rgba(15, 23, 42, 0.28), -2px 1px 6px rgba(15, 23, 42, 0.16)'
+                    : '0 2px 8px rgba(15, 23, 42, 0.12)',
                 }}
                 className="group/door cursor-pointer rounded-md outline-none"
                 title={freezerOpen ? 'Click freezer door to close' : 'Click freezer door to open outward to the right'}
                 aria-label={freezerOpen ? 'Close freezer door' : 'Open freezer door'}
               >
-                {/* FRONT FACE of Freezer Door (Visible when closed) */}
+                {/* 3D Extruded Left Opening Edge Profile (Faces viewer when open) */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    bottom: 0,
+                    left: 0,
+                    width: '8px',
+                    transformOrigin: 'left center',
+                    transform: 'rotateY(-90deg)',
+                  }}
+                  className="bg-gradient-to-r from-slate-200 via-white to-slate-200 border-y border-slate-300 pointer-events-none flex flex-col justify-between items-center py-1"
+                >
+                  {/* Perimeter rubber gasket strip on side edge */}
+                  <div className="w-1 h-full bg-slate-300/80 rounded-full" />
+                </div>
+
+                {/* 3D Extruded Top Edge Profile */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '8px',
+                    transformOrigin: 'top center',
+                    transform: 'rotateX(90deg)',
+                  }}
+                  className="bg-gradient-to-b from-slate-100 to-slate-200 border-x border-slate-300 pointer-events-none"
+                />
+
+                {/* 3D Extruded Bottom Edge Profile */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: '8px',
+                    transformOrigin: 'bottom center',
+                    transform: 'rotateX(-90deg)',
+                  }}
+                  className="bg-gradient-to-t from-slate-200 to-slate-300 border-x border-slate-300 pointer-events-none"
+                />
+
+                {/* FRONT FACE of Freezer Door (Outer Face) */}
                 <div
                   style={{
                     position: 'absolute',
                     inset: 0,
+                    transform: 'translateZ(4px)',
                     backfaceVisibility: 'hidden',
                   }}
                   className={`rounded-md overflow-hidden border transition-colors ${
                     freezerOpen
-                      ? 'border-cyan-300 bg-white/70 backdrop-blur-xs'
-                      : 'border-white/70 bg-gradient-to-r from-white/95 via-sky-50/85 to-slate-100/95 backdrop-blur-xs hover:border-cyan-400 shadow-sm'
+                      ? 'border-cyan-400 bg-gradient-to-r from-white via-sky-50 to-slate-100 shadow-md'
+                      : 'border-slate-300/90 bg-gradient-to-r from-white via-slate-50 to-slate-100/95 hover:border-cyan-400 shadow-sm'
                   }`}
                 >
                   {/* Frosted Acrylic Texture & Gloss */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent pointer-events-none" />
-                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.7),transparent_70%)] pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/50 to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.8),transparent_70%)] pointer-events-none" />
 
                   {/* Left-Side Vertical Chrome Pull Handle (Opposite the right-side hinge) */}
                   <div
@@ -910,10 +976,11 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                       bottom: '18%',
                       left: '8px',
                       width: '7px',
+                      transform: 'translateZ(4px)',
                     }}
-                    className="rounded-full bg-gradient-to-r from-slate-400 via-slate-100 to-slate-400 border border-slate-300 shadow-xs flex items-center justify-center group-hover/door:border-cyan-400 transition-colors pointer-events-none"
+                    className="rounded-full bg-gradient-to-r from-slate-300 via-white to-slate-400 border border-slate-300 shadow-xs flex items-center justify-center group-hover/door:border-cyan-500 transition-colors pointer-events-none"
                   >
-                    <div className="w-0.5 h-1/2 bg-slate-400/60 rounded-full" />
+                    <div className="w-0.5 h-1/2 bg-slate-400/70 rounded-full" />
                   </div>
 
                   {/* Door Center Emblem & Open Affordance */}
@@ -930,21 +997,24 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                   </div>
                 </div>
 
-                {/* BACK FACE of Freezer Door (Swung open outward to the right) */}
+                {/* BACK FACE of Freezer Door (Inner Face with Food-Grade White Liner & Gasket) */}
                 <div
                   style={{
                     position: 'absolute',
                     inset: 0,
-                    transform: 'rotateY(180deg)',
+                    transform: 'translateZ(-4px) rotateY(180deg)',
                     backfaceVisibility: 'hidden',
                   }}
-                  className="rounded-md overflow-hidden bg-gradient-to-l from-slate-100 via-white to-sky-50 border border-slate-300 shadow-md p-1.5 flex flex-col justify-between items-center"
+                  className="rounded-md overflow-hidden bg-gradient-to-l from-slate-50 via-white to-slate-100 border border-slate-300 shadow-md p-1.5 flex flex-col justify-between items-center"
                 >
-                  <div className="flex items-center gap-1 text-[7px] font-bold text-slate-600">
+                  {/* Perimeter Grey Magnetic Rubber Gasket Seal */}
+                  <div className="absolute inset-1 rounded-sm border-2 border-slate-300/80 pointer-events-none" />
+
+                  <div className="relative z-10 flex items-center gap-1 text-[7px] font-bold text-slate-700 pt-0.5">
                     <Snowflake className="w-2 h-2 text-cyan-500" />
                     <span>Freezer Door Open</span>
                   </div>
-                  <div className="text-[7px] font-bold text-cyan-700 bg-cyan-50 px-1.5 py-0.5 rounded border border-cyan-200">
+                  <div className="relative z-10 text-[7px] font-bold text-cyan-800 bg-cyan-50 hover:bg-cyan-100 px-2 py-0.5 rounded border border-cyan-300 shadow-2xs">
                     <span>Tap to Close ◀</span>
                   </div>
                 </div>
@@ -996,6 +1066,8 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
               --------------------------------------------------------------------
               C. INTERACTIVE SLIDING CRISPER DRAWER (BOTTOM: 77.5% to 95.5%)
               Slides open in 3D perspective to reveal fresh vegetables & fruits inside!
+              Engineered with photorealistic frosted acrylic materials, clean cavity slot,
+              ergonomic top handle grip, and zero clipping!
               --------------------------------------------------------------------
             */}
             <div
@@ -1018,16 +1090,23 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                   inset: 0,
                   transform: 'translateZ(-6px)',
                 }}
-                className="rounded-lg overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border border-slate-700/60 shadow-inner flex flex-col justify-between p-2 pointer-events-none"
+                className="rounded-lg overflow-hidden bg-gradient-to-b from-slate-200 via-slate-100 to-slate-200 border border-slate-300 shadow-inner flex flex-col justify-between p-2 pointer-events-none"
               >
                 {/* Molded Slide Rails on Left and Right Walls */}
-                <div className="absolute inset-y-1 left-0.5 w-1 rounded-full bg-slate-700/40 shadow-inner" />
-                <div className="absolute inset-y-1 right-0.5 w-1 rounded-full bg-slate-700/40 shadow-inner" />
+                <div className="absolute inset-y-1.5 left-0.5 w-1 rounded-full bg-slate-300/80 shadow-inner" />
+                <div className="absolute inset-y-1.5 right-0.5 w-1 rounded-full bg-slate-300/80 shadow-inner" />
 
-                <div className="flex items-center justify-between text-[7px] font-bold text-slate-500">
-                  <span>CRISPER CAVITY</span>
-                  <div className="flex items-center gap-1 text-emerald-400">
-                    <Droplets className="w-2 h-2" />
+                {/* Rear Humidity Ventilation Airflow Louvers */}
+                <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-60">
+                  <div className="h-0.5 bg-slate-300 rounded-full w-full" />
+                  <div className="h-0.5 bg-slate-300 rounded-full w-4/5 mx-auto" />
+                  <div className="h-0.5 bg-slate-300 rounded-full w-2/3 mx-auto" />
+                </div>
+
+                <div className="flex items-center justify-between text-[7px] font-bold text-slate-600 relative z-10">
+                  <span className="font-mono text-[6.5px] uppercase tracking-wider">CRISPER CAVITY</span>
+                  <div className="flex items-center gap-1 text-emerald-700 bg-white/80 px-1.5 py-0.5 rounded border border-emerald-200/80 shadow-2xs">
+                    <Droplets className="w-2 h-2 text-emerald-600" />
                     <span>85% OPTIMAL</span>
                   </div>
                 </div>
@@ -1052,34 +1131,34 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                   position: 'absolute',
                   inset: 0,
                   transform: crisperOpen
-                    ? 'translateZ(75px) translateY(26px) scale(1.04)'
-                    : 'translateZ(0px) translateY(0px) scale(1)',
+                    ? 'translateZ(65px) translateY(22px)'
+                    : 'translateZ(0px) translateY(0px)',
                   transition: 'transform 550ms cubic-bezier(0.25, 1, 0.4, 1), box-shadow 550ms ease',
                   boxShadow: crisperOpen
-                    ? '0 24px 38px -8px rgba(0, 0, 0, 0.75), 0 12px 20px -6px rgba(0, 0, 0, 0.5)'
-                    : 'inset 0 1px 3px rgba(255, 255, 255, 0.4)',
+                    ? '0 18px 30px -6px rgba(15, 23, 42, 0.3), 0 8px 12px -4px rgba(15, 23, 42, 0.18)'
+                    : 'inset 0 1px 2px rgba(255, 255, 255, 0.7), 0 2px 6px rgba(15, 23, 42, 0.12)',
                   cursor: 'pointer',
                   pointerEvents: 'auto',
                 }}
                 className={`group/drawer cursor-pointer rounded-lg overflow-hidden border outline-none ${
                   crisperOpen
-                    ? 'border-emerald-400 bg-white/25 backdrop-blur-xs'
-                    : 'border-white/50 bg-white/15 backdrop-blur-[0.5px] hover:border-emerald-300'
+                    ? 'border-emerald-500/90 bg-gradient-to-b from-white/80 via-white/50 to-white/70 backdrop-blur-xs'
+                    : 'border-white/80 bg-gradient-to-b from-white/60 via-white/35 to-white/50 backdrop-blur-[0.5px] hover:border-emerald-400'
                 }`}
                 title={crisperOpen ? 'Click to slide in vegetable drawer' : 'Click to slide out vegetable drawer'}
                 aria-label={crisperOpen ? 'Slide in vegetable drawer' : 'Slide out vegetable drawer'}
               >
                 {/* Realistic Acrylic Bin Gradient & Reflections */}
-                <div className="absolute inset-0 bg-gradient-to-b from-white/35 via-white/10 to-white/25 pointer-events-none" />
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.65),transparent_60%)] pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/10 to-white/30 pointer-events-none" />
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.75),transparent_60%)] pointer-events-none" />
 
                 {/* Recessed Handle Slot at Top Lip */}
                 <div className="absolute top-1 inset-x-0 flex justify-center pointer-events-none">
-                  <div className="w-22 h-1.5 rounded-full bg-slate-400/50 shadow-inner group-hover/drawer:bg-emerald-400/60 transition-colors" />
+                  <div className="w-24 h-2 rounded-full bg-gradient-to-b from-slate-200 to-white border border-slate-300/80 shadow-inner group-hover/drawer:border-emerald-400 transition-colors" />
                 </div>
 
                 {/* Humidity Control Badge & Slide Affordance */}
-                <div className="absolute bottom-1 inset-x-2 flex items-center justify-between text-[7px] font-bold text-slate-800 bg-white/70 backdrop-blur-xs px-2 py-0.5 rounded pointer-events-none">
+                <div className="absolute bottom-1 inset-x-2 flex items-center justify-between text-[7px] font-bold text-slate-800 bg-white/90 backdrop-blur-xs px-2 py-0.5 rounded border border-slate-200/90 shadow-2xs pointer-events-none">
                   <div className="flex items-center gap-1 text-emerald-800 font-extrabold">
                     <Droplets className="w-2.5 h-2.5 text-emerald-600" />
                     <span>HUMIDITY CONTROL 85%</span>
