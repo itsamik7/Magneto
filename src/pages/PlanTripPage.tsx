@@ -780,14 +780,14 @@ export const PlanTripPage: React.FC = () => {
 
       {/* 
         COLUMN 2 (CENTER):
-        Free-Flow Editable Fridge Workspace (No border box, unclipped zoom)
+        Free-Flow Editable Fridge Workspace (Centered vertically with respect to the left & right side panels)
       */}
-      <div className={`flex-1 w-full flex-col items-center justify-between min-h-0 sm:min-h-[520px] relative p-0 overflow-visible bg-transparent ${
+      <div className={`flex-1 w-full flex-col items-center justify-center min-h-0 sm:min-h-[520px] xl:min-h-[760px] xl:h-[760px] relative p-0 overflow-visible bg-transparent ${
         mobileActiveView === 'fridge' ? 'flex' : 'hidden xl:flex'
       }`}>
         
-        {/* Center Fridge Workspace with Draggable Magnets */}
-        <div className="relative z-10 w-full flex flex-col items-center">
+        {/* Center Fridge Workspace with Draggable Magnets - shifted down to sit in the exact visual center */}
+        <div className="relative z-10 w-full flex flex-col items-center justify-center my-auto pt-4 sm:pt-6 xl:pt-10">
           <FridgeWorkspace
             userId={user?.id || 'guest'}
             currentModel={activeModel}
