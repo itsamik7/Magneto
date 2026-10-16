@@ -505,7 +505,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
             transformOrigin: 'center center',
             transition: isPanning || isPinching ? 'none' : 'transform 200ms cubic-bezier(0.2, 0.9, 0.3, 1)',
           }}
-          className="relative w-full max-w-[310px] overflow-visible"
+          className="relative flex items-center justify-center overflow-visible"
         >
           {/* Check whether active model is the Universal 3D Studio model or another catalog model */}
           {activeModel.id === 'universal-steel-studio' ? (

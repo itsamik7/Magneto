@@ -586,7 +586,7 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
       */}
       <div
         style={{
-          width: 'clamp(250px, 74vw, 310px)',
+          width: 'clamp(220px, min(74vw, calc((100dvh - 160px) * 0.47)), 300px)',
           aspectRatio: `${aspectRatio}`,
           perspective: '1400px',
           transformStyle: 'preserve-3d',

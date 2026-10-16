@@ -589,16 +589,26 @@ export const MyFridgePage: React.FC = () => {
   }
 
   return (
-    <div className="w-full max-w-[1720px] mx-auto flex flex-col xl:flex-row items-center xl:items-center justify-center gap-6 lg:gap-8 pb-6 sm:pb-8 animate-in fade-in duration-200 min-h-[calc(100vh-140px)]">
+    <div className="w-full max-w-[1720px] mx-auto flex flex-col lg:flex-row items-start justify-center gap-6 lg:gap-8 animate-in fade-in duration-200">
       
       {/* 
-        LEFT HERO REFRIGERATOR STAGE (THE WHITE SPACE):
-        Occupies all the available white space to the left of the destination card.
-        The Refrigerator is centered vertically and horizontally to align with the trip card.
+        ========================================================================
+        1. DEDICATED REFRIGERATOR VIEWING AREA (LEFT: ~58-62% WIDTH)
+        - Fixed-height viewing area fitting within the browser viewport (calc(100dvh - 100px))
+        - Uses 58-62% of available screen width, leaving remaining space for right card
+        - Subtle, clean background stage complementing existing design
+        - Centred horizontally and vertically relative to this viewing area
+        - OVERFLOW-VISIBLE so swinging doors and zoom magnification extend freely
+          beyond viewing boundaries with ZERO clipping!
+        ========================================================================
       */}
-      <div className="flex-1 w-full min-w-0 flex flex-col items-center justify-center relative min-h-0 sm:min-h-[580px] xl:min-h-[760px] my-auto pt-4 sm:pt-6 xl:pt-10 pb-4 overflow-visible bg-transparent">
-        {/* Center: The Photorealistic Refrigerator */}
-        <div className="relative z-10 w-full flex flex-col items-center justify-center my-auto overflow-visible">
+      <div className="w-full lg:w-[58%] xl:w-[62%] h-[500px] sm:h-[560px] lg:h-[calc(100dvh-100px)] lg:min-h-[540px] lg:max-h-[880px] lg:sticky lg:top-[76px] relative flex items-center justify-center overflow-visible select-none flex-shrink-0">
+        
+        {/* Subtle, clean gallery viewing stage background */}
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-slate-50/80 via-white/50 to-slate-50/80 border border-slate-200/70 shadow-xs pointer-events-none" />
+
+        {/* Refrigerator 3D Workspace: Centred vertically and horizontally inside the dedicated viewing area */}
+        <div className="relative z-10 w-full h-full flex items-center justify-center overflow-visible p-2 sm:p-4">
           <FridgeWorkspace
             userId={user?.id || 'guest'}
             currentModel={activeModel}
@@ -614,10 +624,13 @@ export const MyFridgePage: React.FC = () => {
       </div>
 
       {/* 
-        RIGHT COLUMN:
-        Trip & Destination Inspector Panel Matching media_1791901625472_ea35fd75.jpg
+        ========================================================================
+        2. RIGHT COLUMN (~38-42% WIDTH):
+        Trip & Destination Inspector Panel Matching reference design
+        Scrollable independently on desktop if content exceeds viewport height.
+        ========================================================================
       */}
-      <div className="w-full max-w-lg mx-auto xl:max-w-none xl:mx-0 xl:w-[380px] 2xl:w-[400px] bg-white rounded-3xl p-4 sm:p-5 shadow-xl border border-slate-200/90 flex flex-col gap-3.5 flex-shrink-0">
+      <div className="w-full lg:w-[42%] xl:w-[38%] max-w-lg mx-auto lg:max-w-none lg:mx-0 bg-white rounded-3xl p-4 sm:p-5 shadow-xl border border-slate-200/90 flex flex-col gap-3.5 flex-shrink-0 lg:max-h-[calc(100dvh-100px)] lg:overflow-y-auto custom-scrollbar relative z-20">
         
         {/* Destination Hero Banner */}
         <div className="relative w-full h-36 sm:h-40 rounded-2xl overflow-hidden shadow-md group">
