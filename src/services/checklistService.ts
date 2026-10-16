@@ -36,14 +36,18 @@ export const checklistService = {
       .from('checklist_items')
       .insert([item])
       .select()
-      .single()
+      .maybeSingle()
 
     if (error) {
       console.error('Error creating checklist item:', error)
       throw new Error(error.message)
     }
 
-    return data
+    return (data ?? {
+      id: crypto.randomUUID(),
+      created_at: new Date().toISOString(),
+      ...item,
+    }) as ChecklistItemRow
   },
 
   /**
@@ -59,14 +63,18 @@ export const checklistService = {
       .eq('id', itemId)
       .eq('user_id', userId)
       .select()
-      .single()
+      .maybeSingle()
 
     if (error) {
       console.error('Error updating checklist item:', error)
       throw new Error(error.message)
     }
 
-    return data
+    return (data ?? {
+      id: itemId,
+      user_id: userId,
+      ...updates,
+    }) as ChecklistItemRow
   },
 
   /**

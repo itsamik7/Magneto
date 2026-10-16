@@ -9,6 +9,7 @@ interface AuthContextType {
   isLoading: boolean
   isConfigured: boolean
   signIn: (email: string, password: string) => Promise<{ error: string | null }>
+  signInWithGoogle: (redirectTo?: string) => Promise<{ error: string | null }>
   signUp: (email: string, password: string, displayName?: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
 }
@@ -20,6 +21,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null)
   const [displayName, setDisplayName] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(true)
+
+  const extractDisplayName = (u: User | null | undefined): string | null => {
+    if (!u) return null
+    return (
+      u.user_metadata?.full_name ||
+      u.user_metadata?.name ||
+      u.user_metadata?.display_name ||
+      u.email?.split('@')[0] ||
+      null
+    )
+  }
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
@@ -34,10 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       setSession(currentSession)
       setUser(currentSession?.user ?? null)
-      if (currentSession?.user) {
-        const metaName = currentSession.user.user_metadata?.display_name || currentSession.user.email?.split('@')[0] || null
-        setDisplayName(metaName)
-      }
+      setDisplayName(extractDisplayName(currentSession?.user))
       setIsLoading(false)
     })
 
@@ -45,12 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession)
       setUser(newSession?.user ?? null)
-      if (newSession?.user) {
-        const metaName = newSession.user.user_metadata?.display_name || newSession.user.email?.split('@')[0] || null
-        setDisplayName(metaName)
-      } else {
-        setDisplayName(null)
-      }
+      setDisplayName(extractDisplayName(newSession?.user))
       setIsLoading(false)
     })
 
@@ -64,6 +68,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { error: 'Supabase credentials not configured. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your .env file.' }
     }
     const { error } = await supabase.auth.signInWithPassword({ email, password })
+    return { error: error?.message ?? null }
+  }
+
+  const signInWithGoogle = async (redirectTo?: string) => {
+    if (!isSupabaseConfigured) {
+      return { error: 'Supabase credentials not configured. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your .env file.' }
+    }
+    const origin = typeof window !== 'undefined' ? window.location.origin : ''
+    const targetRedirect = redirectTo || `${origin}/dashboard`
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: targetRedirect,
+        queryParams: {
+          prompt: 'select_account',
+        },
+      },
+    })
     return { error: error?.message ?? null }
   }
 
@@ -100,6 +122,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         isConfigured: isSupabaseConfigured,
         signIn,
+        signInWithGoogle,
         signUp,
         signOut,
       }}

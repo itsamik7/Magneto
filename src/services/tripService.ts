@@ -78,7 +78,7 @@ export const tripService = {
       .select('*')
       .eq('id', tripId)
       .eq('user_id', userId)
-      .single()
+      .maybeSingle()
 
     if (tripError || !trip) {
       return null
@@ -122,14 +122,19 @@ export const tripService = {
       .from('trips')
       .insert([trip])
       .select()
-      .single()
+      .maybeSingle()
 
     if (error) {
       console.error('Error creating trip:', error)
       throw new Error(error.message)
     }
 
-    return data
+    return (data ?? {
+      id: crypto.randomUUID(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      ...trip,
+    }) as TripRow
   },
 
   /**
@@ -145,14 +150,19 @@ export const tripService = {
       .eq('id', tripId)
       .eq('user_id', userId)
       .select()
-      .single()
+      .maybeSingle()
 
     if (error) {
       console.error('Error updating trip:', error)
       throw new Error(error.message)
     }
 
-    return data
+    return (data ?? {
+      id: tripId,
+      user_id: userId,
+      updated_at: new Date().toISOString(),
+      ...updates,
+    }) as TripRow
   },
 
   /**

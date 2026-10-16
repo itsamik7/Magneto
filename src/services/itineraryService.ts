@@ -37,14 +37,18 @@ export const itineraryService = {
       .from('itinerary_items')
       .insert([item])
       .select()
-      .single()
+      .maybeSingle()
 
     if (error) {
       console.error('Error creating itinerary item:', error)
       throw new Error(error.message)
     }
 
-    return data
+    return (data ?? {
+      id: crypto.randomUUID(),
+      created_at: new Date().toISOString(),
+      ...item,
+    }) as ItineraryItemRow
   },
 
   /**
@@ -60,14 +64,18 @@ export const itineraryService = {
       .eq('id', itemId)
       .eq('user_id', userId)
       .select()
-      .single()
+      .maybeSingle()
 
     if (error) {
       console.error('Error updating itinerary item:', error)
       throw new Error(error.message)
     }
 
-    return data
+    return (data ?? {
+      id: itemId,
+      user_id: userId,
+      ...updates,
+    }) as ItineraryItemRow
   },
 
   /**

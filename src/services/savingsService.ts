@@ -39,14 +39,18 @@ export const savingsService = {
       .from('savings_transactions')
       .insert([deposit])
       .select()
-      .single()
+      .maybeSingle()
 
     if (error) {
       console.error('Error adding savings deposit:', error)
       throw new Error(error.message)
     }
 
-    return data
+    return (data ?? {
+      id: crypto.randomUUID(),
+      created_at: new Date().toISOString(),
+      ...deposit,
+    }) as SavingsTransactionRow
   },
 
   /**

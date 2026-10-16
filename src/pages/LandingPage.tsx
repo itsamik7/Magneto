@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { VirtualFridge } from '../components/fridge/VirtualFridge'
@@ -118,10 +118,25 @@ const DEMO_TRIPS: TripWithStats[] = [
 ]
 
 export const LandingPage: React.FC = () => {
-  const { user } = useAuth()
+  const { user, signInWithGoogle } = useAuth()
+  const [googleLoading, setGoogleLoading] = useState(false)
+  const [googleError, setGoogleError] = useState<string | null>(null)
 
   if (user) {
     return <Navigate to="/dashboard" replace />
+  }
+
+  const handleGoogleSignIn = async () => {
+    setGoogleError(null)
+    setGoogleLoading(true)
+    try {
+      const { error } = await signInWithGoogle()
+      if (error) setGoogleError(error)
+    } catch (err: unknown) {
+      setGoogleError(err instanceof Error ? err.message : 'Google sign in failed')
+    } finally {
+      setGoogleLoading(false)
+    }
   }
 
   return (
@@ -182,10 +197,17 @@ export const LandingPage: React.FC = () => {
 
           {/* Big White Card Button Matching Screenshot */}
           <div className="space-y-3 pt-3">
+            {googleError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs">
+                {googleError}
+              </div>
+            )}
             <div className="flex flex-wrap items-center gap-3">
-              <Link
-                to="/signup"
-                className="inline-flex items-center gap-3 px-6 py-3.5 bg-white hover:bg-slate-50 text-slate-800 font-heading font-bold text-sm sm:text-base rounded-2xl border border-slate-300/80 shadow-[0_4px_12px_rgba(0,0,0,0.06)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.1)] transition-all hover:scale-105 active:scale-95"
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={googleLoading}
+                className="inline-flex items-center gap-3 px-6 py-3.5 bg-white hover:bg-slate-50 text-slate-800 font-heading font-bold text-sm sm:text-base rounded-2xl border border-slate-300/80 shadow-[0_4px_12px_rgba(0,0,0,0.06)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.1)] transition-all hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer"
               >
                 {/* Google Multicolor Logo */}
                 <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
@@ -206,8 +228,8 @@ export const LandingPage: React.FC = () => {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                   />
                 </svg>
-                <span>Continue with Google</span>
-              </Link>
+                <span>{googleLoading ? 'Connecting...' : 'Continue with Google'}</span>
+              </button>
 
               <Link
                 to="/login"

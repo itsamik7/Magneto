@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import type { FridgeModel, FridgeStyle, FridgeCountryCategory } from '../../types/fridge'
 import { fridgeService } from '../../services/fridgeService'
+import { FRIDGE_MODELS } from '../../data/fridgeCatalog'
 import {
   X,
   Search,
@@ -81,11 +82,12 @@ export const FridgeModelModal: React.FC<FridgeModelModalProps> = ({
     })
   }, [allModels, selectedCountry, selectedStyle, searchQuery])
 
-  const previewModel = useMemo(() => {
+  const previewModel = useMemo<FridgeModel>(() => {
     return (
       allModels.find((m) => m.id === previewModelId) ||
       allModels.find((m) => m.id === currentModelId) ||
-      allModels[0]
+      allModels[0] ||
+      FRIDGE_MODELS[0]
     )
   }, [allModels, previewModelId, currentModelId])
 
@@ -293,7 +295,7 @@ export const FridgeModelModal: React.FC<FridgeModelModalProps> = ({
               ) : (
                 filteredModels.map((model) => {
                   const isCurrent = model.id === currentModelId
-                  const isSelected = model.id === previewModel.id
+                  const isSelected = model.id === (previewModel?.id || '')
 
                   return (
                     <div
@@ -365,20 +367,20 @@ export const FridgeModelModal: React.FC<FridgeModelModalProps> = ({
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center p-1 border border-slate-200 overflow-hidden flex-shrink-0">
                   <img
-                    src={previewModel.imageUrl}
-                    alt={previewModel.name}
+                    src={previewModel?.imageUrl || FRIDGE_MODELS[0].imageUrl}
+                    alt={previewModel?.name || 'Fridge model'}
                     className="max-h-full max-w-full object-contain"
                   />
                 </div>
                 <div>
                   <p className="text-xs font-bold text-slate-900 flex items-center gap-2">
-                    <span>{previewModel.brand} {previewModel.name}</span>
+                    <span>{previewModel?.brand || ''} {previewModel?.name || ''}</span>
                     <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                      {previewModel.style}
+                      {previewModel?.style || 'Standard'}
                     </span>
                   </p>
                   <p className="text-[11px] text-slate-500">
-                    {previewModel.finish} • Aspect ratio {previewModel.aspectRatio}
+                    {previewModel?.finish || ''} • Aspect ratio {previewModel?.aspectRatio ?? 0.58}
                   </p>
                 </div>
               </div>
@@ -392,7 +394,7 @@ export const FridgeModelModal: React.FC<FridgeModelModalProps> = ({
                 </button>
                 <button
                   onClick={() => {
-                    onSelectModel(previewModel)
+                    onSelectModel(previewModel || FRIDGE_MODELS[0])
                     onClose()
                   }}
                   className="flex-1 sm:flex-none px-5 py-2.5 bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-98 flex items-center justify-center gap-1.5"
@@ -516,3 +518,5 @@ export const FridgeModelModal: React.FC<FridgeModelModalProps> = ({
     </div>
   )
 }
+
+export default FridgeModelModal

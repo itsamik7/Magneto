@@ -192,6 +192,47 @@ export async function adminSignIn(
 }
 
 /**
+ * Initiates Google OAuth Sign-In explicitly configured to redirect back to the Admin portal (/admin).
+ */
+export async function adminSignInWithGoogle(): Promise<{ success: boolean; error?: string }> {
+  if (!isSupabaseConfigured) {
+    // Demo / offline fallback for local dev when backend credentials are not set:
+    const mockAdminUser: User = {
+      id: 'admin-offline-id-001',
+      app_metadata: { role: 'super_admin' },
+      user_metadata: { display_name: 'Super Administrator', email: '1amiteshk@gmail.com' },
+      aud: 'authenticated',
+      created_at: new Date().toISOString(),
+      email: '1amiteshk@gmail.com',
+    } as unknown as User
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem(MEMORY_ADMIN_SESSION_KEY, JSON.stringify(mockAdminUser))
+      window.location.reload()
+    }
+    return { success: true }
+  }
+
+  const origin = typeof window !== 'undefined' ? window.location.origin : ''
+  const adminRedirect = `${origin}/admin`
+
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: adminRedirect,
+      queryParams: {
+        prompt: 'select_account',
+      },
+    },
+  })
+
+  if (error) {
+    return { success: false, error: error.message }
+  }
+
+  return { success: true }
+}
+
+/**
  * Logs out of the administrator portal and clears admin sessions.
  */
 export async function adminSignOut(): Promise<void> {
