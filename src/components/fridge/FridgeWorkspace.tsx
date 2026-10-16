@@ -232,6 +232,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
       if (!next) {
         setIsCrisperOpen(false)
         setIsInternalFreezerOpen(false)
+        setIsFreezerDoorOpen(false)
       }
       setFridgeYaw(next ? -45 : 0)
       return next
@@ -239,25 +240,12 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
   }
 
   const handleToggleFreezerDoor = () => {
-    setIsFreezerDoorOpen((prev) => {
-      const next = !prev
-      setFridgeYaw(next ? -45 : 0)
-      return next
-    })
+    setIsInternalFreezerOpen((prev) => !prev)
+    setIsFreezerDoorOpen((prev) => !prev)
   }
 
   const handleToggleAllDoors = () => {
-    if (isMainDoorOpen || isFreezerDoorOpen) {
-      setIsMainDoorOpen(false)
-      setIsFreezerDoorOpen(false)
-      setIsCrisperOpen(false)
-      setIsInternalFreezerOpen(false)
-      setFridgeYaw(0)
-    } else {
-      setIsMainDoorOpen(true)
-      setIsFreezerDoorOpen(true)
-      setFridgeYaw(-45)
-    }
+    handleToggleMainDoor()
   }
 
   const handlePanMouseDown = (e: React.MouseEvent) => {
@@ -511,9 +499,9 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
           {activeModel.id === 'universal-steel-studio' ? (
             <UniversalSteelFridge
               isDoorOpen={isMainDoorOpen}
-              onToggleDoor={handleToggleAllDoors}
+              onToggleDoor={handleToggleMainDoor}
               isMainDoorOpen={isMainDoorOpen}
-              isFreezerDoorOpen={isFreezerDoorOpen}
+              isFreezerDoorOpen={isInternalFreezerOpen}
               onToggleMainDoor={handleToggleMainDoor}
               onToggleFreezerDoor={handleToggleFreezerDoor}
               isCrisperOpen={isCrisperOpen}

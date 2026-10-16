@@ -187,9 +187,39 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
   onSelectProduct,
   onMoveProduct,
 }) => {
+  const isEffectiveOpen =
+    isMainDoorOpen !== undefined
+      ? isMainDoorOpen
+      : isDoorOpen !== undefined
+        ? isDoorOpen
+        : false
+
   const [internalProducts, setInternalProducts] = useState<FridgeProduct[]>([])
-  const [internalCrisperOpen, setInternalCrisperOpen] = useState(false)
-  const [internalFreezerOpen, setInternalFreezerOpen] = useState(false)
+  const [internalCrisperOpen, setInternalCrisperOpen] = useState(
+    propCrisperOpen !== undefined ? propCrisperOpen : false
+  )
+  const [internalFreezerOpen, setInternalFreezerOpen] = useState(
+    propFreezerOpen !== undefined
+      ? propFreezerOpen
+      : isFreezerDoorOpen !== undefined
+        ? isFreezerDoorOpen
+        : false
+  )
+
+  useEffect(() => {
+    if (propCrisperOpen !== undefined) {
+      setInternalCrisperOpen(propCrisperOpen)
+    }
+  }, [propCrisperOpen])
+
+  useEffect(() => {
+    if (propFreezerOpen !== undefined) {
+      setInternalFreezerOpen(propFreezerOpen)
+    } else if (isFreezerDoorOpen !== undefined) {
+      setInternalFreezerOpen(isFreezerDoorOpen)
+    }
+  }, [propFreezerOpen, isFreezerDoorOpen])
+
   const cavityRef = useRef<HTMLDivElement>(null)
   const doorRef = useRef<HTMLDivElement>(null)
   const [activeDrag, setActiveDrag] = useState<{
@@ -206,8 +236,8 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
       e.stopPropagation()
       e.preventDefault()
     }
+    setInternalCrisperOpen((prev) => !prev)
     if (onToggleCrisper) onToggleCrisper()
-    else setInternalCrisperOpen((prev) => !prev)
   }
 
   const handleToggleFreezer = (e?: React.MouseEvent) => {
@@ -215,9 +245,9 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
       e.stopPropagation()
       e.preventDefault()
     }
+    setInternalFreezerOpen((prev) => !prev)
     if (onToggleFreezer) onToggleFreezer()
     else if (onToggleFreezerDoor) onToggleFreezerDoor()
-    else setInternalFreezerOpen((prev) => !prev)
   }
 
   const handleProductPointerDown = (
@@ -225,6 +255,7 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
     product: FridgeProduct,
     containerType: 'shelf' | 'crisper' | 'freezer' | 'door'
   ) => {
+    e.stopPropagation()
     const startX = e.clientX
     const startY = e.clientY
     let hasMoved = false
@@ -332,11 +363,6 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
     window.addEventListener('pointercancel', handlePointerUp)
   }
 
-  const isEffectiveOpen =
-    isDoorOpen !== undefined
-      ? isDoorOpen
-      : Boolean(isMainDoorOpen || isFreezerDoorOpen)
-
   // Auto-close internal drawer and freezer when main door closes
   useEffect(() => {
     if (!isEffectiveOpen) {
@@ -390,7 +416,10 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
 
   const isAnimatingRef = useRef(false)
 
-  const handleToggle = () => {
+  const handleToggle = (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation()
+    }
     // Debounce rapid clicking during transition to prevent animation glitching
     if (isAnimatingRef.current) return
     isAnimatingRef.current = true
@@ -403,10 +432,10 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
       onYawChange(willBeOpen ? -45 : 0)
     }
 
-    if (onToggleDoor) {
-      onToggleDoor()
-    } else if (onToggleMainDoor) {
+    if (onToggleMainDoor) {
       onToggleMainDoor()
+    } else if (onToggleDoor) {
+      onToggleDoor()
     }
   }
 
@@ -878,6 +907,7 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
             transform: `translateX(${isEffectiveOpen ? 30 : 0}px) rotateY(${yaw}deg)`,
             transition: 'transform 600ms cubic-bezier(0.25, 1, 0.4, 1)',
             overflow: 'visible',
+            pointerEvents: 'none',
           }}
         >
           {/* 3D Left Cabinet Side Panel (folds into -Z depth behind the front face) */}
@@ -1339,11 +1369,11 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                 left: '5.5%',
                 right: '5.5%',
                 height: '18.5%',
-                zIndex: crisperOpen ? 40 : 25,
-                perspective: '2200px',
+                zIndex: crisperOpen ? 45 : 30,
                 transformStyle: 'preserve-3d',
+                pointerEvents: 'auto',
               }}
-              className="select-none overflow-visible pointer-events-auto group/crisper"
+              className="select-none overflow-visible group/crisper"
             >
               {/* Drop Target Indicator on Crisper Drawer */}
               {activeDrag?.shelf === 'crisper_drawer' && (
@@ -1401,11 +1431,11 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                 style={{
                   position: 'absolute',
                   inset: 0,
-                  transform: crisperOpen ? 'translateZ(65px)' : 'translateZ(0px)',
+                  transform: crisperOpen ? 'translateZ(95px) translateY(4px)' : 'translateZ(6px)',
                   transition: 'transform 550ms cubic-bezier(0.25, 1, 0.4, 1), box-shadow 550ms ease',
                   transformStyle: 'preserve-3d',
                   boxShadow: crisperOpen
-                    ? '0 20px 32px -6px rgba(15, 23, 42, 0.35), 0 10px 16px -4px rgba(15, 23, 42, 0.2)'
+                    ? '0 24px 36px -4px rgba(15, 23, 42, 0.4), 0 12px 20px -4px rgba(15, 23, 42, 0.25)'
                     : 'inset 0 1px 2px rgba(255, 255, 255, 0.7), 0 2px 6px rgba(15, 23, 42, 0.12)',
                   cursor: 'pointer',
                   pointerEvents: 'auto',
@@ -1421,7 +1451,7 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                     top: 0,
                     bottom: 0,
                     left: 0,
-                    width: '65px',
+                    width: '95px',
                     transformOrigin: 'left center',
                     transform: 'rotateY(-90deg)',
                     backfaceVisibility: 'hidden',
@@ -1436,7 +1466,7 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                     top: 0,
                     bottom: 0,
                     right: 0,
-                    width: '65px',
+                    width: '95px',
                     transformOrigin: 'right center',
                     transform: 'rotateY(90deg)',
                     backfaceVisibility: 'hidden',
@@ -1451,7 +1481,7 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
                     bottom: 0,
                     left: 0,
                     right: 0,
-                    height: '65px',
+                    height: '95px',
                     transformOrigin: 'center bottom',
                     transform: 'rotateX(-90deg)',
                     backfaceVisibility: 'hidden',
@@ -1517,7 +1547,7 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
               transition: 'transform 600ms cubic-bezier(0.25, 1, 0.4, 1)',
               transformStyle: 'preserve-3d',
               zIndex: isEffectiveOpen ? 20 : 30,
-              pointerEvents: isEffectiveOpen ? 'none' : 'auto',
+              pointerEvents: 'auto',
             }}
           >
             {/* 
@@ -1641,15 +1671,33 @@ export const UniversalSteelFridge: React.FC<UniversalSteelFridgeProps> = ({
             */}
             <div
               ref={doorRef}
+              role="button"
+              tabIndex={isEffectiveOpen ? 0 : -1}
+              onClick={(e) => {
+                if (isEffectiveOpen) {
+                  e.stopPropagation()
+                  handleToggle(e)
+                }
+              }}
+              onKeyDown={(e) => {
+                if (isEffectiveOpen && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleToggle(e as unknown as React.MouseEvent)
+                }
+              }}
               style={{
                 position: 'absolute',
                 inset: 0,
                 transform: 'rotateY(180deg) translateZ(8px)',
                 backfaceVisibility: 'hidden',
+                cursor: isEffectiveOpen ? 'pointer' : 'default',
               }}
               className={`rounded-lg shadow-2xl overflow-hidden bg-white border border-slate-300 flex flex-col ${
-                isEffectiveOpen ? 'pointer-events-auto' : 'pointer-events-none'
+                isEffectiveOpen ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'
               }`}
+              title={isEffectiveOpen ? 'Click door to close' : undefined}
+              aria-label={isEffectiveOpen ? 'Click door to close' : undefined}
             >
               {/* Photorealistic Door-Side Storage Image */}
               <img
