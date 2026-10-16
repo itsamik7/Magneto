@@ -16,6 +16,7 @@ import {
   unarchiveProduct,
   deleteProductPermanent,
   resetToDefaultProducts,
+  populateStockTemplates,
   DEFAULT_FRIDGE_PRODUCTS,
 } from './fridgeProductService'
 
@@ -161,5 +162,70 @@ describe('fridgeProductService', () => {
 
     const all = await getAllAdminProducts()
     expect(all.some((p) => p.id === created.id)).toBe(false)
+  })
+
+  it('should generate a valid RFC4122 v4 UUID for newly created products', async () => {
+    const created = await createProduct({
+      name: 'Artisan Jam',
+      category: 'Condiments',
+      imageUrl: '/assets/products/jam-jar.png',
+      shelf: 'door_bin_middle',
+      positionX: 30,
+      displayScale: 0.9,
+      isActive: true,
+      isArchived: false,
+      displayOrder: 1,
+    })
+
+    const uuidV4Regex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    expect(created.id).toMatch(uuidV4Regex)
+  })
+
+  it('should preserve stacking arrangement, itemCount, and spacing metadata', async () => {
+    const created = await createProduct({
+      name: 'Sparkling Mineral Water',
+      category: 'Beverages',
+      imageUrl: '/assets/products/water-bottle.png',
+      shelf: 'bottom_shelf',
+      positionX: 45,
+      displayScale: 1.0,
+      itemCount: 4,
+      arrangement: 'row',
+      spacing: 22,
+      isActive: true,
+      isArchived: false,
+      displayOrder: 1,
+    })
+
+    expect(created.itemCount).toBe(4)
+    expect(created.arrangement).toBe('row')
+    expect(created.spacing).toBe(22)
+
+    const all = await getAllAdminProducts()
+    const found = all.find((p) => p.id === created.id)
+    expect(found?.itemCount).toBe(4)
+    expect(found?.arrangement).toBe('row')
+    expect(found?.spacing).toBe(22)
+  })
+
+  it('should update populated stock grocery templates seamlessly', async () => {
+    const templates = await populateStockTemplates()
+    expect(templates.length).toBeGreaterThan(0)
+
+    const milkItem = templates.find((t) => t.name.toLowerCase().includes('milk'))
+    expect(milkItem).toBeDefined()
+
+    if (milkItem) {
+      const updated = await updateProduct(milkItem.id, {
+        positionX: 65,
+        displayScale: 1.15,
+        itemCount: 3,
+        arrangement: 'row',
+      })
+
+      expect(updated.positionX).toBe(65)
+      expect(updated.displayScale).toBe(1.15)
+      expect(updated.itemCount).toBe(3)
+    }
   })
 })

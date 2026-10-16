@@ -473,7 +473,7 @@ export const AdminPage: React.FC = () => {
         })
         setFeedbackMessage({
           type: 'success',
-          text: `"${formName}" updated and persisted to database.`,
+          text: `"${formName}" updated and placed on refrigerator shelf.`,
         })
       } else {
         // Create new
@@ -495,7 +495,7 @@ export const AdminPage: React.FC = () => {
         })
         setFeedbackMessage({
           type: 'success',
-          text: `"${formName}" saved to database and placed inside refrigerator.`,
+          text: `"${formName}" added and placed inside refrigerator.`,
         })
       }
 
