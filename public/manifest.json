@@ -1,0 +1,17 @@
+{
+  "name": "Magnetos — Your Virtual Travel Fridge",
+  "short_name": "Magnetos",
+  "description": "Collect dream destinations as virtual refrigerator magnets, track trip savings in INR, and unlock your travel goals.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#059669",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

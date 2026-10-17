@@ -8,7 +8,7 @@ import {
   calculateProgressPercentage,
 } from './utils'
 
-describe('Magneto Financial Rules & Currency Conversions', () => {
+describe('Magnetos Financial Rules & Currency Conversions', () => {
   it('converts Rupees to integer Paise correctly', () => {
     expect(rupeesToPaise(50000)).toBe(5000000)
     expect(rupeesToPaise(5000)).toBe(500000)

@@ -374,6 +374,10 @@ export const fridgeService = {
     modelId: string,
     placementIdOrSlug: string
   ): MagnetPlacement[] {
+    if (!userId || userId === 'guest' || userId === 'default_user') {
+      console.warn('[fridgeService] Unauthorized magnet deletion blocked for unauthenticated user:', userId)
+      return this.getFridgePlacements(userId, modelId)
+    }
     const current = this.getFridgePlacements(userId, modelId)
     const updated = current.filter(
       (p) =>

@@ -493,6 +493,11 @@ export const userMagnetService = {
    * Remove a magnet from the fridge. Supports destination slug or canonical ID.
    */
   async removeMagnetFromFridge(userId: string, identifier: string, source?: string): Promise<boolean> {
+    // Security check: unauthenticated guests and default demo users cannot delete magnets
+    if (!userId || userId === 'guest' || userId === 'default_user') {
+      console.warn('[userMagnetService] Unauthorized magnet deletion blocked for unauthenticated user:', userId)
+      return false
+    }
     try {
       const existing = await userMagnetService.getUserFridgeMagnets(userId)
       const filtered = existing.filter(

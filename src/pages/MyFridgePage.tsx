@@ -11,42 +11,12 @@ import {
   PiggyBank,
   Calendar,
   CheckCircle2,
-  Check,
-  Plane,
-  Building2,
-  Utensils,
-  Car,
-  Star,
-  FileText,
-  ShoppingBag,
-  SlidersHorizontal,
+  Compass,
+  ArrowRight,
   Plus,
   Sparkles,
 } from 'lucide-react'
-import { budgetService, type BudgetItem } from '../services/budgetService'
-
-const renderBudgetItemIcon = (item: BudgetItem) => {
-  const lower = (item.name + ' ' + (item.category || '')).toLowerCase()
-  if (lower.includes('flight') || lower.includes('air') || lower.includes('fly') || lower.includes('plane') || lower.includes('ticket')) {
-    return <Plane className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
-  }
-  if (lower.includes('stay') || lower.includes('hotel') || lower.includes('resort') || lower.includes('villa') || lower.includes('room') || lower.includes('airbnb') || lower.includes('hostel')) {
-    return <Building2 className="w-3.5 h-3.5 text-indigo-600 flex-shrink-0" />
-  }
-  if (lower.includes('food') || lower.includes('drink') || lower.includes('meal') || lower.includes('dining') || lower.includes('restaurant') || lower.includes('cafe') || lower.includes('snack') || lower.includes('lunch') || lower.includes('dinner')) {
-    return <Utensils className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
-  }
-  if (lower.includes('transport') || lower.includes('car') || lower.includes('cab') || lower.includes('taxi') || lower.includes('train') || lower.includes('metro') || lower.includes('bus') || lower.includes('ferry') || lower.includes('bike')) {
-    return <Car className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
-  }
-  if (lower.includes('activit') || lower.includes('tour') || lower.includes('sight') || lower.includes('museum') || lower.includes('safari') || lower.includes('cruise') || lower.includes('excursion') || lower.includes('scuba') || lower.includes('water sports')) {
-    return <Star className="w-3.5 h-3.5 text-yellow-500 flex-shrink-0" />
-  }
-  if (lower.includes('shop') || lower.includes('souvenir') || lower.includes('gift') || lower.includes('market') || lower.includes('cloth')) {
-    return <ShoppingBag className="w-3.5 h-3.5 text-pink-500 flex-shrink-0" />
-  }
-  return <FileText className="w-3.5 h-3.5 text-purple-600 flex-shrink-0" />
-}
+import { budgetService } from '../services/budgetService'
 
 interface DestinationDetail {
   id: string
@@ -351,15 +321,6 @@ const FEATURED_DETAILS: Record<string, DestinationDetail> = {
   },
 }
 
-const DEFAULT_CHECKLIST = [
-  { id: 'visa', text: 'Apply for visa', completed: false },
-  { id: 'flights', text: 'Book flights', completed: false },
-  { id: 'stay', text: 'Book accommodation', completed: false },
-  { id: 'itinerary', text: 'Plan day-wise itinerary', completed: false },
-  { id: 'insurance', text: 'Check travel insurance', completed: false },
-  { id: 'documents', text: 'Prepare travel documents', completed: false },
-]
-
 export const MyFridgePage: React.FC = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -376,18 +337,6 @@ export const MyFridgePage: React.FC = () => {
   const [destinationOverrides, setDestinationOverrides] = useState<
     Record<string, { totalSavedMinor: number }>
   >({})
-
-  // Travel Checklist per destination
-  const [checklists, setChecklists] = useState<
-    Record<string, typeof DEFAULT_CHECKLIST>
-  >(() => {
-    try {
-      const raw = localStorage.getItem('magneto_checklists')
-      return raw ? JSON.parse(raw) : {}
-    } catch {
-      return {}
-    }
-  })
 
   // Active Fridge Model (Universal Studio Stainless 3D)
   const [activeModel, setActiveModel] = useState<FridgeModel>(() => {
@@ -532,25 +481,6 @@ export const MyFridgePage: React.FC = () => {
   // Formula: Math.ceil((Total Budget - Amount Saved) / Remaining Days)
   const dailyTarget = remainingAmount > 0 ? Math.ceil(remainingAmount / daysRemaining) : 0
 
-  // Checklist for current destination
-  const currentChecklist = useMemo(() => {
-    return checklists[selectedSlug] || DEFAULT_CHECKLIST
-  }, [checklists, selectedSlug])
-
-  const completedChecklistCount = currentChecklist.filter((c) => c.completed).length
-
-  const handleToggleChecklist = (id: string) => {
-    const updated = currentChecklist.map((item) =>
-      item.id === id ? { ...item, completed: !item.completed } : item
-    )
-    const next = { ...checklists, [selectedSlug]: updated }
-    setChecklists(next)
-    try {
-      localStorage.setItem('magneto_checklists', JSON.stringify(next))
-    } catch {
-      // Ignore
-    }
-  }
 
   // Handle savings top-up from modal
   const handleSaveMoneySuccess = async (depositMinor: number) => {
@@ -738,74 +668,55 @@ export const MyFridgePage: React.FC = () => {
 
         </div>
 
-        {/* Itemized Trip Breakdown (Estimated) */}
-        <div className="space-y-2.5 pt-2 border-t border-slate-100">
-          <div className="flex items-center justify-between">
-            <h4 className="font-heading font-bold text-xs text-slate-800">
-              Trip Breakdown (Estimated)
-            </h4>
-            <Link
-              to="/plan-trip"
-              className="text-[10px] font-bold text-blue-600 hover:text-blue-800"
-            >
-              Edit in Planner →
-            </Link>
-          </div>
+        {/* Travel Progress Summary */}
+        <div className="pt-2 border-t border-slate-100 space-y-2.5">
+          <h4 className="font-heading font-bold text-xs text-slate-800 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <span>Travel Progress Summary</span>
+          </h4>
 
-          <div className="space-y-2 text-xs">
-            {currentBudgetItems.map((item) => (
-              <div key={item.id} className="flex items-center justify-between text-slate-600">
-                <span className="flex items-center gap-2 truncate pr-2">
-                  {renderBudgetItemIcon(item)}
-                  <span className="truncate">{item.name}</span>
-                </span>
-                <span className="font-medium whitespace-nowrap">₹ {item.amount.toLocaleString('en-IN')}</span>
+          <div className="grid grid-cols-2 gap-2.5 text-xs">
+            <div className="p-3 bg-slate-50/90 rounded-2xl border border-slate-200/80 flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                <Compass className="w-4 h-4" />
               </div>
-            ))}
+              <div className="min-w-0">
+                <span className="block font-heading font-black text-slate-900 text-base leading-tight">
+                  {userMagnets.length}
+                </span>
+                <span className="text-[10px] text-slate-500 font-medium truncate block">
+                  Magnets Collected
+                </span>
+              </div>
+            </div>
 
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between font-heading font-black text-slate-900 text-sm">
-              <span>Total Estimated</span>
-              <span>₹ {targetBudget.toLocaleString('en-IN')}</span>
+            <div className="p-3 bg-slate-50/90 rounded-2xl border border-slate-200/80 flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <span className="block font-heading font-black text-slate-900 text-base leading-tight">
+                  {userMagnets.filter((m) => m.unlock_state === 'ready_to_go').length}
+                </span>
+                <span className="text-[10px] text-slate-500 font-medium truncate block">
+                  Trips Ready to Go
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Travel Checklist (Interactive) */}
-        <div className="space-y-2 pt-2 border-t border-slate-100">
-          <div className="flex items-center justify-between">
-            <h4 className="font-heading font-bold text-xs text-slate-800">
-              Travel Checklist
-            </h4>
-            <span className="text-[11px] font-bold text-slate-500">
-              {completedChecklistCount}/{currentChecklist.length}
-            </span>
+        {/* Action Button to Open Trip Planner */}
+        <Link
+          to="/plan-trip"
+          className="mt-1 w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white font-heading font-bold text-xs rounded-2xl shadow-md transition-all flex items-center justify-between group"
+        >
+          <div className="flex items-center gap-2">
+            <Calendar className="w-3.5 h-3.5 text-blue-400" />
+            <span>Open Trip Planner</span>
           </div>
-
-          <div className="space-y-1.5">
-            {currentChecklist.map((item) => (
-              <label
-                key={item.id}
-                onClick={() => handleToggleChecklist(item.id)}
-                className={`flex items-center gap-2.5 p-2 rounded-xl text-xs cursor-pointer select-none transition-colors ${
-                  item.completed
-                    ? 'bg-emerald-50/80 text-emerald-900 line-through'
-                    : 'hover:bg-slate-50 text-slate-700'
-                }`}
-              >
-                <div
-                  className={`w-4 h-4 rounded-md border flex items-center justify-center transition-colors ${
-                    item.completed
-                      ? 'bg-emerald-600 border-emerald-600 text-white'
-                      : 'border-slate-300 bg-white'
-                  }`}
-                >
-                  {item.completed && <Check className="w-3 h-3 stroke-[3]" />}
-                </div>
-                <span className="font-medium text-[11px]">{item.text}</span>
-              </label>
-            ))}
-          </div>
-        </div>
+          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform text-slate-300" />
+        </Link>
 
       </div>
 

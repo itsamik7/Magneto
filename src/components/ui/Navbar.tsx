@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { LogOut, User as UserIcon, AlertCircle, Menu, X, ArrowRight, Calendar, Compass } from 'lucide-react'
+import { LogOut, User as UserIcon, AlertCircle, Menu, X, Calendar } from 'lucide-react'
 
 interface NavbarProps {
   onOpenSetupModal?: () => void
@@ -61,7 +61,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
           </div>
           <div>
             <span className="font-heading font-black text-xl tracking-tight text-[#1E293B]">
-              Magneto
+              Magnetos
             </span>
             <span className="hidden sm:block text-[10px] text-slate-500 font-semibold -mt-1">
               Collect Memories. Stick Forever.
@@ -69,66 +69,61 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
           </div>
         </Link>
 
-        {/* Center Navigation: My Fridge & Plan a Trip Pills */}
-        <nav className="hidden sm:flex items-center gap-1.5 bg-slate-100/80 p-1 rounded-2xl border border-slate-200/80 sm:absolute sm:left-1/2 sm:-translate-x-1/2">
-          <Link
-            to="/dashboard"
-            className={`inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 text-xs font-bold rounded-xl transition-all ${
-              isFridgeActive
-                ? 'bg-[#EBF2FE] text-[#2563EB] shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
-            }`}
-          >
-            {/* Refrigerator Icon */}
-            <svg className={`w-4 h-4 ${isFridgeActive ? 'text-[#2563EB]' : 'text-slate-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <rect x="4" y="2" width="16" height="20" rx="3" strokeWidth="2" />
-              <path strokeWidth="2" d="M4 10h16M8 6v2M8 14v4" />
-            </svg>
-            <span>My Fridge</span>
-          </Link>
+        {/* Center Navigation: My Fridge & Plan a Trip Pills (Only visible when user is logged in) */}
+        {user && (
+          <nav className="hidden sm:flex items-center gap-1.5 bg-slate-100/80 p-1 rounded-2xl border border-slate-200/80 sm:absolute sm:left-1/2 sm:-translate-x-1/2">
+            <Link
+              to="/dashboard"
+              className={`inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+                isFridgeActive
+                  ? 'bg-[#EBF2FE] text-[#2563EB] shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
+              }`}
+            >
+              {/* Refrigerator Icon */}
+              <svg className={`w-4 h-4 ${isFridgeActive ? 'text-[#2563EB]' : 'text-slate-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <rect x="4" y="2" width="16" height="20" rx="3" strokeWidth="2" />
+                <path strokeWidth="2" d="M4 10h16M8 6v2M8 14v4" />
+              </svg>
+              <span>My Fridge</span>
+            </Link>
 
-          <Link
-            to="/plan-trip"
-            className={`inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 text-xs font-bold rounded-xl transition-all ${
-              isPlanActive
-                ? 'bg-[#EBF2FE] text-[#2563EB] shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
-            }`}
-          >
-            {/* Calendar / Planner Icon */}
-            <Calendar className={`w-4 h-4 ${isPlanActive ? 'text-[#2563EB]' : 'text-slate-500'}`} />
-            <span>Plan a Trip</span>
-          </Link>
-        </nav>
+            <Link
+              to="/plan-trip"
+              className={`inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+                isPlanActive
+                  ? 'bg-[#EBF2FE] text-[#2563EB] shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
+              }`}
+            >
+              {/* Calendar / Planner Icon */}
+              <Calendar className={`w-4 h-4 ${isPlanActive ? 'text-[#2563EB]' : 'text-slate-500'}`} />
+              <span>Plan a Trip</span>
+            </Link>
+          </nav>
+        )}
 
-        {/* Right Search Bar & User Profile */}
+        {/* User Profile & Actions */}
         <div className="flex items-center gap-3">
-          <div className="relative hidden md:block">
-            <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search destinations, magnets..."
-              className="pl-9 pr-4 py-1.5 text-xs bg-white border border-slate-200 rounded-xl w-52 xl:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Notification Bell */}
-          <button className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-          </button>
-
           {user ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              {/* Notification Bell (Only visible when user is logged in) */}
+              <button 
+                className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                title="Notifications"
+                aria-label="Notifications"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+              </button>
+
               <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-heading font-bold text-xs shadow-xs ring-2 ring-white">
                 {(displayName || user.email || 'U')[0].toUpperCase()}
               </div>
               <button
                 onClick={handleLogout}
-                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                 title="Log Out"
                 aria-label="Log out"
               >
@@ -136,19 +131,26 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
               </button>
             </div>
           ) : (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Link
                 to="/login"
-                className="text-sm font-bold text-slate-700 hover:text-slate-900 px-3 py-2 transition-colors"
+                className={`text-sm font-bold px-3 py-2 rounded-xl transition-colors ${
+                  location.pathname === '/login'
+                    ? 'text-emerald-700 bg-emerald-50'
+                    : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+                }`}
               >
                 Log In
               </Link>
               <Link
                 to="/signup"
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold rounded-xl shadow-md transition-all hover:scale-105 active:scale-95"
+                className={`text-sm font-bold px-3 py-2 rounded-xl transition-colors ${
+                  location.pathname === '/signup'
+                    ? 'text-emerald-700 bg-emerald-50'
+                    : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+                }`}
               >
-                <span>Build My Travel Fridge</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                Sign Up
               </Link>
             </div>
           )}
@@ -208,16 +210,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
               <Link
                 to="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block text-sm font-bold text-slate-800 py-2"
+                className={`block text-sm font-bold py-2 ${
+                  location.pathname === '/login' ? 'text-emerald-700 font-extrabold' : 'text-slate-800'
+                }`}
               >
                 Log In
               </Link>
               <Link
                 to="/signup"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block text-center py-2.5 bg-[#059669] text-white font-bold rounded-xl text-sm"
+                className={`block text-sm font-bold py-2 ${
+                  location.pathname === '/signup' ? 'text-emerald-700 font-extrabold' : 'text-slate-800'
+                }`}
               >
-                Build My Travel Fridge
+                Sign Up
               </Link>
             </>
           )}

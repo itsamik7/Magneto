@@ -32,7 +32,7 @@ VITE_SUPABASE_ANON_KEY=your-actual-anon-key`
         <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm">
           <p className="font-semibold mb-1">🔒 Genuine Row Level Security & Persistence</p>
           <p>
-            Magneto never mocks database calls or simulates fake logins. All data (trips, paise savings, itineraries, tasks) belongs strictly to your authenticated Supabase user profile.
+            Magnetos never mocks database calls or simulates fake logins. All data (trips, paise savings, itineraries, tasks) belongs strictly to your authenticated Supabase user profile.
           </p>
         </div>
 

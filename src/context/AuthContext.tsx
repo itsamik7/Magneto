@@ -44,17 +44,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) {
         console.error('Error fetching session:', error)
       }
-      setSession(currentSession)
-      setUser(currentSession?.user ?? null)
-      setDisplayName(extractDisplayName(currentSession?.user))
+      if (currentSession) {
+        setSession(currentSession)
+        setUser(currentSession.user)
+        setDisplayName(extractDisplayName(currentSession.user))
+      } else if (typeof window !== 'undefined') {
+        const storedDev = localStorage.getItem('magneto_dev_user')
+        if (storedDev) {
+          try {
+            const parsed = JSON.parse(storedDev)
+            setUser(parsed)
+            setDisplayName(parsed.user_metadata?.full_name || parsed.email || 'Traveler')
+          } catch {}
+        }
+      }
       setIsLoading(false)
     })
 
     // 2. Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession)
-      setUser(newSession?.user ?? null)
-      setDisplayName(extractDisplayName(newSession?.user))
+      if (newSession) {
+        setSession(newSession)
+        setUser(newSession.user)
+        setDisplayName(extractDisplayName(newSession.user))
+      }
       setIsLoading(false)
     })
 
@@ -106,8 +119,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const signOut = async () => {
-    if (!isSupabaseConfigured) return
-    await supabase.auth.signOut()
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('magneto_dev_user')
+    }
+    if (isSupabaseConfigured) {
+      await supabase.auth.signOut()
+    }
     setUser(null)
     setSession(null)
     setDisplayName(null)

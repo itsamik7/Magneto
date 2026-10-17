@@ -1,4 +1,4 @@
-# Magneto 🧲✈️
+# Magnetos 🧲✈️
 
 > **Turn your travel dreams into destinations.**  
 > A tactile travel savings and trip planning web application featuring a realistic virtual refrigerator with collectible souvenir destination magnets.
@@ -7,7 +7,7 @@
 
 ## 🌟 Overview & Core Principles
 
-Magneto replaces scattered travel spreadsheets and messy notes with a visual, rewarding travel fridge.
+Magnetos replaces scattered travel spreadsheets and messy notes with a visual, rewarding travel fridge.
 Users collect travel destinations as realistic souvenir magnets, set target budgets in INR, record savings deposits in minor units (paise) with mathematical accuracy, automatically unlock magnet states (*Dreaming* → *Saving* → *Ready to Go!*), and organize their travel itinerary and departure checklist.
 
 ### Core Loop

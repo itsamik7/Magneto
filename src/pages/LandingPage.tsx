@@ -3,7 +3,7 @@ import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { VirtualFridge } from '../components/fridge/VirtualFridge'
 import type { TripWithStats } from '../types/trip'
-import { MapPin, PiggyBank, Sparkles, CheckCircle2 } from 'lucide-react'
+import { MapPin, PiggyBank, Sparkles } from 'lucide-react'
 
 // Demo magnets showcasing the 6 reference destinations from the screenshot
 const DEMO_TRIPS: TripWithStats[] = [
@@ -159,7 +159,7 @@ export const LandingPage: React.FC = () => {
             </div>
             <div>
               <span className="font-heading font-black text-2xl text-[#1E293B] tracking-tight">
-                Magneto
+                Magnetos
               </span>
               <p className="text-xs font-semibold text-[#059669] italic -mt-1 font-serif">
                 Collect. Save. Explore.
@@ -240,7 +240,7 @@ export const LandingPage: React.FC = () => {
             </div>
 
             <p className="text-xs text-slate-500 font-medium">
-              Free to start · Your fridge is saved to your account.
+              Sign in to start building your own travel fridge.
             </p>
           </div>
 
@@ -253,25 +253,10 @@ export const LandingPage: React.FC = () => {
             onSelectTrip={() => {}}
             onAddDestination={() => {}}
             showControls={false}
+            readOnly={true}
           />
         </div>
 
-      </div>
-
-      {/* Floating Bottom Pill (Exact Match to Screenshot Style) */}
-      <div className="pt-8 flex justify-center">
-        <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-[#1E293B] text-white text-xs font-semibold shadow-xl border border-slate-700">
-          <span className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            <span>Supabase Database Connected & Live</span>
-          </span>
-          <Link
-            to="/signup"
-            className="px-3 py-1 rounded-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-[11px] transition-colors"
-          >
-            Open My Fridge
-          </Link>
-        </div>
       </div>
     </div>
   )

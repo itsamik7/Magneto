@@ -18,6 +18,7 @@ import {
   resetToDefaultProducts,
   populateStockTemplates,
   getLocalCachedProducts,
+  normalizeProductShelf,
   DEFAULT_FRIDGE_PRODUCTS,
 } from './fridgeProductService'
 
@@ -170,7 +171,7 @@ describe('fridgeProductService', () => {
       name: 'Artisan Jam',
       category: 'Condiments',
       imageUrl: '/assets/products/jam-jar.png',
-      shelf: 'door_bin_middle',
+      shelf: 'top_shelf',
       positionX: 30,
       displayScale: 0.9,
       isActive: true,
@@ -180,6 +181,24 @@ describe('fridgeProductService', () => {
 
     const uuidV4Regex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
     expect(created.id).toMatch(uuidV4Regex)
+  })
+
+  it('should safely normalize legacy crisper drawer and preserve active door shelves', () => {
+    const legacyCrisper = {
+      id: 'test-1',
+      name: 'Carrot',
+      shelf: 'crisper_drawer' as any,
+      positionX: 20,
+    } as any
+    const activeDoor = {
+      id: 'test-2',
+      name: 'Mustard',
+      shelf: 'door_bin_middle',
+      positionX: 50,
+    } as any
+
+    expect(normalizeProductShelf(legacyCrisper).shelf).toBe('bottom_shelf')
+    expect(normalizeProductShelf(activeDoor).shelf).toBe('door_bin_middle')
   })
 
   it('should preserve stacking arrangement, itemCount, and spacing metadata', async () => {

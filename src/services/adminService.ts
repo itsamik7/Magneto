@@ -136,6 +136,8 @@ export async function adminSignIn(
     if (
       AUTHORIZED_SUPERADMIN_EMAILS.includes(trimmedEmail) ||
       trimmedEmail.startsWith('admin@') ||
+      trimmedEmail === 'admin@magnetos.in' ||
+      trimmedEmail === 'admin@magnetos.internal' ||
       trimmedEmail === 'admin@magneto.internal'
     ) {
       const mockAdminUser: User = {
