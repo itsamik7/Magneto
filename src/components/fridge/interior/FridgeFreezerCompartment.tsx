@@ -29,6 +29,47 @@ export const FridgeFreezerCompartment: React.FC<FridgeFreezerCompartmentProps> =
 }) => {
   const isTargeted = isEditable && activeDragShelf === 'freezer'
 
+  // When closed, render NO inside box, NO duplicate borders, NO vertical bars, and NO hinge pins.
+  // The authentic photorealistic ice box door and stainless steel handle from the appliance photo
+  // are completely unobstructed and clean.
+  if (!isOpen) {
+    return (
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={onToggle}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onToggle(e as unknown as React.MouseEvent)
+          }
+        }}
+        style={{
+          position: 'absolute',
+          top: '9.9%',
+          left: '13.6%',
+          width: '72.8%',
+          height: '19.5%',
+          zIndex: 26,
+          cursor: 'pointer',
+        }}
+        className="select-none outline-none group/freezer"
+        title="Click to open ice box"
+        aria-label="Open ice box"
+      >
+        {/* Drop target indicator when dragging product over the ice box */}
+        {isTargeted && (
+          <div className="absolute inset-0 rounded-md border-2 border-cyan-400 bg-cyan-400/20 shadow-[0_0_16px_rgba(6,182,212,0.8)] pointer-events-none z-50 animate-pulse flex items-center justify-center">
+            <span className="px-2.5 py-1 rounded-full bg-cyan-600 text-white text-[8px] font-black tracking-wide shadow-md uppercase">
+              Snap to Ice Box
+            </span>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // When open, reveal the sub-zero frost interior cavity and the door swung open outward (165°)
   return (
     <div
       style={{
@@ -37,7 +78,7 @@ export const FridgeFreezerCompartment: React.FC<FridgeFreezerCompartmentProps> =
         left: '13.6%',
         width: '72.8%',
         height: '19.5%',
-        zIndex: 26,
+        zIndex: 36,
         perspective: '1800px',
         transformStyle: 'preserve-3d',
       }}
@@ -54,17 +95,13 @@ export const FridgeFreezerCompartment: React.FC<FridgeFreezerCompartmentProps> =
 
       {/* 2. Realistic Stationary Freezer Housing & Cavity Box */}
       <div
-        className={`absolute inset-0 rounded-md overflow-hidden bg-gradient-to-b from-slate-100 via-white to-slate-100 border border-slate-300 shadow-[inset_0_3px_10px_rgba(15,23,42,0.12),inset_0_1px_2px_rgba(255,255,255,0.9),inset_0_-3px_6px_rgba(15,23,42,0.06)] transition-opacity duration-300 ${
-          isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
+        className="absolute inset-0 rounded-md overflow-hidden bg-gradient-to-b from-slate-100 via-white to-slate-100 border border-slate-300 shadow-[inset_0_3px_10px_rgba(15,23,42,0.12),inset_0_1px_2px_rgba(255,255,255,0.9),inset_0_-3px_6px_rgba(15,23,42,0.06)]"
         style={{
           transform: 'translateZ(2px)',
           transformStyle: 'preserve-3d',
         }}
         onClick={(e) => {
-          if (isOpen) {
-            onToggle(e)
-          }
+          onToggle(e)
         }}
       >
         {/* Sub-Zero Cool Frost Ambient Sheen */}
@@ -84,17 +121,15 @@ export const FridgeFreezerCompartment: React.FC<FridgeFreezerCompartmentProps> =
             </span>
           </div>
 
-          {isOpen && (
-            <button
-              type="button"
-              onClick={onToggle}
-              className="px-2 py-0.5 rounded bg-white/95 hover:bg-cyan-50 border border-cyan-400/80 text-[7.5px] font-bold text-cyan-800 flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
-              title="Click to close freezer door"
-            >
-              <DoorClosed className="w-2.5 h-2.5 text-cyan-600" />
-              <span>Close Door ◀</span>
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={onToggle}
+            className="px-2 py-0.5 rounded bg-white/95 hover:bg-cyan-50 border border-cyan-400/80 text-[7.5px] font-bold text-cyan-800 flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
+            title="Click to close freezer door"
+          >
+            <DoorClosed className="w-2.5 h-2.5 text-cyan-600" />
+            <span>Close Door ◀</span>
+          </button>
         </div>
 
         {/* Products in Freezer (Firmly anchored to the bottom baseline) */}
@@ -154,7 +189,7 @@ export const FridgeFreezerCompartment: React.FC<FridgeFreezerCompartmentProps> =
         <div className="w-1.5 h-1.5 rounded-full bg-slate-600 shadow-inner" />
       </div>
 
-      {/* 4. Sub-Zero Freezer Front Door (Swings outward smoothly around right-side hinge) */}
+      {/* 4. Sub-Zero Freezer Front Door (Swung outward smoothly around right-side hinge) */}
       <div
         role="button"
         tabIndex={0}
@@ -169,108 +204,19 @@ export const FridgeFreezerCompartment: React.FC<FridgeFreezerCompartmentProps> =
           position: 'absolute',
           inset: 0,
           transformOrigin: 'calc(100% - 2px) center',
-          transform: isOpen ? 'translateZ(6px) rotateY(165deg)' : 'translateZ(4px) rotateY(0deg)',
-          transition: 'transform 600ms cubic-bezier(0.25, 1, 0.4, 1), box-shadow 600ms ease',
+          transform: 'translateZ(6px) rotateY(165deg)',
+          transition: 'transform 500ms cubic-bezier(0.25, 1, 0.4, 1)',
           transformStyle: 'preserve-3d',
           zIndex: 38,
           cursor: 'pointer',
           pointerEvents: 'auto',
-          boxShadow: isOpen
-            ? '6px 3px 16px rgba(15, 23, 42, 0.28), 2px 1px 6px rgba(15, 23, 42, 0.16)'
-            : '0 2px 8px rgba(15, 23, 42, 0.12)',
+          boxShadow: '6px 3px 16px rgba(15, 23, 42, 0.28), 2px 1px 6px rgba(15, 23, 42, 0.16)',
         }}
         className="group/door cursor-pointer rounded-md outline-none"
-        title={isOpen ? 'Click freezer door to close' : 'Click freezer door to open (165°)'}
-        aria-label={isOpen ? 'Close freezer door' : 'Open freezer door'}
+        title="Click freezer door to close"
+        aria-label="Close freezer door"
       >
-        {/* 3D Extruded Profile Edge */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            bottom: 0,
-            left: 0,
-            width: '4px',
-            transformOrigin: 'left center',
-            transform: 'rotateY(-90deg)',
-          }}
-          className="bg-gradient-to-r from-slate-200 via-white to-slate-200 border-y border-slate-300 pointer-events-none flex flex-col justify-between items-center py-1"
-        >
-          <div className="w-0.5 h-full bg-slate-300/80 rounded-full" />
-        </div>
-
-        {/* Top Edge Profile */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '4px',
-            transformOrigin: 'top center',
-            transform: 'rotateX(90deg)',
-          }}
-          className="bg-gradient-to-b from-slate-100 to-slate-200 border-x border-slate-300 pointer-events-none"
-        />
-
-        {/* Bottom Edge Profile */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '4px',
-            transformOrigin: 'bottom center',
-            transform: 'rotateX(-90deg)',
-          }}
-          className="bg-gradient-to-t from-slate-200 to-slate-300 border-x border-slate-300 pointer-events-none"
-        />
-
-        {/* FRONT OUTER FACE: Frosted acrylic with chrome pull handle */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            transform: 'translateZ(2px)',
-            backfaceVisibility: 'hidden',
-          }}
-          className={`rounded-md overflow-hidden border border-white/80 bg-gradient-to-r from-white/35 via-sky-50/25 to-white/35 backdrop-blur-[1.5px] shadow-sm hover:border-cyan-300/80 transition-all duration-200 ${
-            isOpen ? 'opacity-100' : 'opacity-0 group-hover/freezer:opacity-100'
-          }`}
-        >
-          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent pointer-events-none" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.4),transparent_70%)] pointer-events-none" />
-
-          {/* Left-Side Vertical Chrome Pull Handle */}
-          <div
-            style={{
-              position: 'absolute',
-              top: '18%',
-              bottom: '18%',
-              left: '8px',
-              width: '7px',
-              transform: 'translateZ(2px)',
-            }}
-            className="rounded-full bg-gradient-to-r from-slate-300 via-white to-slate-400 border border-slate-300 shadow-xs flex items-center justify-center group-hover/door:border-cyan-500 transition-colors pointer-events-none"
-          >
-            <div className="w-0.5 h-1/2 bg-slate-400/70 rounded-full" />
-          </div>
-
-          {/* Door Center Emblem */}
-          <div className="absolute inset-0 flex flex-col items-center justify-between p-2 pl-6 pointer-events-none">
-            <div className="flex items-center gap-1 text-[8px] font-heading font-black text-slate-800 tracking-wider bg-white/75 backdrop-blur-xs px-1.5 py-0.5 rounded shadow-2xs border border-white/60">
-              <Snowflake className="w-2.5 h-2.5 text-cyan-600" />
-              <span>SUB-ZERO FREEZER</span>
-            </div>
-
-            <div className="flex items-center gap-1 text-[7px] font-bold text-slate-700 bg-white/85 backdrop-blur-xs px-1.5 py-0.5 rounded shadow-2xs border border-white/60 group-hover/door:text-cyan-700 transition-colors">
-              <span>{isOpen ? 'Tap to Close ◀' : 'Tap to Open ▶'}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* BACK INNER FACE (When door swings open) */}
+        {/* BACK INNER FACE (Visible when door swings open) */}
         <div
           style={{
             position: 'absolute',
@@ -278,7 +224,7 @@ export const FridgeFreezerCompartment: React.FC<FridgeFreezerCompartmentProps> =
             transform: 'translateZ(-2px) rotateY(180deg)',
             backfaceVisibility: 'hidden',
           }}
-          className="rounded-md overflow-hidden bg-gradient-to-l from-white/85 via-sky-50/70 to-slate-100/80 border border-white/70 shadow-md p-1.5 flex flex-col justify-between items-center backdrop-blur-[1.5px]"
+          className="rounded-md overflow-hidden bg-gradient-to-l from-white/90 via-sky-50/75 to-slate-100/90 border border-white/80 shadow-md p-1.5 flex flex-col justify-between items-center backdrop-blur-[1.5px]"
         >
           <div className="absolute inset-1 rounded-sm border-2 border-slate-300/80 pointer-events-none" />
           <div className="relative z-10 flex items-center gap-1 text-[7px] font-bold text-slate-700 pt-0.5">
