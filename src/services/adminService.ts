@@ -214,7 +214,7 @@ export async function adminSignInWithGoogle(): Promise<{ success: boolean; error
     return { success: true }
   }
 
-  const origin = typeof window !== 'undefined' ? window.location.origin : ''
+  const origin = typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'https://magnetos.in'
   const adminRedirect = `${origin}/admin`
 
   const { error } = await supabase.auth.signInWithOAuth({

@@ -88,7 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!isSupabaseConfigured) {
       return { error: 'Supabase credentials not configured. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your .env file.' }
     }
-    const origin = typeof window !== 'undefined' ? window.location.origin : ''
+    const origin = typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'https://magnetos.in'
     const targetRedirect = redirectTo || `${origin}/dashboard`
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
