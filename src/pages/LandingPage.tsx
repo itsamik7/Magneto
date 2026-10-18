@@ -253,7 +253,6 @@ export const LandingPage: React.FC = () => {
             onSelectTrip={() => {}}
             onAddDestination={() => {}}
             showControls={false}
-            readOnly={true}
           />
         </div>
 

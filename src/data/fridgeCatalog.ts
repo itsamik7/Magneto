@@ -8,7 +8,7 @@ export const FRIDGE_MODELS: FridgeModel[] = [
   {
     "id": "universal-steel-studio",
     "name": "Universal Studio Stainless 3D",
-    "brand": "Magnetos Studio",
+    "brand": "Magneto Studio",
     "style": "Single-door",
     "finish": "Brushed Platinum Steel (Openable 3D)",
     "colorHex": "#94A3B8",

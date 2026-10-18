@@ -38,84 +38,73 @@ export const SHELF_DEFINITIONS: Record<FridgeShelf, ShelfDefinition> = {
     id: 'top_shelf',
     label: 'Upper Fresh Food Shelf',
     location: 'cavity',
-    surfaceTopPercent: 47.5, // exact tempered glass top surface in appliance photo
-    verticalCenterPercent: 38,
-    horizontalRange: [18, 82],
-    heightRange: [30, 48],
+    surfaceTopPercent: 44.8, // exact tempered glass top surface
+    verticalCenterPercent: 36,
+    horizontalRange: [14, 86],
+    heightRange: [24, 45],
     description: 'Tempered glass shelf for eggs, dairy jars, and delicate items.',
   },
   middle_shelf: {
     id: 'middle_shelf',
     label: 'Middle Fresh Food Shelf',
     location: 'cavity',
-    surfaceTopPercent: 60.6, // exact tempered glass top surface in appliance photo
-    verticalCenterPercent: 54,
-    horizontalRange: [18, 82],
-    heightRange: [48, 62],
-    description: 'Primary tempered glass shelf for cartons, bottles, fresh produce and containers.',
+    surfaceTopPercent: 60.1, // exact tempered glass top surface
+    verticalCenterPercent: 52,
+    horizontalRange: [14, 86],
+    heightRange: [45, 60],
+    description: 'Primary tempered glass shelf for cartons, bottles, and daily drinks.',
   },
   bottom_shelf: {
     id: 'bottom_shelf',
-    label: 'Refrigerator Cavity Floor',
+    label: 'Lower Fresh Food Shelf',
     location: 'cavity',
-    surfaceTopPercent: 93.0, // clean flat food-grade cavity floor
-    verticalCenterPercent: 76,
-    horizontalRange: [18, 82],
-    heightRange: [62, 94],
-    description: 'Spacious flat lower floor for produce, salads, and large meal containers.',
+    surfaceTopPercent: 73.4, // exact tempered glass top surface
+    verticalCenterPercent: 66,
+    horizontalRange: [14, 86],
+    heightRange: [60, 74],
+    description: 'Sturdy glass shelf above crisper for meal preps, heavy juice carafes.',
   },
-  // Legacy backward-compatibility fallbacks (mapped safely to cavity shelves)
   crisper_drawer: {
     id: 'crisper_drawer',
-    label: 'Legacy Crisper Drawer',
+    label: 'Bottom Crisper Humidity Drawer',
     location: 'cavity',
-    surfaceTopPercent: 60.2,
-    verticalCenterPercent: 53,
-    horizontalRange: [14, 86],
-    heightRange: [47, 61],
-    description: 'Legacy crisper mapped to middle shelf.',
+    surfaceTopPercent: 85.0, // within crisper drawer container
+    verticalCenterPercent: 86,
+    horizontalRange: [16, 84],
+    heightRange: [75, 94],
+    description: 'Transparent high-humidity vegetable & citrus fruit drawer.',
   },
   door_bin_top: {
     id: 'door_bin_top',
-    label: 'Upper Door Dairy & Condiment Bin',
+    label: 'Door Top Dairy Bin',
     location: 'door',
-    surfaceTopPercent: 30.0,
-    verticalCenterPercent: 22,
-    horizontalRange: [14, 86],
-    heightRange: [14, 30],
-    description: 'Upper door storage bin for condiments, butter, and small jars.',
+    surfaceTopPercent: 26.2, // floor of top acrylic dairy rack
+    verticalCenterPercent: 20,
+    horizontalRange: [16, 84],
+    heightRange: [14, 28],
+    description: 'Covered upper acrylic bin for butter, small cheeses, and spreads.',
   },
   door_bin_middle: {
     id: 'door_bin_middle',
-    label: 'Middle Door Beverage & Sauce Bin',
+    label: 'Door Middle Condiment Bin',
     location: 'door',
-    surfaceTopPercent: 55.0,
-    verticalCenterPercent: 46,
-    horizontalRange: [14, 86],
-    heightRange: [37, 55],
-    description: 'Middle door storage bin for jars, sauces, and canned drinks.',
+    surfaceTopPercent: 48.2, // floor of middle condiment rack
+    verticalCenterPercent: 44,
+    horizontalRange: [16, 84],
+    heightRange: [36, 52],
+    description: 'Intermediate acrylic door rack for mustard, sauces, and jam jars.',
   },
   door_bin_bottom: {
     id: 'door_bin_bottom',
-    label: 'Lower Door Gallon & Tall Bottle Bin',
+    label: 'Door Bottom Beverage Gallon Bin',
     location: 'door',
-    surfaceTopPercent: 87.0,
-    verticalCenterPercent: 75,
-    horizontalRange: [14, 86],
-    heightRange: [63, 87],
-    description: 'Deep lower door storage bin for tall bottles, milk cartons, and carafes.',
+    surfaceTopPercent: 88.5, // floor of deep gallon bottle rack
+    verticalCenterPercent: 74,
+    horizontalRange: [16, 84],
+    heightRange: [60, 89],
+    description: 'Deep guardrail door rack for champagne, tall bottles, and juices.',
   },
 }
-
-export const ACTIVE_FRIDGE_SHELVES: FridgeShelf[] = [
-  'freezer',
-  'top_shelf',
-  'middle_shelf',
-  'bottom_shelf',
-  'door_bin_top',
-  'door_bin_middle',
-  'door_bin_bottom',
-]
 
 export interface ProductVisualDimensions {
   widthPx: number
@@ -167,7 +156,7 @@ export function getProductDimensions(product: {
     name.includes('juice') ||
     img.includes('orange-juice')
   ) {
-    return { widthPx: 38, heightPx: 56, shadowWidthPercent: 88, shadowShape: 'rounded-rect' }
+    return { widthPx: 32, heightPx: 56, shadowWidthPercent: 84, shadowShape: 'rounded-rect' }
   }
   // 6. Round salad greens & lettuce
   if (name.includes('lettuce') || name.includes('salad') || img.includes('green-lettuce')) {
@@ -357,7 +346,7 @@ export const APPROVED_ASSETS: ApprovedAsset[] = [
     name: 'Pure Squeezed Orange Juice',
     category: 'Beverages',
     path: '/assets/products/orange-juice.png',
-    suggestedShelf: 'door_bin_middle',
+    suggestedShelf: 'bottom_shelf',
     defaultQuantity: '1 Carafe',
     defaultItemCount: 1,
     defaultArrangement: 'single',
@@ -379,7 +368,7 @@ export const APPROVED_ASSETS: ApprovedAsset[] = [
     name: 'Dijon Mustard & Condiment',
     category: 'Condiments',
     path: '/assets/products/condiment-jar.png',
-    suggestedShelf: 'door_bin_top',
+    suggestedShelf: 'door_bin_middle',
     defaultQuantity: '250g Jar',
     defaultItemCount: 1,
     defaultArrangement: 'single',
@@ -390,7 +379,7 @@ export const APPROVED_ASSETS: ApprovedAsset[] = [
     name: 'Artisan Strawberry Conserve',
     category: 'Condiments',
     path: '/assets/products/jam-jar.png',
-    suggestedShelf: 'door_bin_top',
+    suggestedShelf: 'door_bin_middle',
     defaultQuantity: '340g Jar',
     defaultItemCount: 1,
     defaultArrangement: 'single',
@@ -398,10 +387,10 @@ export const APPROVED_ASSETS: ApprovedAsset[] = [
   },
   {
     id: 'asset-citrus-basket',
-    name: 'Fresh Citrus Basket',
+    name: 'Crisper Fresh Citrus Basket',
     category: 'Fruits & Vegetables',
     path: '/assets/products/citrus-basket.png',
-    suggestedShelf: 'middle_shelf',
+    suggestedShelf: 'crisper_drawer',
     defaultQuantity: '1 Basket',
     defaultItemCount: 1,
     defaultArrangement: 'single',
@@ -412,7 +401,7 @@ export const APPROVED_ASSETS: ApprovedAsset[] = [
     name: 'Hydroponic Salad Greens',
     category: 'Fruits & Vegetables',
     path: '/assets/products/green-lettuce.png',
-    suggestedShelf: 'middle_shelf',
+    suggestedShelf: 'crisper_drawer',
     defaultQuantity: '1 Head',
     defaultItemCount: 1,
     defaultArrangement: 'single',
@@ -423,7 +412,7 @@ export const APPROVED_ASSETS: ApprovedAsset[] = [
     name: 'Glass Meal Prep Container',
     category: 'Prepared Meals',
     path: '/assets/products/meal-container.png',
-    suggestedShelf: 'middle_shelf',
+    suggestedShelf: 'bottom_shelf',
     defaultQuantity: '2 Containers (Stacked)',
     defaultItemCount: 2,
     defaultArrangement: 'stack',

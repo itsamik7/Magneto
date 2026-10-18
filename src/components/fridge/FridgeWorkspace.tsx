@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect, useCallback } from 'react'
 import type { FridgeModel, MagnetPlacement } from '../../types/fridge'
 import type { FridgeMagnetItem } from '../../services/userMagnetService'
 import { fridgeService } from '../../services/fridgeService'
-import { useAuth } from '../../context/AuthContext'
 import { DraggableMagnet } from './DraggableMagnet'
 import { UniversalSteelFridge } from './UniversalSteelFridge'
 import {
@@ -46,10 +45,6 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
   onDropMagnet,
   placements: controlledPlacements,
 }) => {
-  const { user } = useAuth()
-  const isAuthenticated = Boolean(user && user.id && user.id !== 'guest' && user.id !== 'default_user')
-  const isEffectiveReadOnly = Boolean(readOnly || !isAuthenticated)
-
   const surfaceRef = useRef<HTMLDivElement>(null)
   const [isDragOver, setIsDragOver] = useState(false)
   const [internalSelectedId, setInternalSelectedId] = useState<string | null>(null)
@@ -104,6 +99,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
   // 3D Door Open/Close State
   const [isMainDoorOpen, setIsMainDoorOpen] = useState(false)
   const [isFreezerDoorOpen, setIsFreezerDoorOpen] = useState(false)
+  const [isCrisperOpen, setIsCrisperOpen] = useState(false)
   const [isInternalFreezerOpen, setIsInternalFreezerOpen] = useState(false)
 
   const handleResetZoom = () => {
@@ -234,6 +230,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
     setIsMainDoorOpen((prev) => {
       const next = !prev
       if (!next) {
+        setIsCrisperOpen(false)
         setIsInternalFreezerOpen(false)
         setIsFreezerDoorOpen(false)
       }
@@ -420,11 +417,6 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
   // Remove magnet from fridge placement
   const handleRemovePlacement = useCallback(
     (id: string) => {
-      // Security guard: logged-out visitors and read-only fridges cannot remove magnets
-      if (isEffectiveReadOnly || !isAuthenticated) {
-        console.warn('[FridgeWorkspace] Blocked unauthorized magnet deletion attempt by unauthenticated user')
-        return
-      }
       const toRemove = placementsRef.current.find((p) => p.id === id)
       const next = placementsRef.current.filter((p) => p.id !== id)
       setPlacements(next)
@@ -439,7 +431,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
         onRemoveMagnet(toRemove?.magnetSlug || id)
       }
     },
-    [userId, activeModel.id, selectedPlacementId, onPlacementsChange, onRemoveMagnet, isEffectiveReadOnly, isAuthenticated]
+    [userId, activeModel.id, selectedPlacementId, onPlacementsChange, onRemoveMagnet]
   )
 
   const selectedPlacement = placements.find((p) => p.id === selectedPlacementId)
@@ -512,6 +504,8 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
               isFreezerDoorOpen={isInternalFreezerOpen}
               onToggleMainDoor={handleToggleMainDoor}
               onToggleFreezerDoor={handleToggleFreezerDoor}
+              isCrisperOpen={isCrisperOpen}
+              onToggleCrisper={() => setIsCrisperOpen((v) => !v)}
               isFreezerOpen={isInternalFreezerOpen}
               onToggleFreezer={() => setIsInternalFreezerOpen((v) => !v)}
               magneticRegion={magneticRegion}
@@ -522,7 +516,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               onSurfaceClick={handleSurfaceClick}
-              isEditable={false}
+              isEditable={!readOnly}
               yaw={fridgeYaw}
               onYawChange={setFridgeYaw}
             >
@@ -565,14 +559,10 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
                     placement={placement}
                     isSelected={isSelected}
                     surfaceRef={surfaceRef}
-                    isEditable={!isEffectiveReadOnly}
-                    canDelete={isAuthenticated && !isEffectiveReadOnly}
+                    isEditable={!readOnly}
                     onSelect={() => setSelectedPlacementId(placement.id)}
                     onUpdatePlacement={handleUpdatePlacement}
-                    onRemove={() => {
-                      if (!isAuthenticated || isEffectiveReadOnly) return
-                      handleRemovePlacement(placement.id)
-                    }}
+                    onRemove={() => handleRemovePlacement(placement.id)}
                     onBringToFront={() => handleBringToFront(placement.id)}
                     onClick={() => {
                       setSelectedPlacementId(placement.id)
@@ -739,14 +729,10 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
                         placement={placement}
                         isSelected={isSelected}
                         surfaceRef={surfaceRef}
-                        isEditable={!isEffectiveReadOnly}
-                        canDelete={isAuthenticated && !isEffectiveReadOnly}
+                        isEditable={!readOnly}
                         onSelect={() => setSelectedPlacementId(placement.id)}
                         onUpdatePlacement={handleUpdatePlacement}
-                        onRemove={() => {
-                          if (!isAuthenticated || isEffectiveReadOnly) return
-                          handleRemovePlacement(placement.id)
-                        }}
+                        onRemove={() => handleRemovePlacement(placement.id)}
                         onBringToFront={() => handleBringToFront(placement.id)}
                         onClick={() => {
                           setSelectedPlacementId(placement.id)
@@ -764,7 +750,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
         )}
 
           {/* Selected Magnet Status Toast Overlay (Bottom Edge - Edit Mode Only) */}
-          {!isEffectiveReadOnly && selectedPlacement && (
+          {!readOnly && selectedPlacement && (
             <div className="absolute bottom-2.5 inset-x-3 z-50 p-2 bg-slate-900/90 backdrop-blur-md border border-white/20 rounded-xl text-white flex items-center justify-between text-[10px] shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-150">
               <div className="min-w-0 pr-2">
                 <p className="font-heading font-bold text-white truncate">

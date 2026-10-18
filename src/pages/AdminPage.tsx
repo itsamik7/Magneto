@@ -34,7 +34,6 @@ import {
   PRODUCT_CATEGORIES,
   APPROVED_ASSETS,
   COMPARTMENT_CAPACITIES,
-  ACTIVE_FRIDGE_SHELVES,
 } from '../types/fridgeProduct'
 import { UniversalSteelFridge } from '../components/fridge/UniversalSteelFridge'
 import {
@@ -133,6 +132,7 @@ export const AdminPage: React.FC = () => {
 
   // Live Fridge Preview controls state
   const [previewDoorOpen, setPreviewDoorOpen] = useState(true)
+  const [previewCrisperOpen, setPreviewCrisperOpen] = useState(false)
   const [previewFreezerOpen, setPreviewFreezerOpen] = useState(false)
   const [previewYaw, setPreviewYaw] = useState(-25)
   const [mobileTab, setMobileTab] = useState<'editor' | 'preview'>('editor')
@@ -208,7 +208,9 @@ export const AdminPage: React.FC = () => {
         setPreviewYaw(-20)
       }
 
-      if (formShelf === 'freezer') {
+      if (formShelf === 'crisper_drawer') {
+        setPreviewCrisperOpen(true)
+      } else if (formShelf === 'freezer') {
         setPreviewFreezerOpen(true)
       }
 
@@ -1143,20 +1145,21 @@ export const AdminPage: React.FC = () => {
                       onChange={(e) => setFormShelf(e.target.value as FridgeShelf)}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                     >
-                      <optgroup label="Cabinet Cavity (Glass Shelves & Freezer)">
+                      <optgroup label="Cabinet Cavity (Glass Shelves & Crisper)">
                         <option value="freezer">Top Freezer Compartment (Sub-Zero)</option>
                         <option value="top_shelf">Upper Fresh Food Shelf (Tempered Glass)</option>
                         <option value="middle_shelf">Middle Fresh Food Shelf (Tempered Glass)</option>
-                        <option value="bottom_shelf">Lower Fresh Food Shelf (Heavy Items & Produce)</option>
+                        <option value="bottom_shelf">Lower Fresh Food Shelf (Heavy Items)</option>
+                        <option value="crisper_drawer">Crisper Humidity Drawer (Fruits & Veggies)</option>
                       </optgroup>
-                      <optgroup label="Refrigerator Door (3D Molded Door Bins)">
-                        <option value="door_bin_top">Upper Door Dairy & Condiment Bin</option>
-                        <option value="door_bin_middle">Middle Door Beverage & Sauce Bin</option>
-                        <option value="door_bin_bottom">Lower Door Gallon & Tall Bottle Bin</option>
+                      <optgroup label="Door-Side Storage (Acrylic Bins & Racks)">
+                        <option value="door_bin_top">Door Top Dairy Bin (Covered)</option>
+                        <option value="door_bin_middle">Door Middle Condiment Rack (Jars & Sauces)</option>
+                        <option value="door_bin_bottom">Door Bottom Beverage Bin (Tall Bottles)</option>
                       </optgroup>
                     </select>
                     <span className="text-[10px] text-slate-400 mt-1 block">
-                      Location: <strong className="text-slate-700">{SHELF_DEFINITIONS[formShelf]?.location === 'door' ? 'Door-Side Storage Bin' : formShelf === 'freezer' ? 'Sub-Zero Freezer' : 'Interior Glass Shelf'}</strong>
+                      Location: <strong className="text-slate-700">{SHELF_DEFINITIONS[formShelf]?.location === 'door' ? 'Door Storage Bin' : 'Interior Glass Cavity'}</strong>
                     </span>
                   </div>
 
@@ -1658,7 +1661,18 @@ export const AdminPage: React.FC = () => {
                   All Compartments ({products.filter((p) => p.isActive && !p.isArchived).length})
                 </button>
 
-                {ACTIVE_FRIDGE_SHELVES.map((shelfKey) => {
+                {(
+                  [
+                    'freezer',
+                    'top_shelf',
+                    'middle_shelf',
+                    'bottom_shelf',
+                    'crisper_drawer',
+                    'door_bin_top',
+                    'door_bin_middle',
+                    'door_bin_bottom',
+                  ] as FridgeShelf[]
+                ).map((shelfKey) => {
                   const shelfDef = SHELF_DEFINITIONS[shelfKey]
                   const shelfCap = COMPARTMENT_CAPACITIES[shelfKey]
                   const activeShelfProds = products.filter(
@@ -1740,6 +1754,12 @@ export const AdminPage: React.FC = () => {
                     <option value="top_shelf">Upper Shelf</option>
                     <option value="middle_shelf">Middle Shelf</option>
                     <option value="bottom_shelf">Lower Shelf</option>
+                    <option value="crisper_drawer">Crisper Drawer</option>
+                  </optgroup>
+                  <optgroup label="Door Storage">
+                    <option value="door_bin_top">Door Top Bin</option>
+                    <option value="door_bin_middle">Door Middle Bin</option>
+                    <option value="door_bin_bottom">Door Bottom Bin</option>
                   </optgroup>
                 </select>
 
@@ -2069,6 +2089,20 @@ export const AdminPage: React.FC = () => {
             <div className="flex items-center gap-2">
               <button
                 type="button"
+                onClick={() => setPreviewCrisperOpen(!previewCrisperOpen)}
+                className={`flex-1 py-1.5 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer border ${
+                  previewCrisperOpen
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs'
+                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                }`}
+                title="Slide Crisper Drawer In/Out"
+              >
+                <Droplets className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Crisper: {previewCrisperOpen ? 'Extended ▲' : 'Closed ▼'}</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setPreviewFreezerOpen(!previewFreezerOpen)}
                 className={`flex-1 py-1.5 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer border ${
                   previewFreezerOpen
@@ -2127,12 +2161,13 @@ export const AdminPage: React.FC = () => {
             <div className="pt-2 flex justify-center overflow-visible select-none min-h-[440px]">
               <UniversalSteelFridge
                 isDoorOpen={previewDoorOpen}
+                isCrisperOpen={previewCrisperOpen}
+                onToggleCrisper={() => setPreviewCrisperOpen((v) => !v)}
                 isFreezerOpen={previewFreezerOpen}
                 onToggleFreezer={() => setPreviewFreezerOpen((v) => !v)}
                 yaw={previewYaw}
                 magneticRegion={{ top: 0.1, left: 0.1, width: 0.8, height: 0.8 }}
                 surfaceRef={{ current: null }}
-                isEditable={true}
                 products={previewProducts}
                 highlightedProductId={editingProduct?.id || (isAddMode ? 'draft-new-product-preview-id' : undefined)}
                 onSelectProduct={(prod) => openEditEditor(prod)}

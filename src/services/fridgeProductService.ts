@@ -3,7 +3,11 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase'
 
 const STORAGE_KEY = 'magneto_fridge_interior_products_v2'
 export const FRIDGE_PRODUCTS_UPDATED_EVENT = 'magneto_fridge_products_changed'
-// Stock grocery templates available in Admin Panel & initial fridge contents
+
+// Empty initial products array: the refrigerator starts completely empty!
+export const DEFAULT_FRIDGE_PRODUCTS: FridgeProduct[] = []
+
+// Optional stock grocery templates available in Admin Panel
 export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
   {
     id: '11111111-1111-1111-1111-111111111101',
@@ -13,11 +17,11 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     description: 'Organic whole milk, pasteurized & fortified with Vitamin D',
     shelf: 'middle_shelf',
     positionX: 25,
-    displayScale: 1.0,
-    quantity: '1 Carton',
-    itemCount: 1,
-    arrangement: 'single',
-    spacing: 18,
+    displayScale: 1.05,
+    quantity: '3 Cartons',
+    itemCount: 3,
+    arrangement: 'row',
+    spacing: 22,
     isActive: true,
     isArchived: false,
     displayOrder: 1,
@@ -29,7 +33,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     imageUrl: '/assets/products/egg-carton.png',
     description: 'Pasture-raised grade A large brown eggs',
     shelf: 'top_shelf',
-    positionX: 30,
+    positionX: 28,
     displayScale: 0.95,
     quantity: 'Pack of 6',
     itemCount: 1,
@@ -45,13 +49,13 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     category: 'Beverages',
     imageUrl: '/assets/products/water-bottle.png',
     description: 'Naturally effervescent spring water with mineral electrolytes',
-    shelf: 'door_bin_bottom',
-    positionX: 34,
+    shelf: 'middle_shelf',
+    positionX: 74,
     displayScale: 1.0,
-    quantity: '1 Bottle',
-    itemCount: 1,
-    arrangement: 'single',
-    spacing: 18,
+    quantity: '2 Bottles',
+    itemCount: 2,
+    arrangement: 'row',
+    spacing: 22,
     isActive: true,
     isArchived: false,
     displayOrder: 3,
@@ -62,8 +66,8 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     category: 'Beverages',
     imageUrl: '/assets/products/orange-juice.png',
     description: '100% pure squeezed Florida orange juice with pulp',
-    shelf: 'door_bin_middle',
-    positionX: 50,
+    shelf: 'bottom_shelf',
+    positionX: 28,
     displayScale: 1.0,
     quantity: '1 Carafe',
     itemCount: 1,
@@ -80,7 +84,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     imageUrl: '/assets/products/yogurt-jar.png',
     description: 'Strained whole milk plain Greek yogurt with probiotics',
     shelf: 'top_shelf',
-    positionX: 70,
+    positionX: 72,
     displayScale: 0.9,
     quantity: '2 Jars',
     itemCount: 2,
@@ -96,8 +100,8 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     category: 'Condiments',
     imageUrl: '/assets/products/condiment-jar.png',
     description: 'Authentic French stone-ground Dijon mustard',
-    shelf: 'door_bin_top',
-    positionX: 30,
+    shelf: 'door_bin_middle',
+    positionX: 25,
     displayScale: 0.9,
     quantity: '250g Jar',
     itemCount: 1,
@@ -113,8 +117,8 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     category: 'Condiments',
     imageUrl: '/assets/products/jam-jar.png',
     description: 'Slow-cooked handpicked wild strawberry preserves',
-    shelf: 'door_bin_top',
-    positionX: 70,
+    shelf: 'door_bin_middle',
+    positionX: 75,
     displayScale: 0.85,
     quantity: '340g Jar',
     itemCount: 1,
@@ -126,13 +130,13 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
   },
   {
     id: '11111111-1111-1111-1111-111111111108',
-    name: 'Fresh Citrus Basket',
+    name: 'Crisper Fresh Citrus Basket',
     category: 'Fruits & Vegetables',
     imageUrl: '/assets/products/citrus-basket.png',
     description: 'Juicy organic lemons, sweet clementines and Valencia oranges',
-    shelf: 'middle_shelf',
-    positionX: 52,
-    displayScale: 1.0,
+    shelf: 'crisper_drawer',
+    positionX: 32,
+    displayScale: 1.1,
     quantity: '1 Basket',
     itemCount: 1,
     arrangement: 'single',
@@ -147,9 +151,9 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     category: 'Fruits & Vegetables',
     imageUrl: '/assets/products/green-lettuce.png',
     description: 'Crisp romaine and butterhead salad greens',
-    shelf: 'bottom_shelf',
-    positionX: 50,
-    displayScale: 1.0,
+    shelf: 'crisper_drawer',
+    positionX: 72,
+    displayScale: 1.05,
     quantity: '1 Head',
     itemCount: 1,
     arrangement: 'single',
@@ -164,8 +168,8 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     category: 'Prepared Meals',
     imageUrl: '/assets/products/meal-container.png',
     description: 'Grilled chicken, roasted asparagus, and quinoa in airtight borosilicate container',
-    shelf: 'middle_shelf',
-    positionX: 78,
+    shelf: 'bottom_shelf',
+    positionX: 72,
     displayScale: 1.0,
     quantity: '2 Containers (Stacked)',
     itemCount: 2,
@@ -184,10 +188,10 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     shelf: 'freezer',
     positionX: 50,
     displayScale: 1.0,
-    quantity: '1 Pint',
-    itemCount: 1,
-    arrangement: 'single',
-    spacing: 18,
+    quantity: '2 Pints',
+    itemCount: 2,
+    arrangement: 'row',
+    spacing: 22,
     isActive: true,
     isArchived: false,
     displayOrder: 11,
@@ -199,8 +203,8 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     imageUrl: '/assets/products/champagne-bottle.png',
     description: 'Brut vintage reserve champagne chilled for celebrations',
     shelf: 'door_bin_bottom',
-    positionX: 68,
-    displayScale: 1.1,
+    positionX: 50,
+    displayScale: 1.15,
     quantity: '750 ml',
     itemCount: 1,
     arrangement: 'single',
@@ -211,27 +215,8 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
   },
 ]
 
-// Default initial products array: starts empty until created or loaded
-export const DEFAULT_FRIDGE_PRODUCTS: FridgeProduct[] = []
-
 // In-memory fallback
 const memoryStore = new Map<string, string>()
-
-/**
- * Safely normalizes legacy products referencing removed crisper drawer
- * onto the primary remaining tempered glass shelves so no user data is lost.
- * Active door bins are preserved.
- */
-export function normalizeProductShelf(product: FridgeProduct): FridgeProduct {
-  let shelf = product.shelf
-  let positionX = product.positionX
-  if (shelf === 'crisper_drawer') {
-    shelf = 'bottom_shelf'
-    if (product.name?.toLowerCase().includes('citrus')) positionX = 24
-    else if (product.name?.toLowerCase().includes('salad') || product.name?.toLowerCase().includes('lettuce')) positionX = 42
-  }
-  return { ...product, shelf, positionX }
-}
 
 function getLocalProducts(): FridgeProduct[] {
   try {
@@ -242,7 +227,7 @@ function getLocalProducts(): FridgeProduct[] {
       if (raw !== null) {
         const parsed = JSON.parse(raw) as FridgeProduct[]
         if (Array.isArray(parsed)) {
-          return parsed.map(normalizeProductShelf)
+          return parsed
         }
       }
     } else {
@@ -250,14 +235,14 @@ function getLocalProducts(): FridgeProduct[] {
       if (raw) {
         const parsed = JSON.parse(raw) as FridgeProduct[]
         if (Array.isArray(parsed)) {
-          return parsed.map(normalizeProductShelf)
+          return parsed
         }
       }
     }
   } catch (err) {
     console.warn('[FridgeProductService] Error parsing local products:', err)
   }
-  return DEFAULT_FRIDGE_PRODUCTS.map(normalizeProductShelf)
+  return [...STOCK_GROCERY_TEMPLATES]
 }
 
 /**
@@ -338,34 +323,15 @@ function mapRowToProduct(row: DbFridgeProduct): FridgeProduct {
     }
   }
 
-  let imageUrl = row.image_url
-  let shelf = row.shelf as FridgeShelf
-  let positionX = Number(row.position_x)
-  let displayScale = Number(row.display_scale)
-
-  // Protect stock template identity from corrupted legacy test records
-  if (
-    row.id === '11111111-1111-1111-1111-111111111101' &&
-    (imageUrl.includes('water-bottle.png') || shelf === 'freezer' || row.quantity === '3 Cartons')
-  ) {
-    imageUrl = '/assets/products/milk-carton.png'
-    shelf = 'middle_shelf'
-    positionX = 25
-    itemCount = 1
-    arrangement = 'single'
-    spacing = 18
-    displayScale = 1.0
-  }
-
-  return normalizeProductShelf({
+  return {
     id: row.id,
     name: row.name,
     category: row.category as ProductCategory,
-    imageUrl,
+    imageUrl: row.image_url,
     description: cleanDescription,
-    shelf,
-    positionX,
-    displayScale,
+    shelf: row.shelf as FridgeShelf,
+    positionX: Number(row.position_x),
+    displayScale: Number(row.display_scale),
     quantity: row.quantity ?? undefined,
     itemCount,
     arrangement,
@@ -376,7 +342,7 @@ function mapRowToProduct(row: DbFridgeProduct): FridgeProduct {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     createdBy: row.created_by ?? undefined,
-  })
+  }
 }
 
 import type { Database } from '../types/database'

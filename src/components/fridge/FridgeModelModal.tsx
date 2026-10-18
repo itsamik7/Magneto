@@ -4,6 +4,7 @@ import { fridgeService } from '../../services/fridgeService'
 import { FRIDGE_MODELS } from '../../data/fridgeCatalog'
 import {
   X,
+  Search,
   Check,
   Upload,
   Camera,
@@ -41,6 +42,7 @@ export const FridgeModelModal: React.FC<FridgeModelModalProps> = ({
   onSelectModel,
 }) => {
   const [activeTab, setActiveTab] = useState<'catalog' | 'upload'>('catalog')
+  const [searchQuery, setSearchQuery] = useState('')
   const [selectedCountry, setSelectedCountry] = useState<FridgeCountryCategory>('All')
   const [selectedStyle, setSelectedStyle] = useState<FridgeStyle | 'All'>('All')
   const [previewModelId, setPreviewModelId] = useState<string>(currentModelId)
@@ -67,9 +69,18 @@ export const FridgeModelModal: React.FC<FridgeModelModalProps> = ({
       // Style filter
       if (selectedStyle !== 'All' && model.style !== selectedStyle) return false
 
+      // Search query
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase()
+        const matchesName = model.name.toLowerCase().includes(query)
+        const matchesBrand = model.brand.toLowerCase().includes(query)
+        const matchesFinish = model.finish.toLowerCase().includes(query)
+        if (!matchesName && !matchesBrand && !matchesFinish) return false
+      }
+
       return true
     })
-  }, [allModels, selectedCountry, selectedStyle])
+  }, [allModels, selectedCountry, selectedStyle, searchQuery])
 
   const previewModel = useMemo<FridgeModel>(() => {
     return (
@@ -235,8 +246,28 @@ export const FridgeModelModal: React.FC<FridgeModelModalProps> = ({
         {/* Content Body */}
         {activeTab === 'catalog' ? (
           <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-            {/* Style Filter Bar */}
-            <div className="p-4 bg-white border-b border-[#E8E5DF]">
+            {/* Search & Style Filter Bar */}
+            <div className="p-4 space-y-3 bg-white border-b border-[#E8E5DF]">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search by brand (LG, Samsung, Whirlpool, Bosch, Sub-Zero, Godrej, Haier) or model..."
+                  className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* Style Pills Bar */}
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[11px]">
                 {STYLES.map((st) => (
                   <button
@@ -258,8 +289,8 @@ export const FridgeModelModal: React.FC<FridgeModelModalProps> = ({
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">
               {filteredModels.length === 0 ? (
                 <div className="col-span-full py-16 text-center text-slate-500">
-                  <p className="font-heading font-bold text-sm text-slate-700">No refrigerator models found</p>
-                  <p className="text-xs mt-1">Try selecting a different style or country filter.</p>
+                  <p className="font-heading font-bold text-sm text-slate-700">No refrigerator models matched your search</p>
+                  <p className="text-xs mt-1">Try clearing filters or search terms.</p>
                 </div>
               ) : (
                 filteredModels.map((model) => {

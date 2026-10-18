@@ -17,7 +17,6 @@ interface DraggableMagnetProps {
   isSelected: boolean
   surfaceRef: React.RefObject<HTMLDivElement | null>
   isEditable?: boolean
-  canDelete?: boolean
   onSelect: () => void
   onUpdatePlacement: (updated: MagnetPlacement, isCommit?: boolean) => void
   onRemove: () => void
@@ -30,7 +29,6 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
   isSelected,
   surfaceRef,
   isEditable = true,
-  canDelete = false,
   onSelect,
   onUpdatePlacement,
   onRemove,
@@ -391,20 +389,16 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
               </button>
             )}
 
-            {canDelete && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  if (!canDelete) return
-                  onRemove()
-                }}
-                className="p-1 hover:bg-rose-900/60 text-rose-300 rounded-lg transition-colors"
-                title="Remove from Fridge"
-                aria-label="Remove from Fridge"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onRemove()
+              }}
+              className="p-1 hover:bg-rose-900/60 text-rose-300 rounded-lg transition-colors"
+              title="Remove from Fridge"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
           </div>
         </>
       )}

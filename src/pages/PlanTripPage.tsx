@@ -8,6 +8,8 @@ import type { FridgeModel, MagnetPlacement } from '../types/fridge'
 import { FridgeWorkspace } from '../components/fridge/FridgeWorkspace'
 import { SaveMoneyModal } from '../components/trips/SaveMoneyModal'
 import {
+  Search,
+  SlidersHorizontal,
   Heart,
   Plus,
   Check,
@@ -50,6 +52,7 @@ export const PlanTripPage: React.FC = () => {
   const navigate = useNavigate()
 
   // Left Discovery Catalog Filters
+  const [searchQuery, setSearchQuery] = useState('')
   const [activeFilterPill, setActiveFilterPill] = useState('All')
   const [activeCategoryTile, setActiveCategoryTile] = useState('All')
   const [favorites, setFavorites] = useState<Set<string>>(new Set(['santorini', 'paris', 'goa-beach']))
@@ -198,6 +201,15 @@ export const PlanTripPage: React.FC = () => {
   // Filter Catalog Magnets
   const filteredCatalog = useMemo(() => {
     return SOUVENIR_MAGNETS_CATALOG.filter((item) => {
+      // Search
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase()
+        const matchesName = item.name.toLowerCase().includes(q)
+        const matchesDest = item.destination.toLowerCase().includes(q)
+        const matchesTags = item.tags.some((t) => t.toLowerCase().includes(q))
+        if (!matchesName && !matchesDest && !matchesTags) return false
+      }
+
       // Filter Pill
       if (activeFilterPill !== 'All') {
         if (activeFilterPill === 'Countries' && !item.tags.includes('Country')) return true
@@ -219,7 +231,7 @@ export const PlanTripPage: React.FC = () => {
 
       return true
     })
-  }, [activeFilterPill, activeCategoryTile])
+  }, [searchQuery, activeFilterPill, activeCategoryTile])
 
   // Current Destination Inspector Item
   const currentCatalogItem = useMemo(() => {
@@ -445,11 +457,7 @@ export const PlanTripPage: React.FC = () => {
 
   // Delete / Remove Magnet from Fridge
   const handleDeleteMagnet = async (idOrSlug: string) => {
-    const uid = user?.id
-    if (!uid || uid === 'guest' || uid === 'default_user') {
-      console.warn('[PlanTripPage] Blocked unauthorized magnet deletion attempt by unauthenticated user')
-      return
-    }
+    const uid = user?.id || 'guest'
     const cleanSlug = idOrSlug.toLowerCase().replace(/^magnet-/, '')
     const canonicalId = `magnet-${cleanSlug}`
 
@@ -615,6 +623,18 @@ export const PlanTripPage: React.FC = () => {
           </p>
         </div>
 
+        {/* Search Bar with Filter Icon */}
+        <div className="relative mb-3">
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search destinations, countries, magnets..."
+            className="w-full pl-8 pr-8 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+          />
+          <SlidersHorizontal className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 cursor-pointer hover:text-slate-600" />
+        </div>
 
         {/* Filter Pills */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none mb-3 text-[11px]">

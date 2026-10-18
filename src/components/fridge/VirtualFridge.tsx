@@ -14,7 +14,6 @@ interface VirtualFridgeProps {
   onAddDestination: () => void
   isLoading?: boolean
   showControls?: boolean
-  readOnly?: boolean
 }
 
 export const VirtualFridge: React.FC<VirtualFridgeProps> = ({
@@ -26,7 +25,6 @@ export const VirtualFridge: React.FC<VirtualFridgeProps> = ({
   onAddDestination,
   isLoading = false,
   showControls = true,
-  readOnly = true,
 }) => {
   // Active fridge model (Universal Studio Stainless 3D)
   const [activeModel, setActiveModel] = useState<FridgeModel>(() => {
@@ -84,7 +82,6 @@ export const VirtualFridge: React.FC<VirtualFridgeProps> = ({
       userId={userId}
       currentModel={activeModel}
       magnets={displayItems}
-      readOnly={readOnly}
       onSelectMagnetItem={(magnet) => {
         if (onSelectMagnet) {
           onSelectMagnet(magnet)
