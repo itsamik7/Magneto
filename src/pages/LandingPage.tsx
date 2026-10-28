@@ -3,7 +3,7 @@ import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { VirtualFridge } from '../components/fridge/VirtualFridge'
 import type { TripWithStats } from '../types/trip'
-import { MapPin, PiggyBank, Sparkles } from 'lucide-react'
+import { MapPin, PiggyBank, Sparkles, Megaphone } from 'lucide-react'
 
 // Demo magnets showcasing the 6 reference destinations from the screenshot
 const DEMO_TRIPS: TripWithStats[] = [
@@ -236,6 +236,15 @@ export const LandingPage: React.FC = () => {
                 className="inline-flex items-center gap-1.5 px-4 py-3 bg-transparent hover:bg-black/5 text-slate-700 text-xs font-bold rounded-xl transition-colors"
               >
                 <span>Or use email</span>
+              </Link>
+
+              <Link
+                to="/login?type=merchant"
+                className="inline-flex items-center gap-1.5 px-4 py-3 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 border border-slate-200 text-xs font-bold rounded-xl transition-all hover:scale-105 active:scale-95 shadow-2xs"
+                title="Advertise products on Magnetos Virtual Fridges"
+              >
+                <Megaphone className="w-3.5 h-3.5 text-slate-500" />
+                <span>Advertise</span>
               </Link>
             </div>
 
