@@ -398,6 +398,8 @@ export const MyFridgePage: React.FC = () => {
   const [placements, setPlacements] = useState<MagnetPlacement[]>([])
   const [selectedPlacementId, setSelectedPlacementId] = useState<string | null>(null)
 
+
+
   // Load User Magnets or default starter collection & keep synced
   useEffect(() => {
     const uid = user?.id || 'guest'
@@ -619,6 +621,8 @@ export const MyFridgePage: React.FC = () => {
             onPlacementsChange={setPlacements}
             showControls={false}
             readOnly={true}
+            allowDelete={false}
+            allowDoorOpen={false}
           />
         </div>
       </div>
@@ -632,6 +636,8 @@ export const MyFridgePage: React.FC = () => {
       */}
       <div className="w-full lg:w-[42%] xl:w-[38%] max-w-lg mx-auto lg:max-w-none lg:mx-0 bg-white rounded-3xl p-4 sm:p-5 shadow-xl border border-slate-200/90 flex flex-col gap-3.5 flex-shrink-0 lg:max-h-[calc(100dvh-100px)] lg:overflow-y-auto custom-scrollbar relative z-20">
         
+
+
         {/* Destination Hero Banner */}
         <div className="relative w-full h-36 sm:h-40 rounded-2xl overflow-hidden shadow-md group">
           <img

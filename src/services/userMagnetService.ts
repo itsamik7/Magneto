@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { trackDepositAdded, trackMagnetUnlocked } from '../lib/posthog'
 import type { DestinationWithMagnet } from '../types/destination'
 import { DESTINATIONS_CATALOG } from '../data/destinationsCatalog'
 import { tripService } from './tripService'
@@ -607,6 +608,23 @@ export const userMagnetService = {
     }
 
     magnets[magnetIndex] = updatedMagnet
+
+    trackDepositAdded({
+      destination: currentMagnet.destination_name,
+      amount: depositMinor,
+      totalSaved: newTotalSaved,
+      targetBudget: targetBudget,
+      progressPercentage: newPct,
+    })
+
+    if (newUnlockState === 'ready_to_go' && currentMagnet.unlock_state !== 'ready_to_go') {
+      trackMagnetUnlocked({
+        magnetId: currentMagnet.id,
+        destination: currentMagnet.destination_name,
+        totalSaved: newTotalSaved,
+        targetBudget: targetBudget,
+      })
+    }
 
     // Persist magnets to storage
     await userMagnetService.saveUserFridgeMagnets(userId, magnets, options?.source || 'recordMagnetDeposit')

@@ -1,4 +1,5 @@
 import { supabase, checkSupabaseReady } from '../lib/supabase'
+import { trackDepositAdded } from '../lib/posthog'
 import type { SavingsTransactionInsert, SavingsTransactionRow } from '../types/savings'
 
 export const savingsService = {
@@ -46,11 +47,19 @@ export const savingsService = {
       throw new Error(error.message)
     }
 
-    return (data ?? {
+    const result = (data ?? {
       id: crypto.randomUUID(),
       created_at: new Date().toISOString(),
       ...deposit,
     }) as SavingsTransactionRow
+
+    trackDepositAdded({
+      tripId: deposit.trip_id,
+      amount: deposit.amount_minor,
+      currency: deposit.currency,
+    })
+
+    return result
   },
 
   /**

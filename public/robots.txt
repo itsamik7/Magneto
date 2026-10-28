@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /merchant/
+Disallow: /auth/
+
+Sitemap: https://magnetos.in/sitemap.xml

@@ -1,16 +1,29 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate, Navigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { loginSchema, type LoginFormData } from '../lib/validation'
 import { useAuth } from '../context/AuthContext'
-import { LogIn, AlertCircle, KeyRound, Mail } from 'lucide-react'
+import { LogIn, AlertCircle, KeyRound, Mail, Store, User, ArrowRight, Sparkles } from 'lucide-react'
 
 export const LoginPage: React.FC = () => {
-  const { user, signIn, signInWithGoogle, isConfigured } = useAuth()
+  const { user, signIn, signInWithGoogle, isConfigured, merchantProfile, refreshMerchantProfile } = useAuth()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  // Account Type Switch: 'personal' vs 'merchant'
+  const initialType = searchParams.get('type') === 'merchant' ? 'merchant' : 'personal'
+  const [accountType, setAccountType] = useState<'personal' | 'merchant'>(initialType)
+
   const [authError, setAuthError] = useState<string | null>(null)
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false)
+
+  // Sync state with URL parameter if changed
+  const handleAccountTypeChange = (type: 'personal' | 'merchant') => {
+    setAccountType(type)
+    setSearchParams({ type })
+    setAuthError(null)
+  }
 
   // Catch OAuth cancellation or errors passed back in URL hash/search
   useEffect(() => {
@@ -48,16 +61,34 @@ export const LoginPage: React.FC = () => {
     },
   })
 
-  // Redirect if already logged in
-  if (user) {
-    return <Navigate to="/dashboard" replace />
-  }
+  // If already authenticated and visiting login page:
+  useEffect(() => {
+    if (user) {
+      if (accountType === 'merchant') {
+        if (merchantProfile) {
+          navigate('/merchant/dashboard', { replace: true })
+        } else {
+          // Check if profile exists
+          refreshMerchantProfile().then((prof) => {
+            if (prof) {
+              navigate('/merchant/dashboard', { replace: true })
+            } else {
+              navigate('/signup?type=merchant', { replace: true })
+            }
+          })
+        }
+      } else {
+        navigate('/dashboard', { replace: true })
+      }
+    }
+  }, [user, accountType, merchantProfile, navigate, refreshMerchantProfile])
 
   const handleGoogleLogin = async () => {
     setAuthError(null)
     setIsGoogleSubmitting(true)
     try {
-      const { error } = await signInWithGoogle()
+      const target = accountType === 'merchant' ? '/merchant/dashboard' : '/dashboard'
+      const { error } = await signInWithGoogle(target)
       if (error) setAuthError(error)
     } catch (err: unknown) {
       setAuthError(err instanceof Error ? err.message : 'Google sign in failed')
@@ -72,35 +103,77 @@ export const LoginPage: React.FC = () => {
     if (error) {
       setAuthError(error)
     } else {
-      navigate('/dashboard')
+      if (accountType === 'merchant') {
+        const prof = await refreshMerchantProfile()
+        if (prof) {
+          navigate('/merchant/dashboard')
+        } else {
+          navigate('/signup?type=merchant')
+        }
+      } else {
+        navigate('/dashboard')
+      }
     }
   }
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md p-8 bg-white rounded-3xl border border-slate-200 shadow-xl space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 mx-auto rounded-2xl bg-[#243447] text-white flex items-center justify-center shadow-md">
-            <LogIn className="w-6 h-6 text-coral" />
-          </div>
-          <h2 className="font-heading font-black text-2xl text-[#243447]">
-            Welcome back to Magnetos
-          </h2>
-          <p className="text-xs text-slate-500">
-            Sign in to access your personal travel fridge and savings goals.
-          </p>
+        
+        {/* Account-type switch: Personal Account | Merchant / Advertiser */}
+        <div className="w-full p-1 bg-slate-100 rounded-2xl flex items-center border border-slate-200/80 shadow-2xs">
+          <button
+            type="button"
+            onClick={() => handleAccountTypeChange('personal')}
+            className={`flex-1 py-2 text-xs font-heading font-black rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              accountType === 'personal'
+                ? 'bg-white text-slate-900 shadow-xs'
+                : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <User className="w-3.5 h-3.5" />
+            <span>Personal Account</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleAccountTypeChange('merchant')}
+            className={`flex-1 py-2 text-xs font-heading font-black rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              accountType === 'merchant'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <Store className="w-3.5 h-3.5" />
+            <span>Merchant / Advertiser</span>
+          </button>
         </div>
 
-        {/* Warning if Supabase unconfigured */}
-        {!isConfigured && (
-          <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-            <span>
-              Supabase credentials are missing. Please add <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> to your <code>.env</code> file.
-            </span>
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <div
+            className={`w-12 h-12 mx-auto rounded-2xl flex items-center justify-center shadow-md transition-colors ${
+              accountType === 'merchant'
+                ? 'bg-blue-600 text-white'
+                : 'bg-[#243447] text-white'
+            }`}
+          >
+            {accountType === 'merchant' ? (
+              <Store className="w-6 h-6 text-white" />
+            ) : (
+              <LogIn className="w-6 h-6 text-coral" />
+            )}
           </div>
-        )}
+          <h2 className="font-heading font-black text-2xl text-[#243447]">
+            {accountType === 'merchant'
+              ? 'Merchant Advertising Portal'
+              : 'Welcome back to Magnetos'}
+          </h2>
+          <p className="text-xs text-slate-500">
+            {accountType === 'merchant'
+              ? 'Sign in to manage magnet campaigns, virtual fridge placements, and live preview.'
+              : 'Sign in to access your personal travel fridge and savings goals.'}
+          </p>
+        </div>
 
         {/* Auth error alert */}
         {authError && (
@@ -136,32 +209,35 @@ export const LoginPage: React.FC = () => {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
               />
             </svg>
-            <span>{isGoogleSubmitting ? 'Signing in with Google...' : 'Continue with Google'}</span>
+            <span>
+              {isGoogleSubmitting
+                ? 'Authenticating...'
+                : accountType === 'merchant'
+                ? 'Continue with Google as Merchant'
+                : 'Continue with Google'}
+            </span>
           </button>
-          <p className="text-center text-xs text-slate-500 font-medium">
-            Sign in to start building your own travel fridge.
-          </p>
         </div>
 
         <div className="relative flex items-center justify-center my-2">
           <div className="border-t border-slate-200 w-full" />
           <span className="bg-white px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider absolute">
-            Or sign in with email
+            Or sign in with business credentials
           </span>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-1">
           <div>
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Email Address
+              {accountType === 'merchant' ? 'Business Email Address' : 'Email Address'}
             </label>
             <div className="relative">
               <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
                 type="email"
-                placeholder="you@example.com"
+                placeholder={accountType === 'merchant' ? 'ads@yourbrand.com' : 'you@example.com'}
                 {...register('email')}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#3A8D8C] text-sm text-slate-900 bg-white"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm text-slate-900 bg-white"
               />
             </div>
             {errors.email && (
@@ -170,16 +246,18 @@ export const LoginPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Password
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Password
+              </label>
+            </div>
             <div className="relative">
               <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
                 type="password"
                 placeholder="••••••••"
                 {...register('password')}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#3A8D8C] text-sm text-slate-900 bg-white"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm text-slate-900 bg-white"
               />
             </div>
             {errors.password && (
@@ -190,18 +268,42 @@ export const LoginPage: React.FC = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3 bg-[#243447] hover:bg-slate-800 text-white font-heading font-bold text-sm rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-98 disabled:opacity-50 flex items-center justify-center gap-2"
+            className={`w-full py-3 text-white font-heading font-black text-sm rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-98 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer ${
+              accountType === 'merchant'
+                ? 'bg-blue-600 hover:bg-blue-700'
+                : 'bg-[#243447] hover:bg-slate-800'
+            }`}
           >
-            {isSubmitting ? 'Signing in...' : 'Sign In to My Fridge'}
+            {isSubmitting ? (
+              'Authenticating...'
+            ) : accountType === 'merchant' ? (
+              <>
+                <span>Sign In to Merchant Dashboard</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
+            ) : (
+              'Sign In to My Fridge'
+            )}
           </button>
         </form>
 
         {/* Footer */}
         <div className="pt-4 border-t border-slate-100 text-center text-xs text-slate-500">
-          <span>Don&apos;t have a travel fridge yet? </span>
-          <Link to="/signup" className="font-bold text-[#E98267] hover:underline">
-            Create account
-          </Link>
+          {accountType === 'merchant' ? (
+            <div>
+              <span>New advertiser? </span>
+              <Link to="/signup?type=merchant" className="font-bold text-blue-600 hover:underline">
+                Register business account
+              </Link>
+            </div>
+          ) : (
+            <div>
+              <span>Don&apos;t have a travel fridge yet? </span>
+              <Link to="/signup" className="font-bold text-[#E98267] hover:underline">
+                Create personal account
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </div>

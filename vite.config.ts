@@ -17,6 +17,12 @@ export default defineConfig({
       output: {
         manualChunks(id: string) {
           if (id.includes('node_modules')) {
+            if (id.includes('three')) {
+              return 'three'
+            }
+            if (id.includes('posthog-js')) {
+              return 'posthog'
+            }
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
               return 'vendor'
             }

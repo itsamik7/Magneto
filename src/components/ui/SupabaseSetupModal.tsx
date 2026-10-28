@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Modal } from './Modal'
-import { Check, Copy, ExternalLink, Database, KeyRound, Terminal } from 'lucide-react'
+import { Check, Copy, ExternalLink, Database, KeyRound, Terminal, Globe } from 'lucide-react'
 
 interface SupabaseSetupModalProps {
   isOpen: boolean
@@ -113,6 +113,41 @@ VITE_SUPABASE_ANON_KEY=your-actual-anon-key`
           <div className="flex gap-3">
             <div className="w-7 h-7 rounded-full bg-[#243447] text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
               4
+            </div>
+            <div className="w-full">
+              <h4 className="font-heading font-bold text-slate-900 flex items-center gap-1.5">
+                <Globe className="w-4 h-4 text-sky-600" />
+                Configure Localhost Redirect URLs in Supabase
+              </h4>
+              <p className="text-xs text-slate-600 mt-0.5 mb-2">
+                To prevent Supabase from shifting you to the live website when logging in on localhost, go to{' '}
+                <a
+                  href="https://supabase.com/dashboard/project/telsqvdytbpfyevgvngb/auth/url-configuration"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-teal-700 font-semibold underline inline-flex items-center gap-0.5"
+                >
+                  Auth → URL Configuration <ExternalLink className="w-3 h-3" />
+                </a>{' '}
+                and add to <strong>Redirect URLs</strong>:
+              </p>
+              <div className="space-y-1 font-mono text-xs">
+                <div className="p-2 bg-slate-900 text-emerald-300 rounded-lg flex items-center justify-between">
+                  <span>http://localhost:5173/**</span>
+                </div>
+                <div className="p-2 bg-slate-900 text-slate-300 rounded-lg flex items-center justify-between">
+                  <span>http://localhost:*/**</span>
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-500 mt-1">
+                Without this allow-list entry, Supabase security rejects localhost redirects and falls back to the production site.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <div className="w-7 h-7 rounded-full bg-[#243447] text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+              5
             </div>
             <div>
               <h4 className="font-heading font-bold text-slate-900 flex items-center gap-1.5">

@@ -62,6 +62,13 @@ export interface MagnetPlacement {
   targetBudgetMinor?: number
   isFundedPending?: boolean
   hasLock?: boolean
+  /** Magnet advertising fields */
+  isSponsored?: boolean
+  sponsoredCampaignId?: string
+  brandName?: string
+  productName?: string
+  destinationUrl?: string
+  ctaText?: string
 }
 
 export interface UserFridgeConfiguration {

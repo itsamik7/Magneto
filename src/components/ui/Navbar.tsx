@@ -1,14 +1,14 @@
 import React, { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { LogOut, User as UserIcon, AlertCircle, Menu, X, Calendar } from 'lucide-react'
+import { LogOut, User as UserIcon, Menu, X, Calendar, Building2, Megaphone, Shield } from 'lucide-react'
 
 interface NavbarProps {
   onOpenSetupModal?: () => void
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
-  const { user, displayName, signOut, isConfigured } = useAuth()
+export const Navbar: React.FC<NavbarProps> = () => {
+  const { user, displayName, signOut, userRole, merchantProfile } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -23,24 +23,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200">
-      {/* Top Banner if Supabase is not configured */}
-      {!isConfigured && (
-        <div className="bg-amber-500 text-slate-950 px-4 py-2 text-xs sm:text-sm font-semibold flex items-center justify-between shadow-sm">
-          <div className="flex items-center gap-2 mx-auto">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
-            <span>Supabase backend is not connected yet. Add your URL and publishable key to .env.</span>
-            {onOpenSetupModal && (
-              <button
-                onClick={onOpenSetupModal}
-                className="underline ml-2 font-bold hover:text-slate-900 cursor-pointer"
-              >
-                Setup Guide
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
       <div className="max-w-[1720px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4 relative">
         {/* Brand Logo with Horseshoe Magnet Icon & Tagline */}
         <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-2.5 group flex-shrink-0">
@@ -104,7 +86,39 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
         )}
 
         {/* User Profile & Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Merchant Portal Shortcut / Advertise Link */}
+          {(userRole === 'merchant' || merchantProfile) ? (
+            <Link
+              to="/merchant/dashboard"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-heading font-bold transition-all shadow-xs ${
+                location.pathname.startsWith('/merchant')
+                  ? 'bg-amber-500 text-white shadow-amber-500/25 ring-2 ring-amber-400/40'
+                  : 'bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100'
+              }`}
+            >
+              <Building2 className="w-3.5 h-3.5 text-amber-600" />
+              <span>Merchant Portal</span>
+            </Link>
+          ) : userRole === 'admin' ? (
+            <Link
+              to="/admin"
+              className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-heading font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 transition-colors shadow-xs"
+            >
+              <Shield className="w-3.5 h-3.5 text-purple-600" />
+              <span>Admin Portal</span>
+            </Link>
+          ) : (
+            <Link
+              to="/login?type=merchant"
+              className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              title="Advertise products on Magnetos Virtual Fridges"
+            >
+              <Megaphone className="w-3.5 h-3.5 text-slate-500" />
+              <span>Advertise</span>
+            </Link>
+          )}
+
           {user ? (
             <div className="flex items-center gap-3">
               {/* Notification Bell (Only visible when user is logged in) */}
@@ -194,6 +208,34 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSetupModal }) => {
               >
                 Plan a Trip
               </Link>
+              {(userRole === 'merchant' || merchantProfile) ? (
+                <Link
+                  to="/merchant/dashboard"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block text-sm font-bold text-amber-700 py-1.5 flex items-center gap-2"
+                >
+                  <Building2 className="w-4 h-4 text-amber-600" />
+                  <span>Merchant Portal</span>
+                </Link>
+              ) : userRole === 'admin' ? (
+                <Link
+                  to="/admin"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block text-sm font-bold text-purple-700 py-1.5 flex items-center gap-2"
+                >
+                  <Shield className="w-4 h-4 text-purple-600" />
+                  <span>Admin Portal</span>
+                </Link>
+              ) : (
+                <Link
+                  to="/login?type=merchant"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block text-sm font-semibold text-slate-600 py-1.5 flex items-center gap-2"
+                >
+                  <Megaphone className="w-4 h-4 text-slate-500" />
+                  <span>Advertise on Magnetos</span>
+                </Link>
+              )}
               <button
                 onClick={() => {
                   setMobileMenuOpen(false)

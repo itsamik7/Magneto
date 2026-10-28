@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { Navbar } from './components/ui/Navbar'
-import { SupabaseSetupModal } from './components/ui/SupabaseSetupModal'
 import { ProtectedRoute } from './components/layout/ProtectedRoute'
 
 // Route-specific Document Title Controller
@@ -23,6 +22,8 @@ function PageTitleTracker() {
       document.title = 'Log In | Magnetos'
     } else if (path === '/signup') {
       document.title = 'Sign Up | Magnetos'
+    } else if (path.startsWith('/merchant')) {
+      document.title = 'Merchant Portal | Magnetos'
     } else if (path === '/admin') {
       document.title = 'Admin Portal | Magnetos'
     } else {
@@ -41,17 +42,18 @@ import { MyFridgePage } from './pages/MyFridgePage'
 import { PlanTripPage } from './pages/PlanTripPage'
 import { TripDetailPage } from './pages/TripDetailPage'
 import { AdminPage } from './pages/AdminPage'
+import { MerchantDashboardPage } from './pages/MerchantDashboardPage'
+import { AuthCallbackPage } from './pages/AuthCallbackPage'
+import { MerchantProtectedRoute } from './components/layout/MerchantProtectedRoute'
 
 export default function App() {
-  const [isSetupModalOpen, setIsSetupModalOpen] = useState(false)
-
   return (
     <AuthProvider>
       <BrowserRouter>
         <PageTitleTracker />
         <div className="min-h-screen flex flex-col bg-white text-[#1E293B]">
           {/* Top Navbar */}
-          <Navbar onOpenSetupModal={() => setIsSetupModalOpen(true)} />
+          <Navbar />
 
           {/* Main App Content Area */}
           <main className="flex-1 max-w-[1720px] w-full mx-auto px-3 sm:px-6 py-2 sm:py-4 pb-24 sm:pb-6">
@@ -60,9 +62,16 @@ export default function App() {
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
+              <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
               {/* Dedicated Unlisted Admin Route */}
               <Route path="/admin" element={<AdminPage />} />
+
+              {/* Dedicated Merchant Portal Route */}
+              <Route element={<MerchantProtectedRoute />}>
+                <Route path="/merchant" element={<Navigate to="/merchant/dashboard" replace />} />
+                <Route path="/merchant/dashboard" element={<MerchantDashboardPage />} />
+              </Route>
 
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
@@ -86,23 +95,8 @@ export default function App() {
                 <span className="font-heading font-extrabold text-[#243447]">Magnetos</span>
                 <span>• Turn your travel dreams into destinations.</span>
               </div>
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => setIsSetupModalOpen(true)}
-                  className="hover:text-slate-800 transition-colors"
-                >
-                  Supabase Setup
-                </button>
-                <span>v2.0.0 Global Souvenir Collection</span>
-              </div>
             </div>
           </footer>
-
-          {/* Supabase Migration & Credentials Setup Modal */}
-          <SupabaseSetupModal
-            isOpen={isSetupModalOpen}
-            onClose={() => setIsSetupModalOpen(false)}
-          />
         </div>
       </BrowserRouter>
     </AuthProvider>

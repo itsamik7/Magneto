@@ -496,17 +496,6 @@ export const PlanTripPage: React.FC = () => {
     setTimeout(() => setSaveSuccessMessage(null), 2500)
   }
 
-  // Switch Refrigerator Model
-
-  // Handle Save Fridge Action
-  const handleSaveFridge = async () => {
-    const uid = user?.id || 'guest'
-    fridgeService.saveFridgePlacements(uid, activeModel.id, placements)
-    await userMagnetService.saveUserFridgeMagnets(uid, userMagnets)
-    setSaveSuccessMessage('Fridge layout & trip plans saved!')
-    setTimeout(() => setSaveSuccessMessage(null), 3000)
-  }
-
   // Handle Checklist Add
   const handleAddChecklistItem = (e: React.FormEvent) => {
     e.preventDefault()
@@ -806,6 +795,7 @@ export const PlanTripPage: React.FC = () => {
             onAddDestination={() => setMobileActiveView('catalog')}
             showControls={false}
             readOnly={false}
+            allowDoorOpen={false}
           />
         </div>
 

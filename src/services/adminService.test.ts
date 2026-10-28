@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { verifyUserAdminRole, adminSignIn, getAdminSetupInstructions } from './adminService'
+import { supabase } from '../lib/supabase'
 import type { User } from '@supabase/supabase-js'
 
 describe('adminService', () => {
@@ -9,42 +10,25 @@ describe('adminService', () => {
     expect(res.error).toBeDefined()
   })
 
-  it('should authorize user with app_metadata role admin or super_admin', async () => {
+  it('should authorize user when supabase.rpc(is_admin) returns true', async () => {
     const adminUser = {
       id: 'usr-admin-1',
       email: 'admin@example.com',
       app_metadata: { role: 'admin' },
     } as unknown as User
 
+    const rpcSpy = vi.spyOn(supabase, 'rpc').mockResolvedValueOnce({
+      data: true,
+      error: null,
+    } as any)
+
     const res = await verifyUserAdminRole(adminUser)
     expect(res.isAdmin).toBe(true)
-    expect(res.role).toBe('admin')
-
-    const superAdminUser = {
-      id: 'usr-admin-2',
-      email: 'super@example.com',
-      app_metadata: { role: 'super_admin' },
-    } as unknown as User
-
-    const resSuper = await verifyUserAdminRole(superAdminUser)
-    expect(resSuper.isAdmin).toBe(true)
-    expect(resSuper.role).toBe('super_admin')
+    expect(rpcSpy).toHaveBeenCalledWith('is_admin')
+    rpcSpy.mockRestore()
   })
 
-  it('should authorize primary super admin account 1amiteshk@gmail.com', async () => {
-    const ownerUser = {
-      id: 'usr-owner-1',
-      email: '1amiteshk@gmail.com',
-      app_metadata: {},
-      user_metadata: {},
-    } as unknown as User
-
-    const res = await verifyUserAdminRole(ownerUser)
-    expect(res.isAdmin).toBe(true)
-    expect(res.role).toBe('super_admin')
-  })
-
-  it('should deny standard user without admin role', async () => {
+  it('should deny standard user when supabase.rpc(is_admin) returns false', async () => {
     const normalUser = {
       id: 'usr-normal-1',
       email: 'traveler@gmail.com',
@@ -52,8 +36,14 @@ describe('adminService', () => {
       user_metadata: {},
     } as unknown as User
 
+    const rpcSpy = vi.spyOn(supabase, 'rpc').mockResolvedValueOnce({
+      data: false,
+      error: null,
+    } as any)
+
     const res = await verifyUserAdminRole(normalUser)
     expect(res.isAdmin).toBe(false)
+    rpcSpy.mockRestore()
   })
 
   it('should validate email and password requirement in adminSignIn', async () => {

@@ -1,4 +1,5 @@
 import { supabase, checkSupabaseReady } from '../lib/supabase'
+import { trackTripCreated } from '../lib/posthog'
 import type { TripInsert, TripRow, TripUpdate, TripWithStats } from '../types/trip'
 import { deriveMagnetState, calculateAmountRemaining, calculateProgressPercentage } from '../lib/utils'
 
@@ -129,12 +130,22 @@ export const tripService = {
       throw new Error(error.message)
     }
 
-    return (data ?? {
+    const createdTrip = (data ?? {
       id: crypto.randomUUID(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       ...trip,
     }) as TripRow
+
+    trackTripCreated({
+      tripId: createdTrip.id,
+      destination: createdTrip.destination_name,
+      targetBudget: createdTrip.target_budget_minor,
+      targetDate: createdTrip.start_date || undefined,
+      currency: createdTrip.currency,
+    })
+
+    return createdTrip
   },
 
   /**

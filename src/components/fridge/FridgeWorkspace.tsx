@@ -4,6 +4,12 @@ import type { FridgeMagnetItem } from '../../services/userMagnetService'
 import { fridgeService } from '../../services/fridgeService'
 import { DraggableMagnet } from './DraggableMagnet'
 import { UniversalSteelFridge } from './UniversalSteelFridge'
+import type { FridgeProduct } from '../../types/fridgeProduct'
+import {
+  getPublicActiveProducts,
+  getLocalCachedProducts,
+  FRIDGE_PRODUCTS_UPDATED_EVENT,
+} from '../../services/fridgeProductService'
 import {
   Sparkles,
   Plus,
@@ -11,6 +17,11 @@ import {
   RotateCcw,
   Move,
 } from 'lucide-react'
+import type { AdvertisingCampaign } from '../../types/advertising'
+import {
+  getPublicActiveCampaigns,
+  ADVERTISING_UPDATED_EVENT,
+} from '../../services/advertisingService'
 
 export interface FridgeWorkspaceProps {
   userId?: string
@@ -23,6 +34,10 @@ export interface FridgeWorkspaceProps {
   onChangeFridgeModel?: (model: FridgeModel) => void
   showControls?: boolean
   readOnly?: boolean
+  /** Centralized permission flag: controls whether magnets can be removed/deleted */
+  allowDelete?: boolean
+  /** Centralized permission flag: controls whether fridge doors can be opened (disabled globally across app) */
+  allowDoorOpen?: boolean
   onRemoveMagnet?: (placementIdOrSlug: string) => void
   onPlacementsChange?: (placements: MagnetPlacement[]) => void
   onDropMagnet?: (magnetData: any, dropCoords: { x: number; y: number }) => void
@@ -40,11 +55,15 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
   onChangeFridgeModel,
   showControls = true,
   readOnly = false,
+  allowDelete: propAllowDelete,
+  allowDoorOpen = false,
   onRemoveMagnet,
   onPlacementsChange,
   onDropMagnet,
   placements: controlledPlacements,
 }) => {
+  // Permission rules: if readOnly, deletion is strictly prohibited; otherwise respect allowDelete prop
+  const allowDelete = readOnly ? false : (propAllowDelete !== undefined ? propAllowDelete : true)
   const surfaceRef = useRef<HTMLDivElement>(null)
   const [isDragOver, setIsDragOver] = useState(false)
   const [internalSelectedId, setInternalSelectedId] = useState<string | null>(null)
@@ -96,11 +115,83 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
     zoomLevelRef.current = zoomLevel
   }, [zoomLevel])
 
-  // 3D Door Open/Close State
+  // Centralized policy: door opening deactivated across the application for a clean, stable fridge
+  const ENABLE_FRIDGE_DOOR_OPENING = allowDoorOpen && false
+
+  // 3D Door Open/Close State (kept ready for future restoration, fully closed by default)
   const [isMainDoorOpen, setIsMainDoorOpen] = useState(false)
   const [isFreezerDoorOpen, setIsFreezerDoorOpen] = useState(false)
   const [isCrisperOpen, setIsCrisperOpen] = useState(false)
   const [isInternalFreezerOpen, setIsInternalFreezerOpen] = useState(false)
+  const [fridgeProducts, setFridgeProducts] = useState<FridgeProduct[]>(() =>
+    getLocalCachedProducts().filter((p) => p.isActive && !p.isArchived)
+  )
+
+  // Magnet advertising campaigns state
+  const [magnetCampaigns, setMagnetCampaigns] = useState<AdvertisingCampaign[]>([])
+
+  useEffect(() => {
+    let active = true
+    getPublicActiveProducts().then((prods) => {
+      if (active) setFridgeProducts(prods)
+    })
+    const handleUpdate = () => {
+      getPublicActiveProducts().then((prods) => {
+        if (active) setFridgeProducts(prods)
+      })
+    }
+    window.addEventListener(FRIDGE_PRODUCTS_UPDATED_EVENT, handleUpdate)
+    return () => {
+      active = false
+      window.removeEventListener(FRIDGE_PRODUCTS_UPDATED_EVENT, handleUpdate)
+    }
+  }, [])
+
+  // Sync Public Verified Active Magnet Campaigns
+  useEffect(() => {
+    let active = true
+    const loadAds = async () => {
+      const magnetAds = await getPublicActiveCampaigns('fridge_magnet')
+      if (active) {
+        setMagnetCampaigns(magnetAds)
+      }
+    }
+    loadAds()
+
+    const handleAdUpdate = () => loadAds()
+    window.addEventListener(ADVERTISING_UPDATED_EVENT, handleAdUpdate)
+    return () => {
+      active = false
+      window.removeEventListener(ADVERTISING_UPDATED_EVENT, handleAdUpdate)
+    }
+  }, [])
+
+  // Convert active paid magnet campaigns into sponsored MagnetPlacements
+  const sponsoredPlacements = React.useMemo<MagnetPlacement[]>(() => {
+    return magnetCampaigns.map((c) => ({
+      id: `sponsored_${c.id}`,
+      magnetSlug: `sponsored-${c.id}`,
+      destinationName: c.productName || c.brandName,
+      assetUrl: c.creativeUrl,
+      customImageUrl: c.creativeUrl,
+      x: (c.positionX ?? 72) / 100,
+      y: (c.positionY ?? 22) / 100,
+      rotation: 0,
+      scale: c.displayScale ?? 1.0,
+      zIndex: 85,
+      isSponsored: true,
+      sponsoredCampaignId: c.id,
+      brandName: c.brandName,
+      productName: c.productName,
+      destinationUrl: c.destinationUrl,
+      ctaText: c.ctaText || 'Learn More',
+    }))
+  }, [magnetCampaigns])
+
+  // Combined placements: user magnets + live verified sponsored magnets
+  const displayPlacements = React.useMemo<MagnetPlacement[]>(() => {
+    return [...placements, ...sponsoredPlacements]
+  }, [placements, sponsoredPlacements])
 
   const handleResetZoom = () => {
     setZoomLevel(1.0)
@@ -227,6 +318,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
   }, [panOffset, isPanning])
 
   const handleToggleMainDoor = () => {
+    if (!ENABLE_FRIDGE_DOOR_OPENING) return
     setIsMainDoorOpen((prev) => {
       const next = !prev
       if (!next) {
@@ -240,12 +332,9 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
   }
 
   const handleToggleFreezerDoor = () => {
+    if (!ENABLE_FRIDGE_DOOR_OPENING) return
     setIsInternalFreezerOpen((prev) => !prev)
     setIsFreezerDoorOpen((prev) => !prev)
-  }
-
-  const handleToggleAllDoors = () => {
-    handleToggleMainDoor()
   }
 
   const handlePanMouseDown = (e: React.MouseEvent) => {
@@ -414,9 +503,10 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
     [userId, activeModel.id, onPlacementsChange]
   )
 
-  // Remove magnet from fridge placement
+  // Remove magnet from fridge placement (guarded strictly by allowDelete permission)
   const handleRemovePlacement = useCallback(
     (id: string) => {
+      if (!allowDelete) return
       const toRemove = placementsRef.current.find((p) => p.id === id)
       const next = placementsRef.current.filter((p) => p.id !== id)
       setPlacements(next)
@@ -431,8 +521,33 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
         onRemoveMagnet(toRemove?.magnetSlug || id)
       }
     },
-    [userId, activeModel.id, selectedPlacementId, onPlacementsChange, onRemoveMagnet]
+    [userId, activeModel.id, selectedPlacementId, onPlacementsChange, onRemoveMagnet, allowDelete]
   )
+
+  // Global keyboard listener enforcing magnet deletion permission
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        const activeTag = document.activeElement?.tagName
+        if (
+          activeTag === 'INPUT' ||
+          activeTag === 'TEXTAREA' ||
+          (document.activeElement as HTMLElement)?.isContentEditable
+        ) {
+          return
+        }
+
+        if (selectedPlacementId) {
+          e.preventDefault()
+          if (!allowDelete) return
+          handleRemovePlacement(selectedPlacementId)
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedPlacementId, allowDelete, handleRemovePlacement])
 
   const selectedPlacement = placements.find((p) => p.id === selectedPlacementId)
   const magneticRegion = activeModel.magneticRegion
@@ -440,12 +555,12 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
   return (
     <div className="w-full flex flex-col items-center select-none">
       
-      {/* Top Floating Utility Controls Bar: Actions (Only rendered when showControls and onAddDestination) */}
+      {/* Top Utility Controls Bar: Add Magnet button (if enabled) */}
       {showControls && onAddDestination && (
-        <div className="w-full max-w-2xl mb-1.5 flex items-center justify-end gap-2 px-1 text-xs">
+        <div className="w-full max-w-2xl mb-2 flex items-center justify-end px-1 text-xs">
           <button
             onClick={onAddDestination}
-            className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl shadow-xs font-heading font-bold text-[11px] transition-all hover:scale-105 active:scale-95"
+            className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl shadow-xs font-heading font-bold text-[11px] transition-all hover:scale-105 active:scale-95 cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Magnet</span>
@@ -495,19 +610,20 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
           }}
           className="relative flex items-center justify-center overflow-visible"
         >
-          {/* Check whether active model is the Universal 3D Studio model or another catalog model */}
+          {/* Studio Refrigerator View */}
           {activeModel.id === 'universal-steel-studio' ? (
             <UniversalSteelFridge
-              isDoorOpen={isMainDoorOpen}
-              onToggleDoor={handleToggleMainDoor}
-              isMainDoorOpen={isMainDoorOpen}
-              isFreezerDoorOpen={isInternalFreezerOpen}
-              onToggleMainDoor={handleToggleMainDoor}
-              onToggleFreezerDoor={handleToggleFreezerDoor}
-              isCrisperOpen={isCrisperOpen}
-              onToggleCrisper={() => setIsCrisperOpen((v) => !v)}
-              isFreezerOpen={isInternalFreezerOpen}
-              onToggleFreezer={() => setIsInternalFreezerOpen((v) => !v)}
+              allowDoorOpen={ENABLE_FRIDGE_DOOR_OPENING}
+              isDoorOpen={ENABLE_FRIDGE_DOOR_OPENING ? isMainDoorOpen : false}
+              onToggleDoor={ENABLE_FRIDGE_DOOR_OPENING ? handleToggleMainDoor : undefined}
+              isMainDoorOpen={ENABLE_FRIDGE_DOOR_OPENING ? isMainDoorOpen : false}
+              isFreezerDoorOpen={false}
+              onToggleMainDoor={ENABLE_FRIDGE_DOOR_OPENING ? handleToggleMainDoor : undefined}
+              onToggleFreezerDoor={undefined}
+              isCrisperOpen={false}
+              onToggleCrisper={undefined}
+              isFreezerOpen={false}
+              onToggleFreezer={undefined}
               magneticRegion={magneticRegion}
               surfaceRef={surfaceRef}
               aspectRatio={activeModel.aspectRatio}
@@ -544,8 +660,8 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
                 </div>
               )}
 
-              {/* Render all Draggable, Resizable, Rotatable Magnets */}
-              {placements.map((placement) => {
+              {/* Render all Draggable, Resizable, Rotatable Magnets (including active sponsored magnets) */}
+              {displayPlacements.map((placement) => {
                 const isSelected = placement.id === selectedPlacementId
                 const matchedMagnet = magnets.find(
                   (m) =>
@@ -560,6 +676,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
                     isSelected={isSelected}
                     surfaceRef={surfaceRef}
                     isEditable={!readOnly}
+                    allowDelete={allowDelete}
                     onSelect={() => setSelectedPlacementId(placement.id)}
                     onUpdatePlacement={handleUpdatePlacement}
                     onRemove={() => handleRemovePlacement(placement.id)}
@@ -714,8 +831,8 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
                     </div>
                   )}
 
-                  {/* Render all Draggable, Resizable, Rotatable Magnets */}
-                  {placements.map((placement) => {
+                  {/* Render all Draggable, Resizable, Rotatable Magnets (including active sponsored magnets) */}
+                  {displayPlacements.map((placement) => {
                     const isSelected = placement.id === selectedPlacementId
                     const matchedMagnet = magnets.find(
                       (m) =>
@@ -730,6 +847,7 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
                         isSelected={isSelected}
                         surfaceRef={surfaceRef}
                         isEditable={!readOnly}
+                        allowDelete={allowDelete}
                         onSelect={() => setSelectedPlacementId(placement.id)}
                         onUpdatePlacement={handleUpdatePlacement}
                         onRemove={() => handleRemovePlacement(placement.id)}
@@ -748,29 +866,8 @@ export const FridgeWorkspace: React.FC<FridgeWorkspaceProps> = ({
             </div>
           </div>
         )}
-
-          {/* Selected Magnet Status Toast Overlay (Bottom Edge - Edit Mode Only) */}
-          {!readOnly && selectedPlacement && (
-            <div className="absolute bottom-2.5 inset-x-3 z-50 p-2 bg-slate-900/90 backdrop-blur-md border border-white/20 rounded-xl text-white flex items-center justify-between text-[10px] shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-150">
-              <div className="min-w-0 pr-2">
-                <p className="font-heading font-bold text-white truncate">
-                  {selectedPlacement.destinationName}
-                </p>
-                <p className="text-[9px] text-slate-300">
-                  Drag to place · Use right panel to scale, rotate & layer
-                </p>
-              </div>
-              <button
-                onClick={() => setSelectedPlacementId(null)}
-                className="text-slate-400 hover:text-white px-1 font-bold text-[10px] cursor-pointer"
-              >
-                Done
-              </button>
-            </div>
-          )}
         </div>
       </div>
-
     </div>
   )
 }

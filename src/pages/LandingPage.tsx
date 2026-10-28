@@ -130,7 +130,7 @@ export const LandingPage: React.FC = () => {
     setGoogleError(null)
     setGoogleLoading(true)
     try {
-      const { error } = await signInWithGoogle()
+      const { error } = await signInWithGoogle('/dashboard')
       if (error) setGoogleError(error)
     } catch (err: unknown) {
       setGoogleError(err instanceof Error ? err.message : 'Google sign in failed')
@@ -253,6 +253,8 @@ export const LandingPage: React.FC = () => {
             onSelectTrip={() => {}}
             onAddDestination={() => {}}
             showControls={false}
+            allowDelete={false}
+            allowDoorOpen={false}
           />
         </div>
 

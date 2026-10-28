@@ -7,10 +7,10 @@ export const DEFAULT_FRIDGE_ID = 'universal-steel-studio'
 export const FRIDGE_MODELS: FridgeModel[] = [
   {
     "id": "universal-steel-studio",
-    "name": "Universal Studio Stainless 3D",
+    "name": "Universal Studio Stainless",
     "brand": "Magneto Studio",
     "style": "Single-door",
-    "finish": "Brushed Platinum Steel (Openable 3D)",
+    "finish": "Brushed Platinum Steel",
     "colorHex": "#94A3B8",
     "countryCategory": "Indian",
     "imageUrl": "/fridges/premium-steel-door-closed.png",
@@ -21,9 +21,8 @@ export const FRIDGE_MODELS: FridgeModel[] = [
       "width": 0.90,
       "height": 0.94
     },
-    "description": "Universal photorealistic brushed platinum stainless steel refrigerator with openable 3D door, illuminated interior shelves, and interactive zoom view.",
+    "description": "Universal brushed platinum stainless steel refrigerator with illuminated interior shelves and interactive zoom view.",
     "features": [
-      "Openable 3D Door",
       "Brushed Steel Finish",
       "Interactive Zoom View",
       "Illuminated Interior Shelves"

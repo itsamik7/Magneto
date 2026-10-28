@@ -26,83 +26,83 @@ export interface ShelfDefinition {
 export const SHELF_DEFINITIONS: Record<FridgeShelf, ShelfDefinition> = {
   freezer: {
     id: 'freezer',
-    label: 'Top Freezer Compartment',
+    label: 'Upper Fresh Food Shelf',
     location: 'cavity',
-    surfaceTopPercent: 86.0, // within internal sub-zero box container
-    verticalCenterPercent: 12,
-    horizontalRange: [30, 84],
-    heightRange: [4, 22],
-    description: 'Frosted sub-zero freezer shelf for frozen treats and ice.',
+    surfaceTopPercent: 24.0,
+    verticalCenterPercent: 14,
+    horizontalRange: [14, 86],
+    heightRange: [4, 24],
+    description: 'Upper tempered glass shelf for delicate treats and items.',
   },
   top_shelf: {
     id: 'top_shelf',
     label: 'Upper Fresh Food Shelf',
     location: 'cavity',
-    surfaceTopPercent: 44.8, // exact tempered glass top surface
-    verticalCenterPercent: 36,
+    surfaceTopPercent: 24.0,
+    verticalCenterPercent: 20,
     horizontalRange: [14, 86],
-    heightRange: [24, 45],
+    heightRange: [4, 28],
     description: 'Tempered glass shelf for eggs, dairy jars, and delicate items.',
   },
   middle_shelf: {
     id: 'middle_shelf',
     label: 'Middle Fresh Food Shelf',
     location: 'cavity',
-    surfaceTopPercent: 60.1, // exact tempered glass top surface
-    verticalCenterPercent: 52,
+    surfaceTopPercent: 48.0,
+    verticalCenterPercent: 44,
     horizontalRange: [14, 86],
-    heightRange: [45, 60],
+    heightRange: [28, 54],
     description: 'Primary tempered glass shelf for cartons, bottles, and daily drinks.',
   },
   bottom_shelf: {
     id: 'bottom_shelf',
     label: 'Lower Fresh Food Shelf',
     location: 'cavity',
-    surfaceTopPercent: 73.4, // exact tempered glass top surface
-    verticalCenterPercent: 66,
+    surfaceTopPercent: 72.0,
+    verticalCenterPercent: 68,
     horizontalRange: [14, 86],
-    heightRange: [60, 74],
-    description: 'Sturdy glass shelf above crisper for meal preps, heavy juice carafes.',
+    heightRange: [54, 78],
+    description: 'Sturdy glass shelf for meal preps, heavy juice carafes, and dishes.',
   },
   crisper_drawer: {
     id: 'crisper_drawer',
-    label: 'Bottom Crisper Humidity Drawer',
+    label: 'Bottom Base Compartment',
     location: 'cavity',
-    surfaceTopPercent: 85.0, // within crisper drawer container
-    verticalCenterPercent: 86,
-    horizontalRange: [16, 84],
-    heightRange: [75, 94],
-    description: 'Transparent high-humidity vegetable & citrus fruit drawer.',
+    surfaceTopPercent: 92.0,
+    verticalCenterPercent: 88,
+    horizontalRange: [14, 86],
+    heightRange: [78, 96],
+    description: 'Clean bottom compartment with spacious base for produce and large items.',
   },
   door_bin_top: {
     id: 'door_bin_top',
-    label: 'Door Top Dairy Bin',
-    location: 'door',
-    surfaceTopPercent: 26.2, // floor of top acrylic dairy rack
+    label: 'Upper Shelf Space',
+    location: 'cavity',
+    surfaceTopPercent: 24.0,
     verticalCenterPercent: 20,
-    horizontalRange: [16, 84],
-    heightRange: [14, 28],
-    description: 'Covered upper acrylic bin for butter, small cheeses, and spreads.',
+    horizontalRange: [14, 86],
+    heightRange: [4, 28],
+    description: 'Upper interior shelf space.',
   },
   door_bin_middle: {
     id: 'door_bin_middle',
-    label: 'Door Middle Condiment Bin',
-    location: 'door',
-    surfaceTopPercent: 48.2, // floor of middle condiment rack
+    label: 'Middle Shelf Space',
+    location: 'cavity',
+    surfaceTopPercent: 48.0,
     verticalCenterPercent: 44,
-    horizontalRange: [16, 84],
-    heightRange: [36, 52],
-    description: 'Intermediate acrylic door rack for mustard, sauces, and jam jars.',
+    horizontalRange: [14, 86],
+    heightRange: [28, 54],
+    description: 'Middle interior shelf space.',
   },
   door_bin_bottom: {
     id: 'door_bin_bottom',
-    label: 'Door Bottom Beverage Gallon Bin',
-    location: 'door',
-    surfaceTopPercent: 88.5, // floor of deep gallon bottle rack
-    verticalCenterPercent: 74,
-    horizontalRange: [16, 84],
-    heightRange: [60, 89],
-    description: 'Deep guardrail door rack for champagne, tall bottles, and juices.',
+    label: 'Lower Shelf Space',
+    location: 'cavity',
+    surfaceTopPercent: 72.0,
+    verticalCenterPercent: 68,
+    horizontalRange: [14, 86],
+    heightRange: [54, 78],
+    description: 'Lower interior shelf space.',
   },
 }
 
@@ -287,6 +287,10 @@ export interface FridgeProduct {
   arrangement?: StackingArrangement
   /** Spacing in pixels between duplicate units (10 to 45px) */
   spacing?: number
+  /** Rotation angle in degrees (0 to 360) for 3D placement */
+  rotation?: number
+  /** Optional URL to dedicated 3D GLB model */
+  model3dUrl?: string
   isActive: boolean
   isArchived: boolean
   displayOrder: number

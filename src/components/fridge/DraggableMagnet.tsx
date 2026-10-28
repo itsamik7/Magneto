@@ -6,21 +6,23 @@ import {
   RotateCw,
   ZoomIn,
   ZoomOut,
-  ArrowUpToLine,
   Trash2,
-  ExternalLink,
   Lock,
+  ExternalLink,
 } from 'lucide-react'
+import { trackAdvertisingEvent } from '../../services/advertisingService'
 
 interface DraggableMagnetProps {
   placement: MagnetPlacement
   isSelected: boolean
   surfaceRef: React.RefObject<HTMLDivElement | null>
   isEditable?: boolean
+  /** Centralized permission flag: controls whether this magnet can be removed/deleted */
+  allowDelete?: boolean
   onSelect: () => void
   onUpdatePlacement: (updated: MagnetPlacement, isCommit?: boolean) => void
   onRemove: () => void
-  onBringToFront: () => void
+  onBringToFront?: () => void
   onClick?: () => void
 }
 
@@ -29,6 +31,7 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
   isSelected,
   surfaceRef,
   isEditable = true,
+  allowDelete = true,
   onSelect,
   onUpdatePlacement,
   onRemove,
@@ -46,6 +49,61 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
   })
   const hasMovedRef = useRef(false)
 
+  // Track impression when sponsored magnet is rendered
+  useEffect(() => {
+    if (placement.isSponsored && placement.sponsoredCampaignId) {
+      trackAdvertisingEvent({
+        campaignId: placement.sponsoredCampaignId,
+        eventType: 'impression',
+        placementType: 'fridge_magnet',
+      })
+    }
+  }, [placement.isSponsored, placement.sponsoredCampaignId])
+
+  const handleSponsoredClick = (e: React.MouseEvent | React.PointerEvent) => {
+    e.stopPropagation()
+    if (placement.isSponsored && placement.destinationUrl) {
+      if (placement.sponsoredCampaignId) {
+        trackAdvertisingEvent({
+          campaignId: placement.sponsoredCampaignId,
+          eventType: 'click',
+          placementType: 'fridge_magnet',
+          metadata: { destinationUrl: placement.destinationUrl },
+        })
+      }
+      window.open(placement.destinationUrl, '_blank', 'noopener,noreferrer')
+    }
+  }
+
+  // Enforce deletion restrictions on keyboard shortcuts
+  useEffect(() => {
+    if (!isSelected || !isEditable || placement.isSponsored) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        const activeTag = document.activeElement?.tagName
+        if (
+          activeTag === 'INPUT' ||
+          activeTag === 'TEXTAREA' ||
+          (document.activeElement as HTMLElement)?.isContentEditable
+        ) {
+          return
+        }
+
+        e.preventDefault()
+        e.stopPropagation()
+
+        // Strictly disallow deletion if allowDelete is false or magnet is sponsored
+        if (!allowDelete || placement.isSponsored) return
+
+        onRemove()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isSelected, isEditable, allowDelete, onRemove, placement.isSponsored])
+
   // Dragging logic via Pointer Events
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     // Only drag with primary pointer button
@@ -53,6 +111,13 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
 
     // Prevent propagation so parent container doesn't deselect
     e.stopPropagation()
+
+    // Sponsored magnets open advertiser URL immediately on click
+    if (placement.isSponsored) {
+      handleSponsoredClick(e)
+      return
+    }
+
     onSelect()
 
     if (!isEditable) {
@@ -235,29 +300,51 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
       {/* Visual Magnet Body */}
       <div className="relative flex flex-col items-center">
         <div className="relative">
-          <MagnetGraphic
-            magnetKey={placement.magnetSlug}
-            assetUrl={placement.assetUrl}
-            destinationName={placement.destinationName}
-            state={placement.unlockState || 'dreaming'}
-            progressPercentage={placement.progressPercentage || 0}
-            isInteractive={false}
-            floatVariant={isDragging ? 1 : 1}
-          />
+          {placement.isSponsored ? (
+            <div
+              onClick={handleSponsoredClick}
+              className="relative rounded-2xl overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.35),0_2px_6px_rgba(0,0,0,0.2)] border-2 border-amber-400/90 bg-white cursor-pointer hover:scale-105 active:scale-95 transition-transform duration-200"
+              style={{ width: '74px', height: '74px' }}
+              title={`Sponsored by ${placement.brandName || 'Partner'} • Click to visit`}
+            >
+              <img
+                src={placement.assetUrl}
+                alt={placement.productName || placement.brandName || 'Sponsored Magnet'}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-tr from-black/25 via-transparent to-white/40 pointer-events-none" />
+              {placement.brandName && (
+                <div className="absolute bottom-0 inset-x-0 bg-slate-950/75 backdrop-blur-xs px-1 py-0.5 text-[7px] text-amber-300 font-heading font-black text-center truncate">
+                  {placement.brandName}
+                </div>
+              )}
+            </div>
+          ) : (
+            <MagnetGraphic
+              magnetKey={placement.magnetSlug}
+              assetUrl={placement.assetUrl}
+              destinationName={placement.destinationName}
+              state={placement.unlockState || 'dreaming'}
+              progressPercentage={placement.progressPercentage || 0}
+              isInteractive={false}
+              floatVariant={isDragging ? 1 : 1}
+            />
+          )}
 
           {/* Lock Icon Badge (Top Right of Magnet) */}
-          {(placement.hasLock ||
-            placement.isFundedPending ||
-            placement.magnetSlug === 'rome' ||
-            placement.magnetSlug === 'santorini' ||
-            placement.magnetSlug === 'thailand') && (
+          {!placement.isSponsored &&
+            (placement.hasLock ||
+              placement.isFundedPending ||
+              placement.magnetSlug === 'rome' ||
+              placement.magnetSlug === 'santorini' ||
+              placement.magnetSlug === 'thailand') && (
             <div className="absolute top-1 right-1 w-5 h-5 rounded-full bg-slate-900/85 backdrop-blur-xs text-white flex items-center justify-center shadow-md border border-white/40 pointer-events-none">
               <Lock className="w-2.5 h-2.5 fill-white" />
             </div>
           )}
 
           {/* Selection Indicator Ring */}
-          {isSelected && (
+          {isSelected && !placement.isSponsored && (
             <div
               className={`absolute -inset-2.5 rounded-3xl pointer-events-none ${
                 isEditable
@@ -269,7 +356,16 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
         </div>
 
         {/* State Badge Pill (Directly Below Magnet) */}
-        {(placement.isFundedPending ||
+        {placement.isSponsored ? (
+          <div
+            onClick={handleSponsoredClick}
+            className="mt-1 px-2 py-0.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-[8px] font-heading font-extrabold rounded-lg shadow-sm flex items-center justify-center gap-1 border border-amber-300/80 cursor-pointer hover:brightness-110 active:scale-95 transition-all whitespace-nowrap"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            <span>Sponsored • {placement.brandName || 'Featured'}</span>
+            <ExternalLink className="w-2.5 h-2.5 ml-0.5 opacity-90" />
+          </div>
+        ) : (placement.isFundedPending ||
           placement.unlockState === 'ready_to_go' ||
           placement.progressPercentage === 100) ? (
           /* State 1: Funded / Ready to Go Pill */
@@ -298,8 +394,8 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
         )}
       </div>
 
-      {/* Resize Corner Handles & Floating Actions (Only in Edit Mode) */}
-      {isSelected && isEditable && (
+      {/* Resize Corner Handles & Floating Actions (Only in Edit Mode and non-sponsored) */}
+      {isSelected && isEditable && !placement.isSponsored && (
         <>
           <div
             onPointerDown={(e) => handleResizePointerDown(e, 'nw')}
@@ -363,42 +459,22 @@ export const DraggableMagnet: React.FC<DraggableMagnetProps> = ({
               <ZoomIn className="w-3.5 h-3.5 text-slate-200" />
             </button>
 
-            <div className="w-[1px] h-3.5 bg-slate-700 mx-0.5" />
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onBringToFront()
-              }}
-              className="p-1 hover:bg-slate-700 rounded-lg transition-colors"
-              title="Bring to Front"
-            >
-              <ArrowUpToLine className="w-3.5 h-3.5 text-amber-300" />
-            </button>
-
-            {onClick && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onClick()
-                }}
-                className="p-1 hover:bg-slate-700 rounded-lg transition-colors"
-                title="View Destination / Trip Details"
-              >
-                <ExternalLink className="w-3.5 h-3.5 text-sky-300" />
-              </button>
+            {allowDelete && (
+              <>
+                <div className="w-[1px] h-3.5 bg-slate-700 mx-0.5" />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (!allowDelete) return
+                    onRemove()
+                  }}
+                  className="p-1 hover:bg-rose-900/60 text-rose-300 rounded-lg transition-colors cursor-pointer"
+                  title="Remove from Fridge"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </>
             )}
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onRemove()
-              }}
-              className="p-1 hover:bg-rose-900/60 text-rose-300 rounded-lg transition-colors"
-              title="Remove from Fridge"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
           </div>
         </>
       )}

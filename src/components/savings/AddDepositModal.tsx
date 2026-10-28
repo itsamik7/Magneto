@@ -6,6 +6,7 @@ import { savingsDepositSchema, type SavingsDepositFormData } from '../../lib/val
 import type { TripWithStats } from '../../types/trip'
 import type { SavingsTransactionInsert } from '../../types/savings'
 import { formatINR, rupeesToPaise, deriveMagnetState, calculateProgressPercentage, calculateAmountRemaining } from '../../lib/utils'
+import { trackMagnetUnlocked } from '../../lib/posthog'
 import { Sparkles, ArrowRight, CheckCircle2 } from 'lucide-react'
 
 interface AddDepositModalProps {
@@ -58,6 +59,14 @@ export const AddDepositModal: React.FC<AddDepositModalProps> = ({
         currency: 'INR',
         note: data.note?.trim() || null,
       })
+      if (willUnlockReady) {
+        trackMagnetUnlocked({
+          tripId: trip.id,
+          destination: trip.destination_name,
+          totalSaved: projectedTotalSaved,
+          targetBudget: trip.target_budget_minor,
+        })
+      }
       reset()
       onClose()
     } catch (err: unknown) {

@@ -14,6 +14,10 @@ interface VirtualFridgeProps {
   onAddDestination: () => void
   isLoading?: boolean
   showControls?: boolean
+  /** Centralized permission flag: controls whether magnets can be removed/deleted */
+  allowDelete?: boolean
+  /** Centralized permission flag: controls whether fridge doors can be opened */
+  allowDoorOpen?: boolean
 }
 
 export const VirtualFridge: React.FC<VirtualFridgeProps> = ({
@@ -25,6 +29,8 @@ export const VirtualFridge: React.FC<VirtualFridgeProps> = ({
   onAddDestination,
   isLoading = false,
   showControls = true,
+  allowDelete = false,
+  allowDoorOpen = false,
 }) => {
   // Active fridge model (Universal Studio Stainless 3D)
   const [activeModel, setActiveModel] = useState<FridgeModel>(() => {
@@ -82,6 +88,8 @@ export const VirtualFridge: React.FC<VirtualFridgeProps> = ({
       userId={userId}
       currentModel={activeModel}
       magnets={displayItems}
+      allowDelete={allowDelete}
+      allowDoorOpen={allowDoorOpen}
       onSelectMagnetItem={(magnet) => {
         if (onSelectMagnet) {
           onSelectMagnet(magnet)

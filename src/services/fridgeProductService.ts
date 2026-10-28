@@ -1,7 +1,7 @@
 import type { FridgeProduct, FridgeShelf, ProductCategory } from '../types/fridgeProduct'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 
-const STORAGE_KEY = 'magneto_fridge_interior_products_v2'
+const STORAGE_KEY = 'magneto_fridge_interior_products_v3'
 export const FRIDGE_PRODUCTS_UPDATED_EVENT = 'magneto_fridge_products_changed'
 
 // Empty initial products array: the refrigerator starts completely empty!
@@ -14,6 +14,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     name: 'Fresh Whole Milk Carton',
     category: 'Dairy',
     imageUrl: '/assets/products/milk-carton.png',
+    model3dUrl: '/assets/products/3d/milk-carton.glb',
     description: 'Organic whole milk, pasteurized & fortified with Vitamin D',
     shelf: 'middle_shelf',
     positionX: 25,
@@ -22,6 +23,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     itemCount: 3,
     arrangement: 'row',
     spacing: 22,
+    rotation: 0,
     isActive: true,
     isArchived: false,
     displayOrder: 1,
@@ -31,6 +33,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     name: 'Farm Fresh Brown Eggs',
     category: 'Dairy',
     imageUrl: '/assets/products/egg-carton.png',
+    model3dUrl: '/assets/products/3d/egg-carton.glb',
     description: 'Pasture-raised grade A large brown eggs',
     shelf: 'top_shelf',
     positionX: 28,
@@ -39,6 +42,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     itemCount: 1,
     arrangement: 'single',
     spacing: 18,
+    rotation: 0,
     isActive: true,
     isArchived: false,
     displayOrder: 2,
@@ -48,6 +52,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     name: 'Sparkling Mineral Water',
     category: 'Beverages',
     imageUrl: '/assets/products/water-bottle.png',
+    model3dUrl: '/assets/products/3d/water-bottle.glb',
     description: 'Naturally effervescent spring water with mineral electrolytes',
     shelf: 'middle_shelf',
     positionX: 74,
@@ -56,6 +61,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     itemCount: 2,
     arrangement: 'row',
     spacing: 22,
+    rotation: 0,
     isActive: true,
     isArchived: false,
     displayOrder: 3,
@@ -65,6 +71,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     name: 'Pure Squeezed Orange Juice',
     category: 'Beverages',
     imageUrl: '/assets/products/orange-juice.png',
+    model3dUrl: '/assets/products/3d/orange-juice.glb',
     description: '100% pure squeezed Florida orange juice with pulp',
     shelf: 'bottom_shelf',
     positionX: 28,
@@ -73,6 +80,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     itemCount: 1,
     arrangement: 'single',
     spacing: 18,
+    rotation: 0,
     isActive: true,
     isArchived: false,
     displayOrder: 4,
@@ -82,6 +90,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     name: 'Artisanal Greek Yogurt',
     category: 'Dairy',
     imageUrl: '/assets/products/yogurt-jar.png',
+    model3dUrl: '/assets/products/3d/yogurt-jar.glb',
     description: 'Strained whole milk plain Greek yogurt with probiotics',
     shelf: 'top_shelf',
     positionX: 72,
@@ -90,6 +99,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     itemCount: 2,
     arrangement: 'row',
     spacing: 20,
+    rotation: 0,
     isActive: true,
     isArchived: false,
     displayOrder: 5,
@@ -99,6 +109,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     name: 'Dijon Mustard & Condiment',
     category: 'Condiments',
     imageUrl: '/assets/products/condiment-jar.png',
+    model3dUrl: '/assets/products/3d/condiment-jar.glb',
     description: 'Authentic French stone-ground Dijon mustard',
     shelf: 'door_bin_middle',
     positionX: 25,
@@ -107,6 +118,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     itemCount: 1,
     arrangement: 'single',
     spacing: 18,
+    rotation: 0,
     isActive: true,
     isArchived: false,
     displayOrder: 6,
@@ -116,6 +128,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     name: 'Artisan Strawberry Conserve',
     category: 'Condiments',
     imageUrl: '/assets/products/jam-jar.png',
+    model3dUrl: '/assets/products/3d/jam-jar.glb',
     description: 'Slow-cooked handpicked wild strawberry preserves',
     shelf: 'door_bin_middle',
     positionX: 75,
@@ -124,6 +137,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     itemCount: 1,
     arrangement: 'single',
     spacing: 18,
+    rotation: 0,
     isActive: true,
     isArchived: false,
     displayOrder: 7,
@@ -133,6 +147,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     name: 'Crisper Fresh Citrus Basket',
     category: 'Fruits & Vegetables',
     imageUrl: '/assets/products/citrus-basket.png',
+    model3dUrl: '/assets/products/3d/citrus-basket.glb',
     description: 'Juicy organic lemons, sweet clementines and Valencia oranges',
     shelf: 'crisper_drawer',
     positionX: 32,
@@ -141,6 +156,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     itemCount: 1,
     arrangement: 'single',
     spacing: 18,
+    rotation: 0,
     isActive: true,
     isArchived: false,
     displayOrder: 8,
@@ -150,6 +166,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     name: 'Hydroponic Salad Greens',
     category: 'Fruits & Vegetables',
     imageUrl: '/assets/products/green-lettuce.png',
+    model3dUrl: '/assets/products/3d/green-lettuce.glb',
     description: 'Crisp romaine and butterhead salad greens',
     shelf: 'crisper_drawer',
     positionX: 72,
@@ -158,6 +175,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     itemCount: 1,
     arrangement: 'single',
     spacing: 18,
+    rotation: 0,
     isActive: true,
     isArchived: false,
     displayOrder: 9,
@@ -167,6 +185,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     name: 'Glass Meal Prep Container',
     category: 'Prepared Meals',
     imageUrl: '/assets/products/meal-container.png',
+    model3dUrl: '/assets/products/3d/meal-container.glb',
     description: 'Grilled chicken, roasted asparagus, and quinoa in airtight borosilicate container',
     shelf: 'bottom_shelf',
     positionX: 72,
@@ -175,6 +194,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     itemCount: 2,
     arrangement: 'stack',
     spacing: 16,
+    rotation: 0,
     isActive: true,
     isArchived: false,
     displayOrder: 10,
@@ -184,6 +204,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     name: 'Artisan Gelato Ice Cream Pint',
     category: 'Freezer',
     imageUrl: '/assets/products/ice-cream.png',
+    model3dUrl: '/assets/products/3d/ice-cream.glb',
     description: 'Madagascar vanilla bean and salted caramel gelato',
     shelf: 'freezer',
     positionX: 50,
@@ -192,6 +213,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     itemCount: 2,
     arrangement: 'row',
     spacing: 22,
+    rotation: 0,
     isActive: true,
     isArchived: false,
     displayOrder: 11,
@@ -201,6 +223,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     name: 'Chilled Sparkling Champagne',
     category: 'Beverages',
     imageUrl: '/assets/products/champagne-bottle.png',
+    model3dUrl: '/assets/products/3d/champagne-bottle.glb',
     description: 'Brut vintage reserve champagne chilled for celebrations',
     shelf: 'door_bin_bottom',
     positionX: 50,
@@ -209,6 +232,7 @@ export const STOCK_GROCERY_TEMPLATES: FridgeProduct[] = [
     itemCount: 1,
     arrangement: 'single',
     spacing: 18,
+    rotation: 0,
     isActive: true,
     isArchived: false,
     displayOrder: 12,
@@ -221,8 +245,9 @@ const memoryStore = new Map<string, string>()
 function getLocalProducts(): FridgeProduct[] {
   try {
     if (typeof window !== 'undefined' && window.localStorage) {
-      // Clear legacy v1 key that pre-seeded items
+      // Clear legacy keys that pre-seeded items
       window.localStorage.removeItem('magneto_fridge_interior_products_v1')
+      window.localStorage.removeItem('magneto_fridge_interior_products_v2')
       const raw = window.localStorage.getItem(STORAGE_KEY)
       if (raw !== null) {
         const parsed = JSON.parse(raw) as FridgeProduct[]
@@ -242,7 +267,7 @@ function getLocalProducts(): FridgeProduct[] {
   } catch (err) {
     console.warn('[FridgeProductService] Error parsing local products:', err)
   }
-  return [...STOCK_GROCERY_TEMPLATES]
+  return []
 }
 
 /**
@@ -302,6 +327,8 @@ function mapRowToProduct(row: DbFridgeProduct): FridgeProduct {
   let itemCount: number = 1
   let arrangement: StackingArrangement = 'single'
   let spacing: number = 18
+  let rotation: number | undefined = undefined
+  let model3dUrl: string | undefined = undefined
   let cleanDescription = row.description ?? undefined
 
   if (row.description && row.description.includes('__META__:')) {
@@ -312,6 +339,8 @@ function mapRowToProduct(row: DbFridgeProduct): FridgeProduct {
       if (meta.itemCount !== undefined) itemCount = Math.max(1, Math.min(12, Number(meta.itemCount)))
       if (meta.arrangement) arrangement = meta.arrangement
       if (meta.spacing !== undefined) spacing = Math.max(10, Math.min(45, Number(meta.spacing)))
+      if (meta.rotation !== undefined) rotation = Number(meta.rotation)
+      if (meta.model3dUrl) model3dUrl = String(meta.model3dUrl)
     } catch (e) {
       console.warn('[FridgeProductService] Error parsing arrangement metadata:', e)
     }
@@ -336,6 +365,8 @@ function mapRowToProduct(row: DbFridgeProduct): FridgeProduct {
     itemCount,
     arrangement,
     spacing,
+    rotation,
+    model3dUrl,
     isActive: Boolean(row.is_active),
     isArchived: Boolean(row.is_archived),
     displayOrder: row.display_order ?? 0,
@@ -362,13 +393,17 @@ function mapProductToRow(product: Partial<FridgeProduct>): DbFridgeProductUpdate
   const hasMeta =
     (product.itemCount !== undefined && product.itemCount > 1) ||
     (product.arrangement !== undefined && product.arrangement !== 'single') ||
-    product.spacing !== undefined
+    product.spacing !== undefined ||
+    product.rotation !== undefined ||
+    product.model3dUrl !== undefined
 
   if (hasMeta) {
     const metaJson = JSON.stringify({
       itemCount: product.itemCount ?? 1,
       arrangement: product.arrangement ?? 'single',
       spacing: product.spacing ?? 18,
+      rotation: product.rotation,
+      model3dUrl: product.model3dUrl,
     })
     descToSave = `${descToSave ? descToSave + ' ' : ''}__META__:${metaJson}`
   }
