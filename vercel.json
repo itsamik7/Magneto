@@ -5,6 +5,10 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/google445f632f22b18793.html",
+      "destination": "/google445f632f22b18793.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
